@@ -92,3 +92,88 @@ export const upgradeBusinessResponseSchema = z.object({
 export type UpgradeBusinessResponse = z.infer<
   typeof upgradeBusinessResponseSchema
 >;
+
+export const seasonStatusSchema = z.enum([
+  'upcoming',
+  'active',
+  'frozen',
+  'ended',
+]);
+export type SeasonStatus = z.infer<typeof seasonStatusSchema>;
+
+export const seasonDtoSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  status: seasonStatusSchema,
+  startsAt: z.iso.datetime(),
+  endsAt: z.iso.datetime(),
+  sruSnapshot: z.number().int().positive(),
+});
+export type SeasonDto = z.infer<typeof seasonDtoSchema>;
+
+export const missionDifficultySchema = z.enum([
+  'easy',
+  'normal',
+  'hard',
+  'weekly',
+]);
+export type MissionDifficultyDto = z.infer<typeof missionDifficultySchema>;
+
+export const playerMissionInstanceSchema = z.object({
+  id: z.uuid(),
+  key: z.string(),
+  difficulty: missionDifficultySchema,
+  title: z.string(),
+  description: z.string(),
+  progress: z.number().int().nonnegative(),
+  target: z.number().int().positive(),
+  status: z.enum(['in_progress', 'completed', 'claimed']),
+  rewardPoints: z.number().int().positive(),
+  assignedDate: z.string(),
+  claimedAt: z.iso.datetime().nullable(),
+});
+export type PlayerMissionInstance = z.infer<typeof playerMissionInstanceSchema>;
+
+export const playerStreakDtoSchema = z.object({
+  currentStreak: z.number().int().nonnegative(),
+  longestStreak: z.number().int().nonnegative(),
+  lastClaimDate: z.string().nullable(),
+  canClaimToday: z.boolean(),
+  todayRewardPoints: z.number().int().positive(),
+  isCycleBonusToday: z.boolean(),
+});
+export type PlayerStreakDto = z.infer<typeof playerStreakDtoSchema>;
+
+export const claimMissionRequestSchema = z
+  .object({
+    missionInstanceId: z.uuid(),
+    requestId: z.uuid(),
+  })
+  .strict();
+export type ClaimMissionRequest = z.infer<typeof claimMissionRequestSchema>;
+
+export const claimMissionResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  missionInstanceId: z.uuid(),
+  rewardPoints: z.number().int().positive(),
+  newSeasonPoints: z.number().int().nonnegative(),
+  claimedAt: z.iso.datetime(),
+});
+export type ClaimMissionResponse = z.infer<typeof claimMissionResponseSchema>;
+
+export const claimStreakRequestSchema = z
+  .object({
+    requestId: z.uuid(),
+  })
+  .strict();
+export type ClaimStreakRequest = z.infer<typeof claimStreakRequestSchema>;
+
+export const claimStreakResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  rewardPoints: z.number().int().positive(),
+  newStreak: z.number().int().positive(),
+  newSeasonPoints: z.number().int().nonnegative(),
+  isCycleBonus: z.boolean(),
+  claimedAt: z.iso.datetime(),
+});
+export type ClaimStreakResponse = z.infer<typeof claimStreakResponseSchema>;
