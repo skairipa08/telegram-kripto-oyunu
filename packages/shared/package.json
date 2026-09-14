@@ -1,0 +1,12 @@
+{
+  "name": "@empire/shared",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
+  }
+}

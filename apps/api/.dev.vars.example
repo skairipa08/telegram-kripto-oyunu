@@ -1,0 +1,7 @@
+# Copy to .dev.vars when implementing Telegram authentication in step 2.
+# R0 health endpoint does not consume or require these values.
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_WEBHOOK_SECRET=
+SESSION_SECRET=
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
