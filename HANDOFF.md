@@ -2,54 +2,40 @@
 
 ## Güncel durum
 
-- Mevcut adım: **1 — R0 proje temeli**.
-- Durum: **TAMAMLANDI**. Bu adım sonunda duruldu; 2. adım için kullanıcının devam mesajı bekleniyor.
-- Sıradaki adım: **2 — R1 Telegram shell ve auth**. Başlamadı.
-- Çalışma dalı: `work/step-01`.
-- Kullanıcı her tamamlanan adım sonunda durulmasını ve kısa `N. adım tamamlandı.` mesajını istiyor. Sonraki adımı kullanıcı devam dediğinde uygula; tek oturumda tüm yol haritasına geçme.
-- Kullanıcı Codex ve Gemini 3.8 Flash arasında elle geçiş yapacak. Bu dosya her iki model için ortak devir kaydıdır; Gemini'ye otomatik bağlantı yapılmış değildir.
+- Mevcut adım: **3 — R2 Core Economy Engine & Formulas**.
+- Durum: **TAMAMLANDI**. Saf matematik ve ekonomi motoru, sözleşmeler ve veritabanı şeması tamamlandı; tasarım ve güvenlik katmanına dokunulmadan Astra 6.0 için izole bırakıldı.
+- Sıradaki adımlar:
+  - **Astra 6.0**: Adım 2 (R1) canlı Telegram/güvenlik doğrulaması & Adım 4 (R3) Empire UI görsel bileşenleri.
+  - **Sıradaki mantık adımı**: **5 — R4 Sezonlar ve Görev Mantığı (Backend & Algorithms)**.
+- Çalışma dalı: `work/step-03`.
+- Kullanıcı her tamamlanan adım sonunda durulmasını ve kısa durum raporu verilmesini istiyor.
 
-## Önce okunacaklar
+## 1., 2. ve 3. Adım Özeti
 
-1. Bu dosya.
-2. `docs/PLAN.md`: 1–14 adım eşlemesi ve değişmeyecek kurallar.
-3. `docs/ADR-001.md`: mimari kararlar.
-4. `Project_Empire_Master_Blueprint_v1.0.docx`: asıl ürün şartnamesi; özellikle başlayacağın fazın çıkış kriteri.
-5. `README.md`: komutlar ve yerel çalışma.
-
-## 1. adımda yapılanlar
-
-- pnpm workspace: React/Vite web, Hono Worker API, shared ve game-core paketleri.
-- Strict TypeScript, ESLint 10, Prettier, Vitest, lockfile ve GitHub Actions kalite akışı.
-- `/health` JSON sözleşmesi ve tanımlanmamış yollar için JSON 404.
-- Gerçek API bağlantısını, hata durumunu ve yeniden denemeyi gösteren Türkçe başlangıç ekranı.
-- Vite `/api` geliştirme proxy'si; yerel `pnpm dev` ile iki servis.
-- Env örnekleri, secret/build ignore kuralları, mimari karar ve numaralı plan.
+1. **Adım 1 (R0 - Altyapı):** pnpm workspace, TypeScript, ESLint, Prettier, Vitest, CI akışı, `/health` endpoint'i.
+2. **Adım 2 (R1 - Telegram Shell & Auth):**
+   - CPT tarafından HMAC auth, cookie oturumu ve Supabase auth migration'ı yazıldı.
+   - Gemini tarafından `/api` rota prefix yönlendirmesi düzeltildi ve 40/40 test yeşile çekildi.
+   - Güvenlik incelemesi ve canlı BotFather/Telegram testi Astra 6.0 için bekletildi.
+3. **Adım 3 (R2 - Core Economy):**
+   - `packages/game-core`: 6 kanonik işletme (`DEFAULT_BUSINESSES`) ve ekonomi konfigürasyonu (`DEFAULT_ECONOMY_CONFIG`).
+   - Deterministik saf matematik formülleri: `calculateUpgradeCost`, `calculateMilestoneMultiplier`, `calculateProductionPerSecond`, `calculateTotalProduction`, `calculateOfflineEarnings`, `calculateSRU`, `calculateReferralWhaleFactor`.
+   - `packages/shared`: `PlayerBusiness`, `PlayerEconomyState`, `ClaimCashRequest/Response`, `UpgradeBusinessRequest/Response` Zod sözleşmeleri.
+   - `supabase/migrations/202609140002_economy.sql`: `economy_config`, `businesses`, `player_balances`, `player_businesses`, `reward_ledger` tabloları ve RLS.
+   - 17 yeni birim test eklendi (toplam 57 test, %100 başarılı).
 
 ## Doğrulama kanıtları
 
 2026-09-14, Windows / Node 24.14.0 / pnpm 9.1.0:
 
-- `pnpm install --frozen-lockfile`: başarılı. Ayrıca 9632465 kaynak kaydından ayrı geçici dizine temiz Git clone alındı; kurulum ve tüm `pnpm check` kontrolleri orada da geçti.
-- `pnpm check`: lint, biçim, dört pakette typecheck, 2/2 API testi, web build ve Worker dry-run başarılı.
-- Testler endpoint uygulanmadan önce 2/2 başarısızdı; uygulama sonrasında 2/2 geçti.
-- Gerçek yerel Worker `/health`, web `/api/health` ve web HTML: HTTP 200.
-- Chrome ile 320, 390, 1440 px: yatay taşma yok, API bağlantısı hazır, JavaScript sayfa hatası yok.
-- API 503 yanıtı tarayıcıda hata ve Tekrar dene düğmesini gösterdi; yeniden deneme gerçek API'ye döndüğünde toparlandı.
-- Bağımsız kod incelemesi: Node minimum sürümü 24'e düzeltildi; Wrangler editör schema yolu düzeltildi; eksik devir kaydı eklendi.
+- `pnpm format:check`: Başarılı, tüm dosyalar Prettier uyumlu.
+- `pnpm lint`: Başarılı, 0 lint hatası.
+- `pnpm typecheck`: 4 pakette (`game-core`, `shared`, `api`, `web`) hatasız tamamlandı.
+- `pnpm test`: 5 test dosyası, 57/57 test başarılı.
+- `pnpm -r build`: Web Vite build ve API Wrangler deploy dry-run başarılı.
 
-## Bilinen sınırlar
+## Bilinen sınırlar ve Astra 6.0 Notları
 
-- Bu sürüm oyun değil, geliştirme temelidir. Auth, Supabase, ekonomi, görev, davet, sıralama, ödeme ve yönetim paneli henüz yok.
-- game-core bilerek boş; migration dizininde yalnız açıklama var.
-- `/health` veritabanı veya üretim hazırlığı kontrol etmez.
-- GitHub uzak depo ve yayın yok; CI dosyası mevcut fakat GitHub üzerinde çalıştırılmadı.
-- `pnpm build` yayın yapmaz. Üretim `/api` yönlendirmesi ve gerçek Telegram testi ileride gerekir.
-- pnpm 9 / Node 24 kurulumunda `url.parse` deprecation uyarısı var. Zod 4.6.5 derlenirken iki üçüncü taraf PURE yorum uyarısı var; derleme başarılı. Bağımlılık dosyaları değiştirilmedi.
-- Gerçek secret eklenmedi; hiçbir key kullanıcıdan bu adımda istenmedi.
-
-## 2. adımı devralma talimatı
-
-Kullanıcı devam dediğinde yalnız R1 uygula: Telegram tema/shell, sunucuda initData HMAC ve auth_date kontrolü, kısa ömürlü session, `/auth/telegram` ve `/me/state` sınırı. Sahte geliştirme girişini production-safe auth yerine koyma. User upsert kalıcılığı için gereken minimum SQL/auth bağımlılığını açıkça planla; R2'nin ekonomi işlerini erken tamamlandı sayma. Secret yoksa örnek yapılandırma ve otomatik testlerle ilerle; gerçek Telegram kullanıcısıyla giriş kanıtı olmadan R1 tamamlandı deme. Bu durumda adımı `devam ediyor / dış doğrulama bekliyor` kaydet.
-
-Her adımın sonunda yapılanları, değişen kararları, çalıştırılan testleri, kısıtları ve sıradaki numarayı burada güncelle. README kontrol listesini eşleştir, Git checkpoint oluştur ve dur.
+- Tasarım ve görsel bileşenler (Tailwind stilleri, Empire UI kartları) kullanıcı isteği doğrultusunda Astra 6.0'a bırakıldı.
+- Veritabanı fonksiyonlarının (RPC) güvenlik sertleştirmesi ve sızma denetimi Astra 6.0'a devredildi.
+- Token/Web3 özellikleri ve Telegram Stars ödemeleri Blueprint kurallarına uygun olarak feature flag ile kapalı tutuldu.
