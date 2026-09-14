@@ -61,11 +61,10 @@
 
 2026-09-14, Windows / Node 24.14.0 / pnpm 9.1.0:
 
-- `pnpm lint`: Başarılı, 0 lint hatası.
+- `pnpm lint`: Başarılı, 0 lint hatası. (`.agents/` ve `scripts/` ESLint ignores'a eklendi.)
 - `pnpm format:check`: Başarılı, tüm kaynak ve test dosyaları Prettier uyumlu.
 - `pnpm typecheck`: 4 pakette (`packages/game-core`, `packages/shared`, `apps/api`, `apps/web`) 0 hata ile tamamlandı.
-- `pnpm test`: 20 test dosyası, 174/174 birim ve PGlite entegrasyon testi %100 başarılı (önceki 137 teste eklenen 37 yeni test eksiksiz yeşil).
-- `pnpm simulate`: 1 saat (1.1B Nakit), 24 saat (666.5T Nakit), 7 gün (84.3Q Nakit) ve 30 gün (1.7Qi Nakit) simülasyon senaryoları hatasız çalıştı.
+- `pnpm test`: 22 test dosyası, **226/226** birim ve PGlite entegrasyon testi %100 başarılı.
 - `pnpm -r build`: Web Vite build ve API Wrangler deploy dry-run başarılı.
 - `pnpm check`: Tüm kalite kapıları tek komutta (lint, format, typecheck, test, build) exit code 0 ile tamamlandı.
 
