@@ -25,14 +25,14 @@ Amaç: Kimlik bilgisi gerektirmeyen, temiz kurulumdan çalıştırılabilen geli
 
 Mimari: apps/web React/Vite istemcisi, apps/api Hono Worker. packages/shared Zod API sözleşmelerini, packages/game-core ileride saf ekonomi fonksiyonlarını içerir. Veritabanı bağlama 3. adımdadır. Başlangıç ekranı oynanabilir oyun gibi davranmaz; gerçek API bağlantısını gösterir.
 
-- [ ] pnpm workspace, strict TypeScript, ESLint ve Prettier kur.
-- [ ] Health API sözleşmesini tanımla; başarılı yanıt ve bilinmeyen yol testlerini önce çalıştır.
-- [ ] Hono health endpoint ve standart 404 yanıtını uygula.
-- [ ] React başlangıç ekranını API durumunu gerçekten okuyacak şekilde kur.
-- [ ] CI, env örnekleri, ADR, README ve devir kayıtlarını yaz.
-- [ ] Kurulum, lint, format, typecheck, test ve build çalıştır.
-- [ ] Yerel web/API süreçlerini başlatıp HTTP üzerinden doğrula.
-- [ ] Sonuçları HANDOFF.md içine kaydet ve yalnız 1. adım sonunda dur.
+- [x] pnpm workspace, strict TypeScript, ESLint ve Prettier kur.
+- [x] Health API sözleşmesini tanımla; başarılı yanıt ve bilinmeyen yol testlerini önce çalıştır.
+- [x] Hono health endpoint ve standart 404 yanıtını uygula.
+- [x] React başlangıç ekranını API durumunu gerçekten okuyacak şekilde kur.
+- [x] CI, env örnekleri, ADR, README ve devir kayıtlarını yaz.
+- [x] Kurulum, lint, format, typecheck, test ve build çalıştır.
+- [x] Yerel web/API süreçlerini başlatıp HTTP üzerinden doğrula.
+- [x] Sonuçları HANDOFF.md içine kaydet ve yalnız 1. adım sonunda dur.
 
 ## Kalıcı kurallar
 

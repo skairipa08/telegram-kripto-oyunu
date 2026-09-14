@@ -49,7 +49,7 @@ Bot token, session secret ve Supabase service role yalnız API ortamında tutulu
 
 Güncel adım durumu ve test kanıtları HANDOFF.md içindedir. Tam yol haritası docs/PLAN.md içindedir.
 
-- [ ] 1. adım (R0): Proje temeli.
+- [x] 1. adım (R0): Proje temeli; temiz kurulum, kalite kontrolleri ve yerel web/API doğrulandı.
 - [ ] 2. adım (R1): Telegram shell ve auth.
 - [ ] 3–13. adımlar (R2–R12): Oyun, güvenlik ve canlı operasyon.
 - [ ] 14. adım (R13): Koşullu token hazırlığı; varsayılan kapalı.

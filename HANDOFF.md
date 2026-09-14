@@ -3,7 +3,7 @@
 ## Güncel durum
 
 - Mevcut adım: **1 — R0 proje temeli**.
-- Durum: Son temiz kurulum doğrulaması sürüyor.
+- Durum: **TAMAMLANDI**. Bu adım sonunda duruldu; 2. adım için kullanıcının devam mesajı bekleniyor.
 - Sıradaki adım: **2 — R1 Telegram shell ve auth**. Başlamadı.
 - Çalışma dalı: `work/step-01`.
 - Kullanıcı her tamamlanan adım sonunda durulmasını ve kısa `N. adım tamamlandı.` mesajını istiyor. Sonraki adımı kullanıcı devam dediğinde uygula; tek oturumda tüm yol haritasına geçme.
@@ -30,7 +30,7 @@
 
 2026-09-14, Windows / Node 24.14.0 / pnpm 9.1.0:
 
-- `pnpm install --frozen-lockfile`: başarılı.
+- `pnpm install --frozen-lockfile`: başarılı. Ayrıca 9632465 kaynak kaydından ayrı geçici dizine temiz Git clone alındı; kurulum ve tüm `pnpm check` kontrolleri orada da geçti.
 - `pnpm check`: lint, biçim, dört pakette typecheck, 2/2 API testi, web build ve Worker dry-run başarılı.
 - Testler endpoint uygulanmadan önce 2/2 başarısızdı; uygulama sonrasında 2/2 geçti.
 - Gerçek yerel Worker `/health`, web `/api/health` ve web HTML: HTTP 200.
