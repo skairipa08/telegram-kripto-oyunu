@@ -45,7 +45,31 @@ export const DEFAULT_BUSINESSES: readonly BusinessConfig[] = [
   },
 ] as const;
 
-export const DEFAULT_ECONOMY_CONFIG = {
+export interface EconomyConfig {
+  offlineCapFreeSec: number;
+  offlineCapPassSec: number;
+  upgradeCostGrowth: number;
+  productionLevelGrowth: number;
+  seasonSruBase: number;
+  seasonSruRefQap: number;
+  seasonSruExponent: number;
+  seasonSruMin: number;
+  seasonSruMax: number;
+  referralBindWindowMin: number;
+  referralDiminishThreshold: number;
+  referralDiminishFloor: number;
+  passPriceStars: number;
+  passDurationDays: number;
+  missionDailySlots: number;
+  missionFreeRerolls: number;
+  missionPassRerolls: number;
+  featureToken: boolean;
+  featureStarsPayments: boolean;
+  featureLeaderboard: boolean;
+  featureReferrals: boolean;
+}
+
+export const DEFAULT_ECONOMY_CONFIG: EconomyConfig = {
   offlineCapFreeSec: 14400, // 4 hours
   offlineCapPassSec: 43200, // 12 hours
   upgradeCostGrowth: 1.18,
@@ -65,6 +89,6 @@ export const DEFAULT_ECONOMY_CONFIG = {
   missionPassRerolls: 3,
   featureToken: false,
   featureStarsPayments: false,
-} as const;
-
-export type EconomyConfig = typeof DEFAULT_ECONOMY_CONFIG;
+  featureLeaderboard: true,
+  featureReferrals: true,
+};

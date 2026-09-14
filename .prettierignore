@@ -3,3 +3,5 @@ node_modules
 dist
 .wrangler
 *.docx
+.agents
+ORIGINAL_REQUEST.md

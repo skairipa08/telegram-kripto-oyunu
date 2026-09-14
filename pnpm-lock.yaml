@@ -38,6 +38,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@empire/game-core':
+        specifier: workspace:*
+        version: link:../../packages/game-core
       '@empire/shared':
         specifier: workspace:*
         version: link:../../packages/shared

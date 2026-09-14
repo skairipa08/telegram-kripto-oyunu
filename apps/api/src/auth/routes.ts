@@ -12,8 +12,8 @@ import {
 } from './crypto';
 import { SupabaseAuthStore, type AuthStore, type StoredSession } from './store';
 
-const COOKIE = '__Host-empire_session';
-function sessionCookie(header: string) {
+export const COOKIE = '__Host-empire_session';
+export function sessionCookie(header: string) {
   if (header.length > 8192) return null;
   const values = header
     .split(';')
@@ -21,6 +21,33 @@ function sessionCookie(header: string) {
     .filter((v) => v.startsWith(`${COOKIE}=`));
   return values.length === 1 ? values[0]!.slice(COOKIE.length + 1) : null;
 }
+
+export async function getCurrentUserSession(
+  header: string | undefined,
+  env: Bindings,
+  store: AuthStore,
+  now: () => number = () => Math.floor(Date.now() / 1000),
+): Promise<StoredSession | null> {
+  if (!header) return null;
+  const token = sessionCookie(header);
+  if (!token) return null;
+  let claims;
+  try {
+    claims = await verifySession(token, env.SESSION_SECRET!, now());
+  } catch {
+    return null;
+  }
+  const record = await store.getSession(claims.sid);
+  if (
+    !record ||
+    record.issuedAt !== claims.iat ||
+    record.expiresAt !== claims.exp ||
+    record.expiresAt <= now()
+  )
+    return null;
+  return record;
+}
+
 function state(session: StoredSession): PlayerState {
   return {
     apiVersion: 'v1',

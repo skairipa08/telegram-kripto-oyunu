@@ -1,0 +1,768 @@
+
+PROJECT EMPIRE
+Telegram-native economic multiplayer game
+Product • Economy • Referral • Monetization • Technical Build Blueprint
+Purpose
+Bu belge, bir coding agent / Work oturumuna tek başına yüklenip ek ürün kararı beklemeden uygulamanın kurulmasına başlanabilecek kadar kesin kararlar içerir. Eksik dış kimlik bilgileri (Telegram bot token vb.) dışında soru sorulmadan varsayılanlar uygulanacaktır.
+Status: BUILD-READY
+Working title. Coin/token launch is OPTIONAL and disabled in the initial product.
+
+1. Yönetici Özeti
+Project Empire, Telegram içinde çalışan, mobil ve masaüstünde aynı rahatlıkta oynanabilen basit bir idle/economic empire oyunudur. Kullanıcı işletmeler kurar, pasif gelir toplar, yükseltir, günlük görevler yapar, arkadaş getirir ve sezon sıralamasında yarışır. Oyunun çekirdeği 30–90 saniyelik kısa oturumlarla anlaşılabilmelidir.
+Tek cümlelik ürün:  “İmparatorluğunu büyüt, arkadaşlarını getir, sezonlarda yarış; ödeme sana zaman kazandırsın ama zafer satın aldırmasın.”
+
+Değiştirilmeyecek ürün ilkeleri
+Pay-to-win olmayacak. Para harcamak maksimum rekabet gücünü değil; otomasyon, zaman tasarrufu, offline kapasite ve kozmetiği artıracak.
+Referral, gerçek kullanıcı kazanımı sağlayacak. Sadece linke tıklama ödül getirmeyecek; ödüller davet edilen oyuncunun aktivasyon ve retention kilometre taşlarında açılacak.
+Oyun karmaşık olmayacak. İlk sürümde yalnızca iki temel oyun değeri: Cash ve Season Points.
+Tek elle mobil kullanım ana tasarım; desktop görünüm aynı bilgi mimarisini daha geniş yerleşimde gösterecek.
+Tüm ekonomi ve ödül hesapları server-authoritative olacak. Client hiçbir zaman kazanılan miktarı belirleyemeyecek.
+Coin zorunlu değildir. İlk ürün blockchain kullanmadan çalışır. İleride token çıkarsa puanlar sabit 1:1 dönüşüm sözü vermez; yalnızca snapshot ağırlığı olabilir.
+İlk hedef token fiyatı veya kullanıcı sayısı değil: tekrar kullanım, qualified referral ve ödeme dönüşümünün sağlıklı olmasıdır.
+MVP kapsam özeti
+Alan
+İlk sürümde
+Platform
+Telegram Mini App + Telegram Bot
+Ana loop
+Gelir biriktir → claim → business upgrade → mission → season score
+Ana ekranlar
+Empire, Missions, Friends, Leaderboard, Shop
+Para birimleri
+Cash (oyun içi), Season Points (rekabet/reward weight)
+Ödeme
+Telegram Stars; yalnız convenience + cosmetics
+Blockchain
+YOK / feature flag kapalı
+AI API
+YOK; “manager” davranışları deterministic/rule-based
+Backend
+TypeScript server; tüm ödüller backend hesaplı
+Database
+PostgreSQL
+
+2. Benchmark ve Arz Kararı
+Aşağıdaki benchmark yalnız token miktarını kopyalamak için değil, topluluğa ayrılan oranların hangi bantta çalıştığını görmek için kullanılır. “Toplam arz” tek başına ekonomik değer yaratmaz; asıl önemli parametre topluluğun payı, emission ve kullanım talebidir.
+Proje
+Toplam arz
+Topluluk / oyuncu ağırlığı
+Not
+Catizen (CATI)
+1,000,000,000
+%34 airdrop
+Season 1: %15; sonraki dönemler: %19
+Notcoin (NOT)
+102,719,221,714
+%78 miners + %5 community incentives
+Listing anında toplam arzın %100’ü circulating olarak tanımlandı
+Hamster Kombat (HMSTR)
+100,000,000,000
+%60 S1 + %15 S2 = %75 player rewards
+Yüksek topluluk tahsisi
+DOGS
+550,000,000,000
+%81.5 community
+Telegram aktivitesine dayalı dağıtım
+
+Project Empire – koşullu token modeli
+Karar:  İleride token çıkarmaya karar verilirse maksimum arz 100,000,000,000 (100 milyar) olarak tasarlanır. Bu sayı NOT/HMSTR ölçeğine yakındır, hesaplamayı kolaylaştırır ve oyuncuya mikro ondalık yerine anlaşılır tam sayılar sunar. İlk sürümde token basılmaz.
+
+Havuz
+Oran
+100B karşılığı
+Amaç
+Gameplay & seasonal rewards
+45%
+45B
+Gerçek oynama ve sezon performansı
+Referral & social rewards
+10%
+10B
+Qualified referral ve sosyal büyüme
+Future user incentives
+10%
+10B
+Geç gelen kullanıcıların oyuna girme motivasyonu
+Creators / events / tournaments
+5%
+5B
+Topluluk üretimi ve etkinlikler
+Treasury / operations
+10%
+10B
+Uzun vadeli ürün operasyonu
+Team
+8%
+8B
+Token olursa uzun vesting; anlık unlock yok
+Liquidity
+5%
+5B
+Token launch edilirse piyasa likiditesi
+Growth / partnerships
+4%
+4B
+Dağıtım ve ortaklıklar
+Ecosystem grants
+3%
+3B
+Üçüncü taraf mini oyun/araç geliştirme
+TOPLAM
+100%
+100B
+
+
+Token çıkarsa Season Points doğrudan “1 point = X token” olmayacaktır. Her snapshot havuzu için kullanıcı payı = eligible weighted score / toplam eligible weighted score. Böylece puan ekonomisini ürün boyunca ayarlamak mümkün kalır.
+3. Oyun Konsepti ve Core Loop
+Tema
+Oyuncu küçük bir işletmeyle başlayıp giderek bir ekonomik imparatorluk kurar. Tema finans/şirket kurma hissi verir ancak muhasebe simülasyonu kadar karmaşık değildir. Her şey kartlar, seviyeler ve anlaşılır gelir rakamları üzerinden yürür.
+30–90 saniyelik oturum
+Oyunu aç → birikmiş Cash’i claim et.
+En iyi ROI veya istediğin business upgrade’ini satın al.
+Varsa günlük mission ilerlemesini tamamla/claim et.
+Referral durumuna veya leaderboard’a bak.
+Çık. Gelir server üzerinde offline cap’e kadar birikmeye devam eder.
+İlk business seti
+#
+Business
+Unlock / base cost
+Base production
+Rol
+1
+Street Stand
+100 Cash
+1 Cash/s
+İlk onboarding
+2
+Cafe
+2,500 Cash
+12 Cash/s
+Erken hızlanma
+3
+Delivery Hub
+25,000 Cash
+90 Cash/s
+Orta oyun
+4
+Factory
+250,000 Cash
+600 Cash/s
+İlk ciddi ölçek
+5
+Tech Company
+3,000,000 Cash
+5,000 Cash/s
+Geç orta oyun
+6
+Global Holding
+50,000,000 Cash
+60,000 Cash/s
+Prestij / late game
+
+Başlangıç değerleri config tablosunda tutulacaktır; kod içine gömülmeyecektir. Balancing gerektiğinde deploy olmadan admin panelinden değiştirilebilmelidir.
+Business formülleri
+Her business için aşağıdaki varsayılan formüller kullanılır. Tüm hesaplar shared game-core paketinde deterministic fonksiyonlardır.
+upgradeCost(baseCost, level) = round(baseCost × 1.18^(level - 1))
+production(baseIncome, level) = baseIncome × level × 1.07^(level - 1)
+milestoneBonus = ×2 at levels 10, 25, 50, 100; thereafter every +50 levels ×1.5
+offlineEarned = productionPerSecond × min(secondsSinceLastClaim, offlineCapSeconds)
+Currencies
+Değer
+Transfer edilebilir?
+Satın alınabilir?
+Kullanım
+Cash
+Hayır
+Hayır
+Business upgrade ve normal progression
+Season Points
+Hayır
+Hayır
+Leaderboard + olası gelecekte reward snapshot weight
+Telegram Stars
+Telegram sistemi
+Kullanıcı Telegram’dan alır
+Convenience Pass ve cosmetics
+
+Karmaşıklık kuralı:  Oyuncunun ana HUD üzerinde aynı anda yalnız Cash ve Season Points görmesi gerekir. Stars yalnız Shop içinde gösterilir.
+
+4. UX / Ekran Spesifikasyonu
+Navigasyon
+Bottom navigation mobilde sabit, desktop’ta sol veya alt rail olabilir. Sekme sayısı 5’i geçmez: Empire • Missions • Friends • Leaderboard • Shop.
+Ekran
+Zorunlu içerik
+Ana CTA
+Empire
+Toplam production/s, claimable Cash, 6 business card, upgrade cost/ROI, offline timer
+CLAIM / UPGRADE
+Missions
+3 daily + 1 weekly, streak, Season Point ödülü
+CLAIM REWARD
+Friends
+Referral link/code, qualified count, milestone progress, referral event history
+INVITE FRIEND
+Leaderboard
+Global / friends; season score; own rank sabit görünür
+VIEW PROFILE
+Shop
+Convenience Pass, cosmetics, purchase history, /paysupport link
+BUY WITH STARS
+
+Responsive kurallar
+390 px genişlik tasarımın canonical referansıdır; 320 px altında yatay scroll kesinlikle yok.
+Desktop’ta ana oyun kolonu max 560 px; yan alanda leaderboard/referral özetleri gösterilebilir, fakat tüm aksiyonlar ana kolonda da erişilebilir olmalıdır.
+Touch target minimum 44×44 px. Hover hiçbir aksiyon için zorunlu değildir.
+Telegram theme params desteklenir; light/dark. Custom tema bu değişkenlerden türetilir.
+Animations 150–250 ms; low-motion tercihinde azaltılır. Claim animasyonu kısa, tekrar kullanımda rahatsız etmeyecek seviyede tutulur.
+İlk yüklemede skeleton kullan; full-screen spinner 1.5 saniyeden uzun görünmemeli.
+5. Season Points ve Azalan Global Emission
+Season Points oyunun kıt ve rekabetçi puanıdır. Cash sonsuz büyüyebilir; Season Points ise kullanıcının aktif kullanıcı sayısına göre azalan “Standard Reward Unit” (SRU) üzerinden verilir.
+Qualified Active Player (QAP) tanımı
+Global emission hesabında ham kayıt sayısı kullanılmaz. Bir oyuncu QAP sayılmak için tutorial’ı bitirmiş, son 7 gün içinde en az 2 ayrı günde geçerli session üretmiş ve fraud flag almamış olmalıdır. Bu sayı günde bir kez hesaplanır.
+SRU formülü
+SRU(QAP) = round(500 × (max(QAP, 100) / 100)^(-0.10))
+SRU_MIN = 100   |   SRU_MAX = 500
+Bu formül kullanıcının verdiği hedefi yaklaşık olarak sağlar: 100 kullanıcıda 500, 1.000 kullanıcıda yaklaşık 400. Azalış yavaş ve sürekli devam eder; milestone değişiminde ani “halving” şoku oluşturmaz.
+Qualified active players
+SRU
+≤100
+500
+1,000
+397 ≈ 400
+10,000
+315
+100,000
+251
+1,000,000
+199
+10,000,000
+158
+100,000,000
+126
+≥ ~1B
+100 floor
+
+Season Point kaynakları
+Aksiyon
+Ödül
+Kural
+Daily mission – easy
+0.75 × SRU
+Günde en fazla 1
+Daily mission – normal
+1.00 × SRU
+Günde en fazla 1
+Daily mission – hard
+1.25 × SRU
+Günde en fazla 1
+Daily streak
+0.25 × SRU
+Streak 7 günde reset/bonus
+Weekly mission
+5.00 × SRU
+Haftada 1
+Achievement
+0.5–5 × SRU
+Tek seferlik
+Referral milestones
+Bkz. referral bölümü
+Retention ile açılır
+
+P2W koruması:  Stars ile Season Points, SRU çarpanı, leaderboard puanı veya Season Point cap’i satın alınamaz. Ücretli kullanıcı aynı maksimum puana daha az sürtünmeyle ulaşır.
+
+Season reset
+Season score her sezon sıfırlanır; lifetime profile ayrı tutulur.
+Eski sezon performansı sonraki sezona yalnız kozmetik badge ve maksimum %2 “veteran XP” bonusu olarak taşınabilir. Season Points çarpanı taşınmaz.
+Leaderboard tek bir sonsuz yarış değildir; yeni kullanıcının daha sonra rekabet edebilmesi korunur.
+Season süresi config’tir. Kodda gün/ay sabitlenmez.
+6. Referral Engine – Ana Büyüme Mekanizması
+Amaç:  Kullanıcı yalnız link paylaşmaya değil, davet ettiği kişinin gerçekten oyuna başlamasına ve geri gelmesine motive edilecek.
+
+Referral bağlama
+Her kullanıcıya immutable referral code verilir.
+Deep link: t.me/<bot>?startapp=ref_<code>.
+Referral yalnız yeni hesapta tutorial bitmeden veya ilk 30 dakika içinde bind edilebilir; ilk geçerli referrer kalıcıdır.
+Self-referral, aynı Telegram ID, high-risk device cluster ve bilinen fraud graph bağlantıları reddedilir.
+Davet edilen kullanıcı referral ile geldiğinde onboarding sonunda küçük Cash starter boost alır; Season Points almaz.
+Qualified referral yaşam döngüsü
+Milestone
+Referrer reward
+Invitee şartı
+Activation
+0.50 × SRU
+Tutorial complete + first business upgrade
+Retained D2
+1.00 × SRU
+İki ayrı aktif gün
+Retained D7
+2.00 × SRU
+7 günlük pencerede ≥4 aktif gün
+Progression
+1.50 × SRU
+Player level / empire tier 10 eşdeğeri
+TOPLAM
+5.00 × SRU
+Tam kaliteli referral
+
+Ödüller event-event açılır; referral oluşturulduğu anda gelecekteki ödüller balance’a yazılmaz. Fraud kontrolü sonrasında ledger transaction oluşturulur.
+Referral whale kontrolü
+Referral güçlü kalmalı ama tek bir influencer bütün Season leaderboard’u satın alamamalı. Bir kullanıcının 20. qualified referral’ından sonra referral Season Point reward’üne aşağıdaki diminishing factor uygulanır:
+factor(Q) = max(0.25, sqrt(20 / Q))  for Q > 20; otherwise 1.0
+Referral sayısı için üst limit yoktur. Diminishing yalnız ana Season Points etkisine uygulanır. Ayrı “Referral / Ambassador leaderboard” ham qualified referral sayısını gösterebilir.
+Referral milestones – non-P2W rewards
+Qualified referrals
+Ek ödül
+1
+Profile “Early Connector” badge
+3
+1 cosmetic chest + 1 extra automation preset
+5
+7 günlük Convenience Pass
+10
+Exclusive profile frame + referral title
+25
+Custom company emblem slot
+50
+Founder-tier cosmetic set
+100+
+Ambassador leaderboard / event eligibility
+
+7. Monetization – Pay-to-Ease, Not Pay-to-Win
+Convenience Pass
+Özellik
+Free
+Pass
+Rekabet etkisi
+Offline accumulation cap
+4 saat
+12 saat
+Aynı production rate; yalnız daha seyrek giriş
+Upgrade queue
+1
+3
+Zaman tasarrufu; upgrade cost aynı
+Auto-claim / auto-reinvest
+Yok
+Var
+Aynı max production; manuel işlemi otomatikleştirir
+Mission reroll
+1/gün
+3/gün
+Mission reward cap değişmez
+Cosmetic pack
+Standard
+Premium set
+Yok
+Season Points multiplier
+×1
+×1
+KESİNLİKLE değişmez
+
+İlk varsayılan fiyat: 250 Telegram Stars / 30 günlük pass. Fiyat remote config’tir. A/B test yapılmadan kalıcı kabul edilmez.
+Satılabilecekler
+Convenience Pass
+Profile frames / themes / business skins
+Claim animations
+Company emblem packs
+Season cosmetic pass (yalnız cosmetics + convenience; point multiplier yok)
+Satılmayacaklar
+Season Points
+SRU multiplier
+Leaderboard rank
+Exclusive yüksek production business
+Sınırsız referral reward multiplier
+Gerçek para ile Cash paketi (ilk sürümde yok)
+Telegram ödeme kuralı:  Telegram Mini App içinde dijital ürün/hizmet satışı Telegram Stars ile yapılacaktır. Blockchain eklenirse Telegram Mini App içinde TON ve TON Connect kuralları uygulanmalıdır.
+
+8. Missions, Progression ve Retention
+Daily mission havuzu
+Tip
+Örnek
+Gameplay
+3 upgrade satın al / 2 business’tan claim et
+Progression
+Production/s değerini %10 artır
+Social
+Friends ekranını aç / referral linkini oluştur (spam zorunlu değil)
+Return
+4+ saatlik offline income claim et
+Choice
+Bir business’ı milestone level’a getir
+
+Her kullanıcıya günde üç mission atanır: easy, normal, hard. Aynı mission iki slotta tekrar edemez. “Invite a friend” daily zorunlu mission yapılmaz; referral spam’i oyuncu deneyimini bozmamalıdır.
+Streak
+Streak bonusu küçük tutulur; kaçırılan bir gün oyuncunun haftalarca emeğini yok etmez.
+7 günlük cycle. Gün 7 bonusu cosmetic chest veya 1 × SRU ek reward olabilir.
+Convenience Pass streak freeze verebilir; bu Season Point cap’ini artırmaz, yalnız kaçırmayı telafi eder.
+9. Teknik Mimari
+Seçilen stack
+Katman
+Teknoloji
+Neden
+Web Mini App
+React + Vite + TypeScript
+SPA; Telegram için SSR gereksiz; hızlı ve hafif
+UI
+Tailwind CSS + küçük component layer
+Responsive ve hızlı iterasyon
+State/data
+TanStack Query + minimal local state
+Server state net ayrılır
+API/Bot
+Hono + TypeScript on Cloudflare Workers
+Ucuz, hızlı, webhook ve API tek runtime
+Database
+Supabase PostgreSQL
+Free başlangıç; SQL ve admin kolaylığı
+Validation
+Zod
+Client/server shared schema
+Game logic
+Pure TypeScript package
+Deterministic test edilebilir ekonomi
+Tests
+Vitest + Playwright
+Unit + end-to-end
+Analytics
+PostHog-compatible event abstraction
+Provider değiştirilebilir
+Package manager
+pnpm workspace
+Monorepo
+
+Repository yapısı
+apps/web/                 # Telegram Mini App SPA
+apps/api/                 # Hono API + Telegram bot webhook
+packages/game-core/       # economy, emission, mission, referral pure functions
+packages/shared/          # Zod schemas, DTOs, constants
+supabase/migrations/      # SQL schema + indexes + RLS only where appropriate
+scripts/                  # seed, economy simulation, load-test helpers
+docs/                     # product decisions, ADRs, API contract
+.env.example
+README.md
+Auth akışı
+1. Mini App Telegram.WebApp.initData değerini API’ye gönderir.
+2. API Telegram initData imzasını doğrular; initDataUnsafe güvenilir kaynak kabul edilmez.
+3. auth_date freshness kontrol edilir.
+4. telegram_user_id unique key ile user upsert edilir.
+5. Kısa ömürlü signed session cookie/token üretilir.
+6. Tüm mutation endpoint’leri session + idempotency kontrolü ister.
+Server-authoritative örnek
+Client “ne kadar kazandığını” yollamaz. Yalnız “claim istiyorum” der. Server last_claim_at, owned business levels, modifiers ve server time üzerinden tutarı hesaplar; transaction içinde balance ve last_claim_at günceller.
+10. Minimum Data Model
+Table
+Ana alanlar
+users
+id, telegram_user_id UNIQUE, username, language, created_at, risk_score, status
+player_profiles
+user_id, cash_balance, lifetime_cash, tier, offline_cap_sec, pass_expires_at, last_claim_at
+business_defs
+id, key, base_cost, base_income, unlock_rule, enabled, config_version
+player_businesses
+user_id, business_id, level, updated_at
+seasons
+id, name, starts_at, ends_at, status, config_json
+season_scores
+season_id, user_id, points, referral_points, mission_points
+missions
+id, key, difficulty, rule_json, reward_sru_multiplier, enabled
+mission_instances
+id, user_id, mission_id, progress, target, assigned_at, claimed_at
+referrals
+invitee_user_id UNIQUE, referrer_user_id, code, bound_at, status
+referral_events
+id, referral_id, milestone, reward_amount, qualified_at, status
+reward_ledger
+id, user_id, currency, amount, reason, idempotency_key UNIQUE, metadata_json, created_at
+purchases
+id, user_id, telegram_payment_charge_id UNIQUE, sku, stars_amount, status, created_at
+economy_config
+key UNIQUE, value_json, version, updated_at
+fraud_events
+id, user_id, type, severity, evidence_json, created_at
+daily_metrics
+date, qap, sru, dau, new_users, qualified_referrals, revenue_stars
+
+Zorunlu transaction kuralları
+Cash claim: SELECT/lock profile → hesapla → ledger yaz → balance/last_claim update → commit.
+Upgrade: cost server hesaplar → cash yeterli mi → balance azalt → level artır → ledger → commit.
+Mission claim: claimed_at NULL kontrolü → progress server-side valid mi → SRU snapshot kullan → ledger + score → commit.
+Referral milestone: unique(referral_id, milestone) ile double reward engellenir.
+Payment fulfillment: telegram_payment_charge_id unique ve idempotent.
+11. API Contract – İlk Sürüm
+Method
+Path
+Amaç
+POST
+/auth/telegram
+initData doğrula, session aç
+GET
+/me/state
+Profile + balances + business + current season summary
+POST
+/game/claim
+Offline/online production claim
+POST
+/game/business/:key/upgrade
+Business level upgrade
+GET
+/missions
+Daily/weekly mission instances
+POST
+/missions/:id/claim
+Mission reward claim
+GET
+/referrals
+Referral code + stats + milestones
+POST
+/referrals/bind
+Startup deep-link referral bind
+GET
+/leaderboard
+Global/friends rank, cursor pagination
+GET
+/shop
+SKUs + remote pricing
+POST
+/shop/invoice
+Telegram Stars invoice oluştur
+POST
+/telegram/webhook
+Bot updates + payment events
+GET
+/config/public
+Versioned public economy/UI config
+
+Rate limits endpoint bazlıdır. Mutation endpoint’leri idempotency-key destekler. API response’ları versioned schema ile döner.
+12. Anti-Cheat / Anti-Bot
+İlk günden zorunlu
+Telegram initData server validation + auth_date freshness.
+Tüm balance/point değişimleri immutable reward_ledger üzerinden izlenir.
+Client-provided timestamps/reward amounts kabul edilmez.
+Mutation rate limits: claim/upgrade/mission/referral ayrı limitler.
+Idempotency key ve unique DB constraints.
+Impossible progression detector: teorik maksimum production ve upgrade hızını aşan hesap flag.
+Referral graph checks: self-referral, aynı device cluster, burst signups, retention sahteciliği.
+Risk score > threshold ise referral/Season Point reward “pending review” olur; Cash gameplay devam edebilir.
+Admin ban, freeze-rewards, unfreeze ve audit trail.
+Sonraki ölçek katmanı
+IP/ASN reputation
+Device fingerprint abstraction
+Graph-based Sybil clustering
+Challenge/CAPTCHA only for suspicious flows
+Redis/edge counters when DB rate limiting no longer sufficient
+Kural:  Anti-bot mekanizması normal oyuncuya CAPTCHA cehennemi yaşatmamalıdır. Challenge yalnız risk sinyali olduğunda açılır.
+
+13. Admin ve Analytics
+Admin panel minimum özellikleri
+Economy config: cost/income multipliers, offline cap, SRU constants, mission reward multipliers.
+Business/mission enable-disable.
+Season create/start/end; leaderboard freeze.
+User search by Telegram ID; balance ledger read-only; ban/freeze reward.
+Referral graph/event görüntüleme.
+Purchase/refund/support kayıtları.
+Feature flags: payments, leaderboard, referrals, optional token module.
+Ölçülecek KPI’lar
+KPI
+Neden
+Activation rate
+Tutorial + first upgrade yapan yeni kullanıcı oranı
+D1 / D7 retention
+Oyunun gerçekten tekrar açılıp açılmadığı
+Sessions / active user
+Loop yoğunluğu
+Qualified referral rate
+Her aktif kullanıcı başına kaliteli referral
+Referral D7 retention
+Referral’ın spam mi gerçek kullanıcı mı olduğu
+Payer conversion
+Stars ödeme dönüşümü
+ARPPU / Stars per payer
+Monetization sağlığı
+Fraud reward share
+Ödüllerin ne kadarının riskli hesaplara gittiği
+Upgrade bottleneck
+Kullanıcının nerede progression’dan düştüğü
+
+14. Build Roadmap – Süresiz, Sıralı
+Aşağıdaki sıra dependency sırasıdır. “Bir sonraki faza geçmek” için alttaki çıkış kriterleri karşılanmalıdır; takvim tarihi kullanılmaz.
+R0 — Repository & standards
+Build: pnpm monorepo, lint/format/typecheck, env template, CI, README, ADR-001 architecture.
+Exit: Fresh clone → install → test → local web/api çalışıyor.
+R1 — Telegram shell & auth
+Build: Bot oluşturma yönergeleri, Mini App shell, initData validation, session, responsive theme.
+Exit: Gerçek Telegram test kullanıcısı güvenli login olup /me/state alabiliyor.
+R2 — Core economy
+Build: Business defs, player businesses, server claim, upgrade, ledger, game-core formulas, seed data.
+Exit: Client manipülasyonu ile balance artırılamıyor; unit tests formülleri kapsıyor.
+R3 — Empire UI
+Build: Empire screen, business cards, offline earning, claim/upgrade UX, mobile/desktop polish.
+Exit: 320px–desktop arası yatay taşma yok; core loop 90 sn altında anlaşılır.
+R4 — Seasons & missions
+Build: Season model, QAP/SRU job, mission assignment/progress/claim, streak, season score.
+Exit: SRU config ve günlük snapshot DB’de; double claim mümkün değil.
+R5 — Referral engine
+Build: Deep links, bind, qualified milestones, delayed rewards, diminishing factor, referral UI.
+Exit: Self referral engelli; D2/D7 milestone otomatik/idempotent açılıyor.
+R6 — Leaderboards
+Build: Global/friends leaderboard, own-rank pin, pagination, season freeze.
+Exit: High-volume query indexleri testli; season reset güvenli.
+R7 — Stars monetization
+Build: Shop, invoices, successful payment fulfillment, pass entitlement, /paysupport, refund tooling.
+Exit: Tek payment iki kez fulfillment yapmıyor; Season Point multiplier değişmiyor.
+R8 — Admin & feature flags
+Build: Economy config, seasons, user risk tools, content toggles, audit log.
+Exit: Core economy değerleri deploy olmadan güvenli değiştirilebiliyor.
+R9 — Anti-fraud hardening
+Build: Risk scoring, referral graph checks, impossible progression rules, reward freeze workflow.
+Exit: Synthetic bot senaryolarının kritik olanları flagleniyor; normal user false-positive düşük.
+R10 — Analytics & experiments
+Build: Event taxonomy, funnels, retention cohorts, payer/referral dashboards, remote experiment flags.
+Exit: Activation/retention/referral/payment ölçümleri kayıpsız gözlenebiliyor.
+R11 — Closed launch hardening
+Build: Load test, error monitoring, backup/restore drill, TOS/privacy/support docs, economy simulation.
+Exit: Critical bug=0; DB restore denenmiş; exploit testleri geçmiş.
+R12 — Live ops
+Build: Seasons, events, cosmetics, balancing, ambassador program, referral campaigns.
+Exit: Content/config sistemi kod değişmeden yeni live-ops yapabiliyor.
+R13 — Optional token-readiness
+Build: Yalnız ürün metrikleri hak ederse: TON architecture, snapshot engine, legal review, audit plan. Feature flag OFF.
+Exit: Blockchain olmadan ürün eksiksiz çalışmaya devam ediyor.
+15. Product Gates – Ne Zaman Büyütülür?
+Kesin hedef sayıların canlı veriden sonra ayarlanması gerekir; fakat şu karar mantığı değişmez:
+Sinyal
+Karar
+D1 çok düşük
+Reklam/referral bütçesi artırılmaz; onboarding/core loop düzeltilir.
+D7 zayıf
+Yeni feature değil, retention problemi çözülür.
+Referral yüksek ama D7 referral düşük
+Ödül spam çekiyor; qualification sertleştirilir.
+Payer conversion var, retention yok
+Monetization başarılı sayılmaz; ürün ölçeklenmez.
+Fraud payı yükseliyor
+Referral/emission ödülleri geçici pending; anti-fraud önce gelir.
+Retention + referral + payer birlikte sağlıklı
+Paid acquisition ve creator/ambassador ölçeği açılır.
+
+Token gate:  Token yalnız “kullanıcı var” diye çıkarılmaz. Ürün blockchain olmadan yaşamaya değer, economy sink’leri gerçek ve retention kanıtlanmışsa değerlendirilir. Token çıkmaması başarısızlık değildir.
+
+16. Optional Token Module (İlk Sürümde KAPALI)
+Başlangıç varsayımları
+Network: TON only (Telegram Mini App blockchain kuralları nedeniyle).
+Wallet connection: TON Connect only.
+Max supply if launched: 100B.
+Community allocation target: 70%.
+Season Points: token değildir, redeemable claim değildir, guaranteed conversion yoktur.
+Snapshot: fraud-filtered weighted score üzerinden yapılır.
+Team allocation varsa uzun vesting uygulanır; kesin schedule legal/tokenomics review sonrası kilitlenir.
+Smart contract AI tarafından yazılsa bile testnet + independent security audit olmadan mainnet deploy edilmez.
+Snapshot formülü
+userAllocation = snapshotPool × userEligibleWeight / sum(allEligibleWeights)
+EligibleWeight; mission score, gameplay score, referral score ve anti-fraud confidence bileşenlerinden türetilir. Puanların sabit token karşılığı önceden ilan edilmez.
+17. Astra / Coding Agent Execution Directive
+Bu bölüm doğrudan coding agent içindir:  Belgeyi okuduktan sonra ürün sorusu sormadan R0’dan başla. Yalnız gerekli dış credential/secret fiziksel olarak yoksa placeholder ve .env.example oluştur; implementasyonu durdurma.
+
+Agent çalışma kuralları
+Roadmap sırasını takip et. Sonraki fazın dependency’si yoksa paralel çalışabilirsin, ancak exit criteria sağlanmadan faz tamamlandı işaretleme.
+Belgedeki sayısal oyun değerlerini hard-code etme; defaults olarak seed/economy_config içine koy.
+Her kritik ekonomi fonksiyonuna unit test yaz. Claim, upgrade, mission, referral ve purchase transaction’larına idempotency testi ekle.
+Her schema migration version-controlled SQL olarak commit edilsin.
+Client’a secret gönderme. Service role/database secrets yalnız API runtime’da.
+Game-core fonksiyonları side-effect free ve deterministic olsun.
+Feature flag OFF olan token/blockchain kodunu R13’ten önce yazma.
+UI mobile-first başlat; desktop sonradan ayrı ürün gibi fork edilmesin.
+Yeni dependency eklerken gerçekten gerekli değilse ekleme. Basitlik bu ürünün şartıdır.
+Ürün kararı belirsiz görünürse bu belgede en yakın tanımlanmış ilkeyi uygula; gereksiz clarification isteme.
+Her roadmap fazı sonunda README progress checklist ve test durumunu güncelle.
+Definition of Done – İlk public-build adayı
+Telegram Mini App auth production-safe.
+Empire core loop server-authoritative ve exploit testli.
+Mobile/desktop responsive.
+Missions, SRU emission, seasons çalışıyor.
+Qualified referral ve delayed milestones çalışıyor.
+Leaderboard çalışıyor ve season reset güvenli.
+Stars purchase + pass entitlement + support/refund path mevcut.
+Admin economy config ve fraud freeze mevcut.
+Analytics temel funnel/retention/referral/payment eventlerini kaydediyor.
+Load/error/backup temel kontrolleri yapılmış.
+Token/blockchain olmadan ürün eksiksiz oynanabilir.
+18. İlk Default Config (Machine-Implementable)
+Key
+Default
+economy.offline_cap_free_sec
+14400 (4h)
+economy.offline_cap_pass_sec
+43200 (12h)
+economy.upgrade_cost_growth
+1.18
+economy.production_level_growth
+1.07
+season.sru_base
+500
+season.sru_reference_qap
+100
+season.sru_exponent
+-0.10
+season.sru_min
+100
+season.sru_max
+500
+referral.bind_window_min
+30
+referral.diminish_after_qualified
+20
+referral.diminish_floor
+0.25
+pass.price_stars
+250
+pass.duration_days
+30
+mission.daily_slots
+3
+mission.free_rerolls
+1
+mission.pass_rerolls
+3
+feature.token
+false
+feature.stars_payments
+false until Bot payment configured
+
+Event taxonomy
+app_open, auth_success, tutorial_complete, business_upgrade, cash_claim
+mission_assigned, mission_complete, mission_claim, streak_claim
+referral_link_copy, referral_bound, referral_milestone_qualified, referral_reward_claim
+leaderboard_view, shop_view, invoice_created, payment_success, payment_refund
+fraud_flag_created, reward_frozen, pass_activated
+19. İlk Sürümde Bilerek Yapılmayacaklar
+NFT sistemi
+On-chain token / wallet connect
+Gerçek para veya kripto ile prediction market
+Player-to-player item trading
+Complex crafting/inventory
+Chat system (Telegram zaten chat platformu)
+Gerçek LLM çalışanları / paid AI API
+3D grafik / ağır game engine
+10’dan fazla business türü
+Multi-level referral / MLM komisyon zinciri
+Direct Cash satış paketleri
+Neden:  Bunların tamamı kod yazılabilir şeylerdir; sorun da tam olarak budur. İlk ürünün amacı feature koleksiyonu değil, tekrar açılan basit bir oyun döngüsü kurmaktır.
+
+20. Kaynaklar ve Benchmark Notları
+Kaynaklar 11 Eylül 2026 itibarıyla kontrol edilmiştir. Token verileri geçmiş launch tokenomics’ini anlatır; güncel piyasa fiyatı veya yatırım tavsiyesi değildir.
+S1 — Binance Research: Catizen (CATI): https://www.binance.com/en-TR/research/projects/catizen — 1B max supply; %34 airdrop; dağılım.
+S2 — Binance Research: Notcoin (NOT): https://www.binance.com/en/research/analysis/notcoin — 102.719B supply; %78 miners, %5 community incentives.
+S3 — Binance Research: Hamster Kombat (HMSTR): https://www.binance.com/en/research/projects/hamster-kombat — 100B supply; 64.375B initial circulation.
+S4 — Hamster Kombat Whitepaper rev. 0.3: https://hamsterkombatgame.io/docs/HK_WP_03.pdf — 100B fixed supply; oyunculara yüksek allocation yaklaşımı.
+S5 — Binance Academy: DOGS: https://www.binance.com/en/academy/articles/what-is-telegram-s-meme-coin-dogs — 550B supply; %81.5 community.
+S6 — Telegram Bot Developer Terms: https://telegram.org/tos/bot-developers — Digital goods: Stars; blockchain Mini Apps: TON rules.
+S7 — Telegram Blockchain Guidelines: https://core.telegram.org/bots/blockchain-guidelines — TON-only asset issuance / TON Connect requirements for Mini Apps.
+S8 — Telegram Mini Apps Docs: https://core.telegram.org/bots/webapps — Mini App interface and initData validation requirements.
+S9 — Telegram Stars Payments: https://core.telegram.org/bots/payments-stars — Digital goods/services payment requirements and support/refund flow.
+Final Product Decision
+BUILD:  Basit ekonomik Telegram oyunu; Cash + Season Points; server-authoritative idle loop; güçlü qualified referral; pay-to-ease Stars monetization; responsive web; optional token later.
+
+DO NOT BUILD YET:  Blockchain, NFT, LLM gameplay, trading, karmaşık inventory, multi-level referral veya oyuncuya gerçek ekonomik vaat.
+
+Bu blueprint v1.0’dır. Ürün davranışı yalnız canlı kullanıcı verisiyle değiştirilecek; temel ilkeler değişecekse karar ayrıca ADR olarak kaydedilecektir.
