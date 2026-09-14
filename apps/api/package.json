@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@empire/shared": "workspace:*",
-    "hono": "^4.10.0"
+    "hono": "^4.10.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "wrangler": "^4.131.2"

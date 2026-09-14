@@ -15,7 +15,7 @@ describe('API boundary', () => {
   });
 
   it('returns structured 404 errors for unimplemented routes', async () => {
-    const response = await app.request('/me/state');
+    const response = await app.request('/does-not-exist');
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({
       apiVersion: 'v1',
