@@ -5,6 +5,7 @@ import { SupabaseLeaderboardStore } from '../leaderboard/store';
 import { SupabaseShopStore } from '../shop/store';
 import { SupabaseConfigStore } from '../config/store';
 import { SupabaseAnalyticsStore } from '../analytics/store';
+import { SupabaseEconomyStore } from '../economy/store';
 
 // Test-only PostgreSQL engine; never imported by the Worker entrypoint.
 export async function createTestDatabase() {
@@ -19,6 +20,7 @@ export async function createTestDatabase() {
     '202609140003_seasons_missions.sql',
     '202609140004_referrals.sql',
     '202609140005_step7_to_11_backend.sql',
+    '202609140006_economy_starter_and_roi.sql',
   ];
 
   for (const file of migrations) {
@@ -121,6 +123,14 @@ export async function createTestDatabase() {
         sql = 'select public.empire_analytics_get_metrics() as result';
         args = [];
         break;
+      case 'empire_init_player_economy':
+        sql = 'select public.empire_init_player_economy($1, $2) as result';
+        args = [p.p_user_id, p.p_is_referred ?? false];
+        break;
+      case 'empire_economy_get_player_state':
+        sql = 'select public.empire_economy_get_player_state($1) as result';
+        args = [p.p_user_id];
+        break;
       default:
         throw new Error(`Unexpected RPC: ${name}`);
     }
@@ -142,5 +152,6 @@ export async function createTestDatabase() {
     shopStore: new SupabaseShopStore(url, serviceKey, fetcher),
     configStore: new SupabaseConfigStore(url, serviceKey, fetcher),
     analyticsStore: new SupabaseAnalyticsStore(url, serviceKey, fetcher),
+    economyStore: new SupabaseEconomyStore(url, serviceKey, fetcher),
   };
 }

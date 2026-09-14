@@ -6,3 +6,5 @@ export * from './leaderboard';
 export * from './monetization';
 export * from './remote-config';
 export * from './analytics';
+export * from './starter';
+export * from './simulation';

@@ -24,8 +24,69 @@ export const playerBusinessSchema = z.object({
   upgradeCost: z.number().int().positive(),
   productionPerSecond: z.number().nonnegative(),
   lastClaimAt: z.iso.datetime(),
+  paybackPeriodSeconds: z
+    .number()
+    .nonnegative()
+    .or(z.literal(Infinity))
+    .optional(),
+  marginalRoi: z.number().nonnegative().optional(),
+  nextProductionPerSecond: z.number().nonnegative().optional(),
 });
 export type PlayerBusiness = z.infer<typeof playerBusinessSchema>;
+
+export const optimalUpgradeRecommendationSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  currentLevel: z.number().int().nonnegative(),
+  upgradeCost: z.number().int().nonnegative(),
+  paybackPeriodSeconds: z.number().nonnegative().or(z.literal(Infinity)),
+  marginalRoi: z.number().nonnegative(),
+  isAffordable: z.boolean(),
+});
+export type OptimalUpgradeRecommendation = z.infer<
+  typeof optimalUpgradeRecommendationSchema
+>;
+
+export const economyRoiResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  currentCash: z.number().nonnegative(),
+  totalProductionPerSecond: z.number().nonnegative(),
+  optimalUpgrade: optimalUpgradeRecommendationSchema.nullable(),
+  businesses: z.array(playerBusinessSchema),
+  multipliers: z
+    .object({
+      offlineCapSeconds: z.number().int().positive(),
+      upgradeCostGrowth: z.number().positive(),
+      productionLevelGrowth: z.number().positive(),
+      hasConveniencePass: z.boolean(),
+    })
+    .optional(),
+});
+export type EconomyRoiResponse = z.infer<typeof economyRoiResponseSchema>;
+
+export const economySimulationResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  durationSeconds: z.number().int().positive(),
+  totalCashEarned: z.number().nonnegative(),
+  finalCashBalance: z.number().nonnegative(),
+  finalProductionPerSecond: z.number().nonnegative(),
+  unlockedBusinessCount: z.number().int().nonnegative(),
+  businessLevels: z.record(z.string(), z.number().int().nonnegative()),
+  timeToUnlockSeconds: z.record(z.string(), z.number().nullable()),
+  totalUpgradesPurchased: z.number().int().nonnegative().optional(),
+  conveniencePassImpact: z
+    .object({
+      cashEarnedFree: z.number().nonnegative(),
+      cashEarnedPass: z.number().nonnegative(),
+      wastedOfflineSecondsFree: z.number().nonnegative(),
+      wastedOfflineSecondsPass: z.number().nonnegative(),
+      efficiencyGainMultiplier: z.number().nonnegative(),
+    })
+    .optional(),
+});
+export type EconomySimulationResponse = z.infer<
+  typeof economySimulationResponseSchema
+>;
 
 export const playerEconomyStateSchema = z.object({
   cash: z.number().int().nonnegative(),

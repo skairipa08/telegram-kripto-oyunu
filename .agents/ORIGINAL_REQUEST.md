@@ -62,3 +62,58 @@ Implement the data models and tracking abstractions for player analytics.
 - [ ] pnpm check (ESLint, Prettier, TypeScript across all packages, Vitest test suite, Vite build, and Wrangler dry-run) executes with exit code 0.
 - [ ] All new logic and formulas have comprehensive automated tests.
 - [ ] All changes are documented in HANDOFF.md with step-by-step progress.
+
+## 2026-09-14T12:46:12Z
+
+Audit, optimize, and refine the economy mathematics, onboarding starter balances, ROI payback models, and simulation tooling for Project Empire, strictly preserving UI/UX and anti-cheat boundaries for Astra 6.0.
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: demo
+
+## Requirements
+
+### R1. Onboarding Starter Grants & Core Loop Calibration
+Calibrate the initial player onboarding balance and unlock flow so that a new user never gets stuck:
+- Provide a default starter balance (100 Cash) on first player creation so the player can immediately unlock Street Stand (Level 1, 1 Cash/s) and activate their core idle loop within 30 seconds.
+- Support additive starter referral boost (+500 Cash) if the player bound a referral link.
+- Expose a pure getStarterEconomyState() function and database trigger/RPC initialization ensuring new users are never initialized with 0 cash and 0 production.
+
+### R2. Economy Mathematical Balance & ROI Metrics
+Implement pure financial and progression analytics in packages/game-core:
+- calculatePaybackPeriodSeconds(upgradeCost, currentProduction, nextProduction): Deterministic calculation of break-even time (ROI) in seconds for any business upgrade.
+- calculateOptimalNextUpgrade(businesses, playerCash): Pure recommendation function identifying the business upgrade that yields the shortest payback period or highest marginal ROI.
+- Safe big-number formatting helper: formatCompactNumber(value) (1.2K, 3.5M, 12.8B, 4.5T) ensuring zero precision loss and protection against numeric overflows.
+
+### R3. Deterministic Economy Simulation Harness
+Create an offline economy simulation runner in packages/game-core (and scripts/):
+- Pure simulation function simulateProgression(strategy, durationSeconds, config) that models player growth over 1 hour, 24 hours, 7 days, and 30 days.
+- Output metrics: total Cash generated, levels achieved per business, time-to-unlock for each of the 6 businesses, and impact of Convenience Pass (4h vs 12h offline cap).
+- Verify that economic progression remains challenging yet achievable without exponential infinite-growth breakdown.
+
+### R4. API & Shared DTO Upgrades for Economy Health
+- Expose ROI and payback metrics in PlayerBusiness DTO within packages/shared.
+- Add an API endpoint GET /economy/simulation or GET /economy/roi for inspecting current economic multipliers and next best upgrade recommendations.
+
+### R5. Strict Domain Boundary (Preserved for Astra 6.0)
+- Do NOT alter or create UI/UX visual elements, React screens, or CSS styling in apps/web (reserved for Astra 6.0).
+- Do NOT alter anti-cheat/anti-fraud algorithms, Sybil clustering, or penetration tests (reserved for Astra 6.0).
+
+## Acceptance Criteria
+
+### Starter Balance & Onboarding Verification
+- [ ] New player initialization tests verify that new users receive 100 starter Cash (or 600 if referred) and can immediately unlock Street Stand.
+- [ ] First-session activation flow transitions smoothly without zero-income deadlock.
+
+### ROI & Mathematical Balance Verification
+- [ ] Payback period and marginal ROI formulas have 100% unit test coverage with mathematical assertions across all 6 business tiers.
+- [ ] Compact number formatting cleanly formats values from 0 up to 10^15 (quadrillions).
+
+### Simulation Harness Verification
+- [ ] Automated simulation suite runs 1h, 24h, and 7-day headless runs with deterministic outputs.
+- [ ] Simulation tests verify that reaching late-game businesses (Factory, Tech Co, Global Holding) follows a smooth pacing curve without runaway inflation.
+
+### Workspace Integrity & Double-Check Quality Gates
+- [ ] pnpm check (ESLint, Prettier, TypeScript across 4 packages, Vitest test suite, Vite build, Wrangler dry-run) passes with 0 errors.
+- [ ] Existing 137 tests remain 100% green; new tests bring coverage even higher.
+- [ ] Full handoff documentation updated in HANDOFF.md.
+

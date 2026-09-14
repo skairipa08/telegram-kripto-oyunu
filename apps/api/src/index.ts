@@ -11,6 +11,8 @@ import type { ConfigStore } from './config/store';
 import { createConfigRoutes } from './config/routes';
 import type { AnalyticsStore } from './analytics/store';
 import { createAnalyticsRoutes } from './analytics/routes';
+import type { EconomyStore } from './economy/store';
+import { createEconomyRoutes } from './economy/routes';
 
 const healthHandler = (c: { json: (data: HealthResponse) => Response }) =>
   c.json({
@@ -25,6 +27,7 @@ export interface AppStoreFactories {
   makeShopStore?: (env: Bindings) => ShopStore;
   makeConfigStore?: (env: Bindings) => ConfigStore;
   makeAnalyticsStore?: (env: Bindings) => AnalyticsStore;
+  makeEconomyStore?: (env: Bindings) => EconomyStore;
 }
 
 export function createApp(
@@ -83,6 +86,15 @@ export function createApp(
   );
   app.route('/', analytics);
   app.route('/api', analytics);
+
+  // 6. Economy routes
+  const economy = createEconomyRoutes(
+    factories.makeEconomyStore,
+    factories.makeAuthStore,
+    now,
+  );
+  app.route('/', economy);
+  app.route('/api', economy);
 
   app.notFound((c) =>
     c.json({ apiVersion: 'v1', error: { code: 'NOT_FOUND' } }, 404),

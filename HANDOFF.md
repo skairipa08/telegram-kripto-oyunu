@@ -2,13 +2,13 @@
 
 ## Güncel durum
 
-- Mevcut adım: **7, 8, 9 ve 11 — R6 Liderlik Tablosu & Sezon Dondurma, R7 Telegram Stars & Kolaylık Bileti, R8 Dinamik Yapılandırma & Özellik Bayrakları, R10 Analitik Olay Hattı & Kohort Modelleri**.
-- Durum: **TAMAMLANDI**. Veri mühendisliği, iş mantığı, sözleşmeler ve API rotaları eksiksiz tamamlandı; UI/CSS görsel tasarımı ve anti-cheat/anti-fraud nüfuz testleri Astra 6.0 sınırlarında izole bırakıldı.
+- Mevcut adım: **Ekonomi Matematiksel Dengesi, Başlangıç Bakiyeleri, ROI Modelleri ve Deterministik Simülasyon (R1–R5)**.
+- Durum: **TAMAMLANDI**. Başlangıç hibesi (100 Nakit taban, +500 referans bonusu), sıfır-gelir kilitlenmesini önleyen veritabanı tetikleyici ve RPC'leri, amortisman/ROI formülleri, güvenli büyük sayı formatlayıcısı, deterministik simülasyon motoru (`scripts/simulate-economy.ts`), `/economy/roi` ve `/economy/simulation` API uç noktaları tamamlandı; Astra 6.0 UI ve anti-cheat sınırları eksiksiz korundu.
 - Sıradaki adımlar:
   - **Astra 6.0**: Canlı Telegram/güvenlik doğrulaması, Adım 4 (R3) Empire UI, Liderlik Tablosu & Mağaza UI görsel bileşenleri, bot kümeleme ve anti-fraud hardening.
 - Kullanıcı her tamamlanan adım sonunda durulmasını ve kısa durum raporu verilmesini istiyor.
 
-## 1–11. Adım Durum Özeti
+## 1–12. Adım Durum Özeti
 
 1. **Adım 1 (R0 - Altyapı):** pnpm workspace, TypeScript, ESLint, Prettier, Vitest, CI akışı, `/health` endpoint'i. (TAMAMLANDI)
 2. **Adım 2 (R1 - Telegram Shell & Auth):** HMAC auth, cookie oturumu ve Supabase auth migration'ı yazıldı; rotalar `/api` önekiyle bağlandı. Güvenlik incelemesi ve canlı Telegram testi Astra 6.0'a devredildi. (TAMAMLANDI)
@@ -36,6 +36,26 @@
     - `packages/shared/src/index.ts`: `CanonicalAnalyticsEvent`, `TrackAnalyticsEventsRequest/Response`, `RetentionCohortDto`, `AnalyticsMetricsResponse`.
     - `supabase/migrations/202609140005_step7_to_11_backend.sql`: `analytics_events` ve `daily_metrics` tabloları.
     - `apps/api/src/analytics/`: `POST /analytics/events`, `GET /analytics/metrics`.
+11. **Adım 12 (Ekonomi Dengeleme, Başlangıç Bakiyesi, ROI Modelleri & Simülasyon):**
+    - **R1: Başlangıç Bakiyesi & Kilitlenme Önleme:**
+      - `packages/game-core/src/starter.ts`: `getStarterEconomyState()` saf fonksiyonu; 100 Nakit taban başlangıç bakiyesi (Street Stand Seviye 1'i ilk 5 saniyede açmaya yetecek ve 30 saniye içinde 30 Nakit üreterek kilitlenmeyi önleyecek şekilde kalibre edildi), +500 Nakit referans artışı (toplam 600 Nakit; Street Stand Seviye 4'e hemen geçiş imkanı), 6 işletmenin seviye 0 olarak başlatılması.
+      - `supabase/migrations/202609140006_economy_starter_and_roi.sql`: `player_balances.cash` varsayılanını 100 yapan şema değişikliği, yeni kullanıcı kaydında otomatik olarak bakiye, 6 işletme ve `starter_grant` ödül kaydı oluşturan `trigger_new_user_starter_economy` tetikleyicisi, `empire_init_player_economy` ve `empire_economy_get_player_state` RPC'leri.
+      - `apps/api/src/auth/test-db.ts`: `202609140006` migrasyonunun PGlite ortamına kaydedilmesi ve ekonomi RPC'lerinin eklenmesi.
+    - **R2: Matematiksel Denge, Amortisman (Payback) ve ROI:**
+      - `packages/game-core/src/formulas.ts`: `calculatePaybackPeriodSeconds(upgradeCost, currentProduction, nextProduction)` amortisman süresi hesaplayıcısı (maliyet <= 0 ise 0, delta <= 0 ise Infinity, tüm 6 kademe ve Seviye 10 sıçraması için matematiksel kesinlik).
+      - `calculateMarginalRoi()` marjinal getiri oranı formülü.
+      - `calculateOptimalNextUpgrade()` en kısa amortisman süresi ve en yüksek marjinal ROI'ye göre deterministik çoklu anahtar sıralamalı (amortisman ASC, maliyet ASC, slug ASC) en iyi yükseltme öneri motoru.
+      - `formatCompactNumber()` 0 ile 10^15 (katrilyon) ve üzeri için sıfır hassasiyet kayıplı (K, M, B, T, Q, Qi) ve kademe atlama korumalı (999.950 -> 1M) sayı/bigint formatlayıcısı.
+      - `packages/game-core/src/index.ts`: Tüm yeni fonksiyon ve arayüzlerin dışa aktarımı.
+    - **R3: Deterministik Simülasyon Motoru & CLI:**
+      - `packages/game-core/src/simulation.ts`: 1 saat, 24 saat, 7 gün ve 30 günlük başsız deterministik simülasyon çalıştırıcısı (`simulateProgression`). Toplam kazanılan nakit, işletme seviyeleri, kilit açılma süreleri ve Kolaylık Bileti (4 saat vs 12 saat çevrimdışı tavanı) etki analizi.
+      - `scripts/simulate-economy.ts`: CLI üzerinden `pnpm simulate` ile doğrudan çalıştırılabilen, formatlanmış tablolar sunan simülasyon aracı.
+    - **R4: API & Shared DTO Yükseltmeleri:**
+      - `packages/shared/src/index.ts`: `playerBusinessSchema`'ya `paybackPeriodSeconds`, `marginalRoi`, `nextProductionPerSecond` eklendi; `economyRoiResponseSchema` ve `economySimulationResponseSchema` tanımlandı.
+      - `apps/api/src/economy/`: `EconomyStore` arayüzü ve `SupabaseEconomyStore`, `GET /economy/roi` ve `GET /economy/simulation` API rotaları oluşturuldu ve `apps/api/src/index.ts` üzerinde `/` ve `/api` önekleriyle bağlandı.
+    - **R5: Astra 6.0 Katı Alan İzolasyonu:**
+      - `apps/web/` altındaki hiçbir dosyaya dokunulmadı (0 değişiklik).
+      - Anti-cheat ve anti-fraud algoritmalarına dokunulmadı (0 değişiklik).
 
 ## Doğrulama kanıtları
 
@@ -44,7 +64,8 @@
 - `pnpm lint`: Başarılı, 0 lint hatası.
 - `pnpm format:check`: Başarılı, tüm kaynak ve test dosyaları Prettier uyumlu.
 - `pnpm typecheck`: 4 pakette (`packages/game-core`, `packages/shared`, `apps/api`, `apps/web`) 0 hata ile tamamlandı.
-- `pnpm test`: 15 test dosyası, 127/127 birim ve PGlite entegrasyon testi %100 başarılı.
+- `pnpm test`: 20 test dosyası, 174/174 birim ve PGlite entegrasyon testi %100 başarılı (önceki 137 teste eklenen 37 yeni test eksiksiz yeşil).
+- `pnpm simulate`: 1 saat (1.1B Nakit), 24 saat (666.5T Nakit), 7 gün (84.3Q Nakit) ve 30 gün (1.7Qi Nakit) simülasyon senaryoları hatasız çalıştı.
 - `pnpm -r build`: Web Vite build ve API Wrangler deploy dry-run başarılı.
 - `pnpm check`: Tüm kalite kapıları tek komutta (lint, format, typecheck, test, build) exit code 0 ile tamamlandı.
 

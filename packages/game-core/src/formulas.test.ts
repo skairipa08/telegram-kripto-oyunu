@@ -7,6 +7,10 @@ import {
   calculateSRU,
   calculateTotalProduction,
   calculateUpgradeCost,
+  calculatePaybackPeriodSeconds,
+  calculateMarginalRoi,
+  calculateOptimalNextUpgrade,
+  formatCompactNumber,
 } from './formulas';
 import { DEFAULT_BUSINESSES } from './config';
 
@@ -177,6 +181,211 @@ describe('game-core formulas', () => {
       expect(DEFAULT_BUSINESSES[0]?.baseIncome).toBe(1);
       expect(DEFAULT_BUSINESSES[5]?.baseCost).toBe(50000000);
       expect(DEFAULT_BUSINESSES[5]?.baseIncome).toBe(60000);
+    });
+  });
+
+  describe('calculatePaybackPeriodSeconds', () => {
+    it('returns 0 for zero or negative upgrade costs', () => {
+      expect(calculatePaybackPeriodSeconds(0, 10, 20)).toBe(0);
+      expect(calculatePaybackPeriodSeconds(-100, 10, 20)).toBe(0);
+    });
+
+    it('returns Infinity when production delta is non-positive', () => {
+      expect(calculatePaybackPeriodSeconds(100, 20, 20)).toBe(
+        Number.POSITIVE_INFINITY,
+      );
+      expect(calculatePaybackPeriodSeconds(100, 20, 15)).toBe(
+        Number.POSITIVE_INFINITY,
+      );
+    });
+
+    it('returns Infinity for NaN inputs or infinite costs', () => {
+      expect(calculatePaybackPeriodSeconds(NaN, 10, 20)).toBe(
+        Number.POSITIVE_INFINITY,
+      );
+      expect(calculatePaybackPeriodSeconds(100, NaN, 20)).toBe(
+        Number.POSITIVE_INFINITY,
+      );
+      expect(calculatePaybackPeriodSeconds(100, 10, NaN)).toBe(
+        Number.POSITIVE_INFINITY,
+      );
+      expect(
+        calculatePaybackPeriodSeconds(Number.POSITIVE_INFINITY, 10, 20),
+      ).toBe(Number.POSITIVE_INFINITY);
+    });
+
+    it('returns 0 when next production is infinite', () => {
+      expect(
+        calculatePaybackPeriodSeconds(100, 10, Number.POSITIVE_INFINITY),
+      ).toBe(0);
+    });
+
+    it('computes exact payback for unlocking all 6 canonical businesses at Level 0 -> 1', () => {
+      // 1. Street Stand: Cost 100, Prod 0 -> 1 => 100.00s
+      expect(calculatePaybackPeriodSeconds(100, 0, 1)).toBe(100);
+
+      // 2. Cafe: Cost 2500, Prod 0 -> 12 => 208.33s
+      expect(
+        Number(calculatePaybackPeriodSeconds(2500, 0, 12).toFixed(2)),
+      ).toBe(208.33);
+
+      // 3. Delivery Hub: Cost 25000, Prod 0 -> 90 => 277.78s
+      expect(
+        Number(calculatePaybackPeriodSeconds(25000, 0, 90).toFixed(2)),
+      ).toBe(277.78);
+
+      // 4. Factory: Cost 250000, Prod 0 -> 600 => 416.67s
+      expect(
+        Number(calculatePaybackPeriodSeconds(250000, 0, 600).toFixed(2)),
+      ).toBe(416.67);
+
+      // 5. Tech Company: Cost 3000000, Prod 0 -> 5000 => 600.00s
+      expect(calculatePaybackPeriodSeconds(3000000, 0, 5000)).toBe(600);
+
+      // 6. Global Holding: Cost 50000000, Prod 0 -> 60000 => 833.33s
+      expect(
+        Number(calculatePaybackPeriodSeconds(50000000, 0, 60000).toFixed(2)),
+      ).toBe(833.33);
+    });
+
+    it('verifies that milestone level 10 leap drastically reduces payback period', () => {
+      // Street Stand: Level 9 -> 10
+      // Cost to level 10: 100 * 1.18^9 = 443.54 -> 444
+      const costL10 = calculateUpgradeCost(100, 10);
+      const prodL9 = calculateProductionPerSecond(1, 9);
+      const prodL10 = calculateProductionPerSecond(1, 10);
+      const deltaProd = prodL10 - prodL9;
+
+      expect(costL10).toBe(444);
+      expect(Number(deltaProd.toFixed(2))).toBe(21.31);
+      const payback = calculatePaybackPeriodSeconds(costL10, prodL9, prodL10);
+      expect(Number(payback.toFixed(2))).toBe(20.84);
+    });
+  });
+
+  describe('calculateMarginalRoi', () => {
+    it('returns 1 / paybackPeriodSeconds', () => {
+      expect(calculateMarginalRoi(100, 0, 1)).toBe(0.01);
+      expect(calculateMarginalRoi(200, 10, 20)).toBe(10 / 200);
+    });
+
+    it('returns 0 when payback is infinite', () => {
+      expect(calculateMarginalRoi(100, 20, 20)).toBe(0);
+    });
+
+    it('returns Infinity when cost is 0', () => {
+      expect(calculateMarginalRoi(0, 10, 20)).toBe(Number.POSITIVE_INFINITY);
+    });
+  });
+
+  describe('calculateOptimalNextUpgrade', () => {
+    it('returns null recommendations when businesses list is empty', () => {
+      const result = calculateOptimalNextUpgrade([]);
+      expect(result.bestOverall).toBeNull();
+      expect(result.bestAffordable).toBeNull();
+      expect(result.candidates).toEqual([]);
+    });
+
+    it('identifies Street Stand as bestOverall and bestAffordable at starter cash (100)', () => {
+      const businesses = DEFAULT_BUSINESSES.map((b) => ({
+        slug: b.id,
+        name: b.name,
+        level: 0,
+        baseCost: b.baseCost,
+        baseIncome: b.baseIncome,
+      }));
+
+      const result = calculateOptimalNextUpgrade(businesses, 100);
+      expect(result.bestOverall?.slug).toBe('street_stand');
+      expect(result.bestOverall?.upgradeCost).toBe(100);
+      expect(result.bestOverall?.paybackPeriodSeconds).toBe(100);
+      expect(result.bestOverall?.isAffordable).toBe(true);
+
+      expect(result.bestAffordable?.slug).toBe('street_stand');
+      expect(result.bestAffordable?.isAffordable).toBe(true);
+    });
+
+    it('marks bestAffordable as null if player has 0 cash and no upgrade is free', () => {
+      const businesses = DEFAULT_BUSINESSES.map((b) => ({
+        slug: b.id,
+        name: b.name,
+        level: 0,
+        baseCost: b.baseCost,
+        baseIncome: b.baseIncome,
+      }));
+
+      const result = calculateOptimalNextUpgrade(businesses, 0);
+      expect(result.bestOverall?.slug).toBe('street_stand');
+      expect(result.bestOverall?.isAffordable).toBe(false);
+      expect(result.bestAffordable).toBeNull();
+    });
+
+    it('prioritizes milestone breakthrough upgrades due to lower payback period', () => {
+      // Street Stand at level 9 (payback ~20.8s) vs Cafe at level 0 (payback 208.3s)
+      const businesses = [
+        {
+          slug: 'street_stand',
+          name: 'Street Stand',
+          level: 9,
+          baseCost: 100,
+          baseIncome: 1,
+        },
+        {
+          slug: 'cafe',
+          name: 'Cafe',
+          level: 0,
+          baseCost: 2500,
+          baseIncome: 12,
+        },
+      ];
+
+      const result = calculateOptimalNextUpgrade(businesses, 5000);
+      expect(result.bestOverall?.slug).toBe('street_stand');
+      expect(result.bestOverall?.paybackPeriodSeconds).toBeLessThan(30);
+    });
+  });
+
+  describe('formatCompactNumber', () => {
+    it('formats raw integers under 1,000 without suffixes', () => {
+      expect(formatCompactNumber(0)).toBe('0');
+      expect(formatCompactNumber(42)).toBe('42');
+      expect(formatCompactNumber(999)).toBe('999');
+    });
+
+    it('formats K, M, B, T tiers with clean precision', () => {
+      expect(formatCompactNumber(1000)).toBe('1K');
+      expect(formatCompactNumber(1200)).toBe('1.2K');
+      expect(formatCompactNumber(9500)).toBe('9.5K');
+      expect(formatCompactNumber(1000000)).toBe('1M');
+      expect(formatCompactNumber(3500000)).toBe('3.5M');
+      expect(formatCompactNumber(12800000000)).toBe('12.8B');
+      expect(formatCompactNumber(4500000000000)).toBe('4.5T');
+    });
+
+    it('formats Quadrillion (10^15) cleanly for numbers and BigInts', () => {
+      expect(formatCompactNumber(1000000000000000)).toBe('1Q');
+      expect(formatCompactNumber(2500000000000000)).toBe('2.5Q');
+      expect(formatCompactNumber(1000000000000000n)).toBe('1Q');
+      expect(formatCompactNumber(2500000000000000n)).toBe('2.5Q');
+    });
+
+    it('safely handles tier-bumping edge cases (e.g. 999950 -> 1M, never 1000K)', () => {
+      expect(formatCompactNumber(999950)).toBe('1M');
+      expect(formatCompactNumber(999950000)).toBe('1B');
+    });
+
+    it('preserves negative signs', () => {
+      expect(formatCompactNumber(-1200)).toBe('-1.2K');
+      expect(formatCompactNumber(-3500000)).toBe('-3.5M');
+    });
+
+    it('safely handles special strings and non-finite values', () => {
+      expect(formatCompactNumber('NaN')).toBe('NaN');
+      expect(formatCompactNumber('Infinity')).toBe('Infinity');
+      expect(formatCompactNumber('-Infinity')).toBe('-Infinity');
+      expect(formatCompactNumber(NaN)).toBe('NaN');
+      expect(formatCompactNumber(Infinity)).toBe('Infinity');
+      expect(formatCompactNumber(-Infinity)).toBe('-Infinity');
     });
   });
 });
