@@ -177,3 +177,69 @@ export const claimStreakResponseSchema = z.object({
   claimedAt: z.iso.datetime(),
 });
 export type ClaimStreakResponse = z.infer<typeof claimStreakResponseSchema>;
+
+export const referralMilestoneSchema = z.enum([
+  'activation',
+  'retained_d2',
+  'retained_d7',
+  'progression',
+]);
+export type ReferralMilestoneDto = z.infer<typeof referralMilestoneSchema>;
+
+export const playerReferralOverviewSchema = z.object({
+  referralCode: z.string(),
+  deepLink: z.string(),
+  totalInvites: z.number().int().nonnegative(),
+  qualifiedCount: z.number().int().nonnegative(),
+  totalEarnedPoints: z.number().int().nonnegative(),
+  unlockedBadges: z.array(z.string()),
+});
+export type PlayerReferralOverview = z.infer<
+  typeof playerReferralOverviewSchema
+>;
+
+export const bindReferralRequestSchema = z
+  .object({
+    referralCode: z.string().min(4).max(32),
+    requestId: z.uuid(),
+  })
+  .strict();
+export type BindReferralRequest = z.infer<typeof bindReferralRequestSchema>;
+
+export const bindReferralResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  success: z.boolean(),
+  starterCashBoost: z.number().int().nonnegative(),
+});
+export type BindReferralResponse = z.infer<typeof bindReferralResponseSchema>;
+
+export const referralEventItemSchema = z.object({
+  id: z.uuid(),
+  milestone: referralMilestoneSchema,
+  rewardAmount: z.number().int().positive(),
+  qualifiedAt: z.iso.datetime(),
+  status: z.enum(['pending', 'claimed', 'frozen']),
+  claimedAt: z.iso.datetime().nullable(),
+});
+export type ReferralEventItem = z.infer<typeof referralEventItemSchema>;
+
+export const claimReferralRewardRequestSchema = z
+  .object({
+    eventId: z.uuid(),
+    requestId: z.uuid(),
+  })
+  .strict();
+export type ClaimReferralRewardRequest = z.infer<
+  typeof claimReferralRewardRequestSchema
+>;
+
+export const claimReferralRewardResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  eventId: z.uuid(),
+  rewardPoints: z.number().int().positive(),
+  newSeasonPoints: z.number().int().nonnegative(),
+  claimedAt: z.iso.datetime(),
+});
+export type ClaimReferralRewardResponse = z.infer<
+  typeof claimReferralRewardResponseSchema
+>;
