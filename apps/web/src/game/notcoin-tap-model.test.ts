@@ -102,13 +102,13 @@ describe('Notcoin Tap Model', () => {
   it('computes upgrade costs across levels and respects level caps', () => {
     expect(getMultitapUpgradeCost(1)).toEqual({ cash: 100, stars: 25 });
     expect(getMultitapUpgradeCost(2)).toEqual({ cash: 200, stars: 50 });
-    expect(getMultitapUpgradeCost(10)).toBeNull();
+    expect(getMultitapUpgradeCost(20)).toBeNull();
 
     expect(getCapacityUpgradeCost(1)).toEqual({ cash: 150, stars: 20 });
-    expect(getCapacityUpgradeCost(10)).toBeNull();
+    expect(getCapacityUpgradeCost(20)).toBeNull();
 
     expect(getRechargeUpgradeCost(1)).toEqual({ cash: 250, stars: 35 });
-    expect(getRechargeUpgradeCost(5)).toBeNull();
+    expect(getRechargeUpgradeCost(20)).toBeNull();
 
     expect(TAPBOT_UNLOCK_COST).toEqual({ cash: 50000, stars: 149 });
     expect(getOfflineExtenderCost(3)).toEqual({ cash: 100000, stars: 99 });

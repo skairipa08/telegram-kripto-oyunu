@@ -7,11 +7,11 @@ import {
 import { calculateUpgradeCost, calculateProductionPerSecond } from './formulas';
 
 describe('getStarterEconomyState', () => {
-  it('initializes default unreferred player with 100 Cash and 6 canonical businesses at level 0', () => {
+  it('initializes default unreferred player with 100 Cash and 16 businesses at level 0', () => {
     const state = getStarterEconomyState(false);
     expect(state.cash).toBe(100);
     expect(state.totalProductionPerSecond).toBe(0);
-    expect(state.businesses).toHaveLength(6);
+    expect(state.businesses).toHaveLength(16);
 
     for (const b of state.businesses) {
       expect(b.level).toBe(0);
@@ -27,7 +27,7 @@ describe('getStarterEconomyState', () => {
     const state = getStarterEconomyState(true);
     expect(state.cash).toBe(STARTER_BASE_CASH + STARTER_REFERRAL_BOOST);
     expect(state.cash).toBe(600);
-    expect(state.businesses).toHaveLength(6);
+    expect(state.businesses).toHaveLength(16);
     expect(state.businesses.every((b) => b.level === 0)).toBe(true);
   });
 

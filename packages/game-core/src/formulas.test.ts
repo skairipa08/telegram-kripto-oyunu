@@ -167,9 +167,9 @@ describe('game-core formulas', () => {
   });
 
   describe('DEFAULT_BUSINESSES', () => {
-    it('includes all 6 canonical businesses in order', () => {
-      expect(DEFAULT_BUSINESSES).toHaveLength(6);
-      expect(DEFAULT_BUSINESSES.map((b) => b.id)).toEqual([
+    it('includes all 16 canonical businesses in order', () => {
+      expect(DEFAULT_BUSINESSES).toHaveLength(16);
+      expect(DEFAULT_BUSINESSES.slice(0, 6).map((b) => b.id)).toEqual([
         'street_stand',
         'cafe',
         'delivery_hub',
@@ -181,6 +181,7 @@ describe('game-core formulas', () => {
       expect(DEFAULT_BUSINESSES[0]?.baseIncome).toBe(1);
       expect(DEFAULT_BUSINESSES[5]?.baseCost).toBe(50000000);
       expect(DEFAULT_BUSINESSES[5]?.baseIncome).toBe(60000);
+      expect(DEFAULT_BUSINESSES[15]?.id).toBe('galactic_federation');
     });
   });
 

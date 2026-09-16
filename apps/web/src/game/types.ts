@@ -26,7 +26,7 @@ export type MissionView = {
   id: string;
   title: string;
   description: string;
-  difficulty: 'easy' | 'normal' | 'hard' | 'weekly';
+  difficulty: 'easy' | 'normal' | 'hard' | 'weekly' | 'lifetime';
   progress: number;
   target: number;
   reward: number;

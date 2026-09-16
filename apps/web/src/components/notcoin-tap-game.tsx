@@ -128,6 +128,40 @@ export function NotcoinTapGame({
     };
   }, []);
 
+  // Active in-game TapBot auto-tapper (taps every 1.5s when unlocked and energy available)
+  useEffect(() => {
+    if (!tapState.upgrades.tapBotUnlocked) return;
+    const botInterval = window.setInterval(() => {
+      const current = tapStateRef.current;
+      if (current.currentEnergy >= 1) {
+        const result = performTap(current);
+        if (result) {
+          tapStateRef.current = result.nextState;
+          setTapState(result.nextState);
+          if (onReward) onReward(result.coinsEarned);
+
+          // Add floating number indicating bot tap
+          const id = `bot-${Date.now()}-${Math.random()}`;
+          setFloatingNumbers((prev) => [
+            ...prev,
+            {
+              id,
+              amount: result.coinsEarned,
+              x: 110 + (Math.random() * 40 - 20),
+              y: 70,
+              isCrit: result.isCrit,
+            },
+          ]);
+          window.setTimeout(() => {
+            setFloatingNumbers((prev) => prev.filter((item) => item.id !== id));
+          }, 900);
+        }
+      }
+    }, 1500);
+
+    return () => clearInterval(botInterval);
+  }, [tapState.upgrades.tapBotUnlocked, onReward]);
+
   // Handle Coin Tap / Click
   function handleCoinTap(e: React.PointerEvent<HTMLDivElement>) {
     const current = tapStateRef.current;

@@ -3,7 +3,8 @@
  * Side-effect free, independent of network, database, or UI.
  */
 
-export type MissionDifficulty = 'easy' | 'normal' | 'hard' | 'weekly';
+export type MissionDifficulty =
+  'easy' | 'normal' | 'hard' | 'weekly' | 'lifetime';
 
 export interface MissionDefinition {
   readonly key: string;
@@ -19,6 +20,7 @@ export const MISSION_SRU_MULTIPLIERS: Record<MissionDifficulty, number> = {
   normal: 1.0,
   hard: 1.25,
   weekly: 5.0,
+  lifetime: 10.0,
 };
 
 export const STREAK_SRU_MULTIPLIER = 0.25;
@@ -104,6 +106,57 @@ export const DEFAULT_MISSIONS: readonly MissionDefinition[] = [
     description: 'Hafta boyunca toplam 15 günlük görevi başarıyla tamamla',
     target: 15,
     sruMultiplier: 5.0,
+  },
+] as const;
+
+export const DEFAULT_LIFETIME_MISSIONS: readonly MissionDefinition[] = [
+  {
+    key: 'earn_1m_cash',
+    difficulty: 'lifetime',
+    title: 'İlk Milyon',
+    description: 'Kariyerinde toplam 1.000.000 nakite ulaş',
+    target: 1000000,
+    sruMultiplier: 10.0,
+  },
+  {
+    key: 'earn_10m_cash',
+    difficulty: 'lifetime',
+    title: 'Finansal Dev',
+    description: 'Kariyerinde toplam 10.000.000 nakite ulaş',
+    target: 10000000,
+    sruMultiplier: 25.0,
+  },
+  {
+    key: 'reach_empire_level_50',
+    difficulty: 'lifetime',
+    title: 'İmparatorluk Ölçeği',
+    description: 'Tüm işletmelerinde toplam 50 seviyeye ulaş',
+    target: 50,
+    sruMultiplier: 15.0,
+  },
+  {
+    key: 'invite_5_friends',
+    difficulty: 'lifetime',
+    title: 'Ağ Lideri',
+    description: 'İmparatorluğuna 5 arkadaşını davet et',
+    target: 5,
+    sruMultiplier: 10.0,
+  },
+  {
+    key: 'reach_tap_level_10',
+    difficulty: 'lifetime',
+    title: 'Hızlı Parmaklar',
+    description: 'Dokunma oyununda seviye 10 geliştirmeye ulaş',
+    target: 10,
+    sruMultiplier: 8.0,
+  },
+  {
+    key: 'reach_merge_tier_20',
+    difficulty: 'lifetime',
+    title: 'Kombinasyon Ustası',
+    description: 'Birleştirme oyununda 20. seviye kutuyu aç',
+    target: 20,
+    sruMultiplier: 15.0,
   },
 ] as const;
 

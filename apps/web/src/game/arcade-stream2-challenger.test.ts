@@ -312,9 +312,9 @@ describe('CHALLENGER VECTOR 2.2: Notcoin Tap Adversarial Probing', () => {
   });
 
   it('upgrade costs cap: returns null when reaching maximum levels', () => {
-    expect(getMultitapUpgradeCost(10)).toBeNull();
-    expect(getCapacityUpgradeCost(10)).toBeNull();
-    expect(getRechargeUpgradeCost(5)).toBeNull();
+    expect(getMultitapUpgradeCost(20)).toBeNull();
+    expect(getCapacityUpgradeCost(20)).toBeNull();
+    expect(getRechargeUpgradeCost(20)).toBeNull();
     expect(getOfflineExtenderCost(24)).toBeNull();
   });
 });

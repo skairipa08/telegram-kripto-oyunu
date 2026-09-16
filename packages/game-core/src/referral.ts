@@ -46,7 +46,45 @@ export const REFERRAL_MILESTONES: Record<
 };
 
 export const REFERRAL_STARTER_CASH_BOOST = 500;
+export const REFERRAL_MUTUAL_STARTER_CASH = 5000;
 export const REFERRAL_BIND_WINDOW_MS = 30 * 60 * 1000; // 30 minutes
+
+export interface ReferralCommissionTier {
+  readonly minInvites: number;
+  readonly maxInvites: number;
+  readonly ratePercent: number;
+  readonly rateDecimal: number;
+}
+
+export const REFERRAL_COMMISSION_TIERS: readonly ReferralCommissionTier[] = [
+  { minInvites: 0, maxInvites: 10, ratePercent: 3, rateDecimal: 0.03 },
+  { minInvites: 11, maxInvites: 30, ratePercent: 5, rateDecimal: 0.05 },
+  { minInvites: 31, maxInvites: Infinity, ratePercent: 7, rateDecimal: 0.07 },
+];
+
+/**
+ * Returns the passive earning commission rate for a referrer based on active invite count:
+ * 0 - 10 invites: 3% (0.03)
+ * 11 - 30 invites: 5% (0.05)
+ * 31+ invites: 7% (0.07)
+ */
+export function getReferralCommissionRate(inviteCount: number): number {
+  if (inviteCount <= 10) return 0.03;
+  if (inviteCount <= 30) return 0.05;
+  return 0.07;
+}
+
+/**
+ * Calculates passive commission earned by referrer from an invitee's generated cash.
+ */
+export function calculatePassiveCommission(
+  inviteeEarnedCash: number,
+  inviteCount: number,
+): number {
+  if (inviteeEarnedCash <= 0) return 0;
+  const rate = getReferralCommissionRate(inviteCount);
+  return Math.floor(inviteeEarnedCash * rate);
+}
 
 export interface InviteeStats {
   readonly hasCompletedTutorial: boolean;

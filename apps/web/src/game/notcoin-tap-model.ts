@@ -47,9 +47,9 @@ export function getTapPower(multitapLevel: number): number {
 export function getMultitapUpgradeCost(
   currentLevel: number,
 ): UpgradeCost | null {
-  if (currentLevel >= 10) return null;
+  if (currentLevel >= 20) return null;
   return {
-    cash: Math.floor(100 * Math.pow(2, currentLevel - 1)),
+    cash: 100 * currentLevel,
     stars: 25 * currentLevel,
   };
 }
@@ -57,9 +57,9 @@ export function getMultitapUpgradeCost(
 export function getCapacityUpgradeCost(
   currentLevel: number,
 ): UpgradeCost | null {
-  if (currentLevel >= 10) return null;
+  if (currentLevel >= 20) return null;
   return {
-    cash: Math.floor(150 * Math.pow(2, currentLevel - 1)),
+    cash: 150 * currentLevel,
     stars: 20 * currentLevel,
   };
 }
@@ -67,9 +67,9 @@ export function getCapacityUpgradeCost(
 export function getRechargeUpgradeCost(
   currentLevel: number,
 ): UpgradeCost | null {
-  if (currentLevel >= 5) return null;
+  if (currentLevel >= 20) return null;
   return {
-    cash: Math.floor(250 * Math.pow(2.2, currentLevel - 1)),
+    cash: 250 * currentLevel,
     stars: 35 * currentLevel,
   };
 }
@@ -228,13 +228,13 @@ export function applyTapUpgrade(
 
   switch (upgradeType) {
     case 'multitap':
-      if (current.multitap >= 10) return state;
+      if (current.multitap >= 20) return state;
       return {
         ...state,
         upgrades: { ...current, multitap: current.multitap + 1 },
       };
     case 'energyCapacity': {
-      if (current.energyCapacity >= 10) return state;
+      if (current.energyCapacity >= 20) return state;
       const nextLevel = current.energyCapacity + 1;
       const newMax = getMaxEnergy(nextLevel);
       return {
@@ -247,7 +247,7 @@ export function applyTapUpgrade(
       };
     }
     case 'rechargeSpeed':
-      if (current.rechargeSpeed >= 5) return state;
+      if (current.rechargeSpeed >= 20) return state;
       return {
         ...state,
         upgrades: { ...current, rechargeSpeed: current.rechargeSpeed + 1 },

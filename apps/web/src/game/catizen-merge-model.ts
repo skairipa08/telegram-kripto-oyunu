@@ -136,8 +136,17 @@ export const MERGE_TIERS: TierDefinition[] = [
   },
 ];
 
-export const MAX_MERGE_TIER = 12;
+export const MAX_MERGE_TIER = 100;
 export const DEFAULT_BOARD_SIZE = 12; // 4x3 grid
+
+export function getMergeFee(tier: number): number {
+  if (tier < 1) return 0;
+  return Math.round(5 * Math.pow(1.35, tier - 1));
+}
+
+export function getMergeCooldown(tier: number): number {
+  return Math.min(30, Math.max(1, Math.round(1 + Math.log2(tier) * 2)));
+}
 
 export function getTierDefinition(tier: number): TierDefinition {
   const def = MERGE_TIERS.find((t) => t.tier === tier);

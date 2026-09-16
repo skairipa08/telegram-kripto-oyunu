@@ -217,6 +217,36 @@ export function FriendsScreen({
         <FriendsArtwork />
       </div>
 
+      <div
+        className="panel referral-mutual-bonus-banner"
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(241, 201, 154, 0.15), rgba(76, 175, 80, 0.12))',
+          border: '1px solid rgba(241, 201, 154, 0.3)',
+          borderRadius: '12px',
+          padding: '14px 18px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+        }}
+      >
+        <span style={{ fontSize: '28px' }} aria-hidden="true">
+          🎁
+        </span>
+        <div>
+          <strong
+            style={{ display: 'block', fontSize: '15px', color: '#f1c99a' }}
+          >
+            Karşılıklı +5.000 Nakit Başlangıç Bonusu
+          </strong>
+          <span style={{ fontSize: '13px', opacity: 0.9 }}>
+            Davet ettiğin her arkadaşın ve sen anında{' '}
+            <strong>5.000'er Nakit</strong> kazanırsınız. Sınırsız davet!
+          </span>
+        </div>
+      </div>
+
       <div className="friends-metrics" aria-label="Davet özeti">
         <div className="metric">
           <span>Nitelikli davet</span>
@@ -227,8 +257,126 @@ export function FriendsScreen({
           <strong>{formatNumber(data.totalInvites)}</strong>
         </div>
         <div className="metric">
+          <span>Komisyon Oranı</span>
+          <strong style={{ color: '#22c55e' }}>
+            %{data.totalInvites <= 10 ? 3 : data.totalInvites <= 30 ? 5 : 7}
+          </strong>
+        </div>
+        <div className="metric">
           <span>Kazanılan puan</span>
           <strong>{formatNumber(data.earnedPoints)} SRU</strong>
+        </div>
+      </div>
+
+      <div
+        className="panel referral-commission-panel"
+        style={{
+          marginTop: '16px',
+          padding: '16px 18px',
+          borderRadius: '12px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px',
+          }}
+        >
+          <div>
+            <p className="eyebrow">KADEMELİ GELİR PAYI</p>
+            <h3 style={{ margin: 0 }}>Ortak Kazanç Komisyonu</h3>
+          </div>
+          <span
+            className="badge"
+            style={{
+              backgroundColor: '#22c55e',
+              color: '#fff',
+              fontWeight: 'bold',
+            }}
+          >
+            Aktif Oran: %
+            {data.totalInvites <= 10 ? 3 : data.totalInvites <= 30 ? 5 : 7}
+          </span>
+        </div>
+        <p className="muted" style={{ fontSize: '13px', marginBottom: '12px' }}>
+          Davet ettiğin tüm ortaklarının anlık kazançlarından kalıcı ve pasif
+          komisyon kazanırsın.
+        </p>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+            gap: '8px',
+          }}
+        >
+          <div
+            style={{
+              padding: '10px',
+              borderRadius: '8px',
+              border:
+                data.totalInvites <= 10
+                  ? '1px solid #f1c99a'
+                  : '1px solid rgba(255,255,255,0.08)',
+              background:
+                data.totalInvites <= 10
+                  ? 'rgba(241, 201, 154, 0.08)'
+                  : 'transparent',
+              textAlign: 'center',
+            }}
+          >
+            <span style={{ fontSize: '12px', opacity: 0.8, display: 'block' }}>
+              0 - 10 Davet
+            </span>
+            <strong style={{ fontSize: '16px', color: '#f1c99a' }}>
+              %3 Pasif
+            </strong>
+          </div>
+          <div
+            style={{
+              padding: '10px',
+              borderRadius: '8px',
+              border:
+                data.totalInvites > 10 && data.totalInvites <= 30
+                  ? '1px solid #f1c99a'
+                  : '1px solid rgba(255,255,255,0.08)',
+              background:
+                data.totalInvites > 10 && data.totalInvites <= 30
+                  ? 'rgba(241, 201, 154, 0.08)'
+                  : 'transparent',
+              textAlign: 'center',
+            }}
+          >
+            <span style={{ fontSize: '12px', opacity: 0.8, display: 'block' }}>
+              11 - 30 Davet
+            </span>
+            <strong style={{ fontSize: '16px', color: '#f1c99a' }}>
+              %5 Pasif
+            </strong>
+          </div>
+          <div
+            style={{
+              padding: '10px',
+              borderRadius: '8px',
+              border:
+                data.totalInvites > 30
+                  ? '1px solid #22c55e'
+                  : '1px solid rgba(255,255,255,0.08)',
+              background:
+                data.totalInvites > 30
+                  ? 'rgba(34, 197, 94, 0.1)'
+                  : 'transparent',
+              textAlign: 'center',
+            }}
+          >
+            <span style={{ fontSize: '12px', opacity: 0.8, display: 'block' }}>
+              31+ Davet
+            </span>
+            <strong style={{ fontSize: '16px', color: '#22c55e' }}>
+              %7 Pasif (Maks)
+            </strong>
+          </div>
         </div>
       </div>
 

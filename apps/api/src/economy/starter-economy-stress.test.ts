@@ -85,13 +85,13 @@ describe('Empirical Starter Flow, Database Trigger & Economy API Stress Suite', 
       const baseState = getStarterEconomyState(false);
       expect(baseState.cash).toBe(100);
       expect(baseState.totalProductionPerSecond).toBe(0);
-      expect(baseState.businesses).toHaveLength(6);
+      expect(baseState.businesses).toHaveLength(16);
       expect(baseState.businesses.every((b) => b.level === 0)).toBe(true);
 
       const referredState = getStarterEconomyState(true);
       expect(referredState.cash).toBe(600);
       expect(referredState.totalProductionPerSecond).toBe(0);
-      expect(referredState.businesses).toHaveLength(6);
+      expect(referredState.businesses).toHaveLength(16);
     });
 
     it('1.2. Batch Onboarding Invariant: 20 newly created users all receive exactly 100 cash, 6 businesses at level 0, and starter_grant ledger row', async () => {
@@ -396,7 +396,7 @@ describe('Empirical Starter Flow, Database Trigger & Economy API Stress Suite', 
       expect(data.apiVersion).toBe('v1');
       expect(data.durationSeconds).toBe(86400);
       expect(data.totalCashEarned).toBeGreaterThan(0);
-      expect(data.unlockedBusinessCount).toBe(6);
+      expect(data.unlockedBusinessCount).toBe(16);
     });
 
     it('3.2. Adversarial Fuzzing on duration query parameter', async () => {

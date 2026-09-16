@@ -232,7 +232,7 @@ describe('Economy Starter Grants, Triggers & ROI API Routes', () => {
       expect(data.apiVersion).toBe('v1');
       expect(data.durationSeconds).toBe(86400);
       expect(data.totalCashEarned).toBeGreaterThan(1000);
-      expect(data.unlockedBusinessCount).toBe(6);
+      expect(data.unlockedBusinessCount).toBe(16);
       expect(
         data.conveniencePassImpact?.efficiencyGainMultiplier,
       ).toBeGreaterThan(1.0);

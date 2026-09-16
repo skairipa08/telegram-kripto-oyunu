@@ -5,6 +5,7 @@ import {
   executeMerge,
   findAutoMergeCandidate,
   findFirstParcel,
+  getMergeFee,
   getTierDefinition,
   moveOrSwapSlot,
   openParcel,
@@ -197,8 +198,10 @@ export function CatizenMergeGame({
       hapticMerge();
       setLastMergedTier(result.newTier);
       if (result.reward && onReward) onReward(result.reward);
+      const fee = getMergeFee(result.newTier - 1);
+      if (fee > 0 && onReward) onReward(-fee);
       setToastMessage(
-        `✨ Birleşti! ${getTierDefinition(result.newTier).name} (+${result.reward} Nakit)`,
+        `✨ Birleşti! ${getTierDefinition(result.newTier).name} (Maliyet: -${fee} · +${result.reward} Nakit)`,
       );
     } else {
       playTapSound();
@@ -242,8 +245,10 @@ export function CatizenMergeGame({
       hapticMerge();
       setLastMergedTier(result.newTier);
       if (result.reward && onReward) onReward(result.reward);
+      const fee = getMergeFee(result.newTier - 1);
+      if (fee > 0 && onReward) onReward(-fee);
       setToastMessage(
-        `✨ Birleşti! ${getTierDefinition(result.newTier).name} (+${result.reward} Nakit)`,
+        `✨ Birleşti! ${getTierDefinition(result.newTier).name} (Maliyet: -${fee} · +${result.reward} Nakit)`,
       );
     } else {
       playTapSound();

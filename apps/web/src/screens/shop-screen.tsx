@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ActionFeedback } from '../game/live-game-model';
 import type { ScreenResource, ShopView } from '../game/types';
 import {
@@ -97,6 +98,8 @@ function CosmeticArt({ variant }: { variant: 'frame' | 'emblem' }) {
   );
 }
 
+type ShopCategory = 'all' | 'pass' | 'bundles' | 'upgrades' | 'cosmetics';
+
 export function ShopScreen({
   resource,
   starsPaymentsEnabled = false,
@@ -104,6 +107,8 @@ export function ShopScreen({
   purchasingSku = null,
   purchaseFeedback = null,
 }: ShopScreenProps) {
+  const [category, setCategory] = useState<ShopCategory>('all');
+
   if (resource.status !== 'ready' || !resource.data) {
     const unavailableResource: ScreenResource<unknown> = resource.data
       ? resource
@@ -144,6 +149,49 @@ export function ShopScreen({
         }
       />
 
+      <div
+        className="missions-segments"
+        role="group"
+        aria-label="Mağaza kategorileri"
+        style={{ marginBottom: '18px' }}
+      >
+        <button
+          type="button"
+          aria-pressed={category === 'all'}
+          onClick={() => setCategory('all')}
+        >
+          Tümü
+        </button>
+        <button
+          type="button"
+          aria-pressed={category === 'pass'}
+          onClick={() => setCategory('pass')}
+        >
+          VIP Pass
+        </button>
+        <button
+          type="button"
+          aria-pressed={category === 'bundles'}
+          onClick={() => setCategory('bundles')}
+        >
+          Paketler
+        </button>
+        <button
+          type="button"
+          aria-pressed={category === 'upgrades'}
+          onClick={() => setCategory('upgrades')}
+        >
+          Otomasyon
+        </button>
+        <button
+          type="button"
+          aria-pressed={category === 'cosmetics'}
+          onClick={() => setCategory('cosmetics')}
+        >
+          Kozmetik
+        </button>
+      </div>
+
       {purchaseFeedback && (
         <div
           className={`sa-feedback-banner ${purchaseFeedback.kind}`}
@@ -154,165 +202,328 @@ export function ShopScreen({
         </div>
       )}
 
-      {pass ? (
-        <article className="sa-pass-card" aria-labelledby="empire-pass-title">
-          <div className="sa-pass-glow" aria-hidden="true" />
-          <div className="sa-pass-copy">
-            <div className="sa-pass-header-row">
-              <p className="eyebrow">AYRICALIK ÜYELİĞİ</p>
-              {!starsPaymentsEnabled && (
-                <span className="badge sa-badge-soon">Yakında</span>
-              )}
+      {(category === 'all' || category === 'pass') &&
+        (pass ? (
+          <article className="sa-pass-card" aria-labelledby="empire-pass-title">
+            <div className="sa-pass-glow" aria-hidden="true" />
+            <div className="sa-pass-copy">
+              <div className="sa-pass-header-row">
+                <p className="eyebrow">AYRICALIK ÜYELİĞİ</p>
+                {!starsPaymentsEnabled && (
+                  <span className="badge sa-badge-soon">Yakında</span>
+                )}
+              </div>
+              <h2 id="empire-pass-title">Empire Pass</h2>
+              <p className="sa-pass-product-name">{pass.name}</p>
+              <p>{pass.description}</p>
+              <div className="sa-pass-meta">
+                {pass.durationDays !== null && (
+                  <span>
+                    <strong>{formatNumber(pass.durationDays)}</strong> gün
+                    erişim
+                  </span>
+                )}
+                {passActive && expiry && (
+                  <span>
+                    <strong>{expiry}</strong> tarihine kadar
+                  </span>
+                )}
+                {passActive && !expiry && (
+                  <span>Bitiş tarihi henüz iletilmedi</span>
+                )}
+              </div>
             </div>
-            <h2 id="empire-pass-title">Empire Pass</h2>
-            <p className="sa-pass-product-name">{pass.name}</p>
-            <p>{pass.description}</p>
-            <div className="sa-pass-meta">
-              {pass.durationDays !== null && (
-                <span>
-                  <strong>{formatNumber(pass.durationDays)}</strong> gün erişim
-                </span>
-              )}
-              {passActive && expiry && (
-                <span>
-                  <strong>{expiry}</strong> tarihine kadar
-                </span>
-              )}
-              {passActive && !expiry && (
-                <span>Bitiş tarihi henüz iletilmedi</span>
-              )}
-            </div>
-          </div>
-          <div className="sa-pass-seal">
-            <PassEmblem />
-            <StarPrice value={pass.price} />
-            <button
-              className="button sa-buy-button"
-              type="button"
-              disabled={
-                !starsPaymentsEnabled ||
-                isAnyPurchasing ||
-                (passActive && !isPassPurchasing)
-              }
-              onClick={() => {
-                if (starsPaymentsEnabled && onPurchase) {
-                  onPurchase(pass.sku);
+            <div className="sa-pass-seal">
+              <PassEmblem />
+              <StarPrice value={pass.price} />
+              <button
+                className="button sa-buy-button"
+                type="button"
+                disabled={
+                  !starsPaymentsEnabled ||
+                  isAnyPurchasing ||
+                  (passActive && !isPassPurchasing)
                 }
-              }}
-            >
-              {!starsPaymentsEnabled
-                ? 'Satışlar yakında'
-                : isPassPurchasing
-                  ? 'Ödeme açılıyor…'
-                  : passActive
-                    ? 'Empire Pass Aktif'
-                    : 'Empire Pass Al'}
-            </button>
-          </div>
-        </article>
-      ) : (
-        <EmptyState
-          title="Empire Pass henüz listelenmiyor"
-          description="Üyelik ürünü mağaza verisine eklendiğinde süre ve yıldız fiyatı burada görünecek."
-        />
-      )}
-
-      <section
-        className="panel sa-comparison"
-        aria-labelledby="pass-comparison-title"
-      >
-        <div className="sa-comparison-heading">
-          <div>
-            <p className="eyebrow">PLAN ÖZELLİKLERİ</p>
-            <h2 id="pass-comparison-title">Günlük akışına daha fazla alan</h2>
-          </div>
-          <span className="badge">Bilgilendirme</span>
-        </div>
-        <p className="muted sa-plan-note">
-          Bu avantajlar planlanan üyelik kapsamını gösterir; satışlar başlayana
-          kadar etkin değildir.
-        </p>
-        <div
-          className="sa-comparison-table"
-          role="table"
-          aria-label="Ücretsiz plan ve Empire Pass karşılaştırması"
-        >
-          <div className="sa-comparison-row sa-comparison-labels" role="row">
-            <span role="columnheader">Özellik</span>
-            <span role="columnheader">Ücretsiz</span>
-            <span role="columnheader">Pass</span>
-          </div>
-          {[
-            ['Çevrimdışı kazanç', '4 saat', '12 saat'],
-            ['Üretim kuyruğu', '1', '3'],
-            ['Günlük görev yenileme', '1', '3'],
-            ['Sezon puanı', '×1', '×1'],
-          ].map(([feature, free, premium]) => (
-            <div className="sa-comparison-row" role="row" key={feature}>
-              <span role="rowheader">{feature}</span>
-              <span role="cell">{free}</span>
-              <strong role="cell">{premium}</strong>
+                onClick={() => {
+                  if (starsPaymentsEnabled && onPurchase) {
+                    onPurchase(pass.sku);
+                  }
+                }}
+              >
+                {!starsPaymentsEnabled
+                  ? 'Satışlar yakında'
+                  : isPassPurchasing
+                    ? 'Ödeme açılıyor…'
+                    : passActive
+                      ? 'Empire Pass Aktif'
+                      : 'Empire Pass Al'}
+              </button>
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="sa-cosmetics" aria-labelledby="cosmetics-title">
-        <div className="sa-subheading">
-          <div>
-            <p className="eyebrow">KOLEKSİYON</p>
-            <h2 id="cosmetics-title">Şehrinin imzası</h2>
-          </div>
-          <p className="muted">Yalnızca görsel özelleştirme</p>
-        </div>
-        {cosmetics.length > 0 ? (
-          <div className="sa-cosmetic-grid">
-            {cosmetics.map((product, index) => {
-              const isThisPurchasing = purchasingSku === product.sku;
-              return (
-                <article className="panel sa-cosmetic-card" key={product.sku}>
-                  <div className="sa-cosmetic-art">
-                    <CosmeticArt variant={index === 0 ? 'frame' : 'emblem'} />
-                  </div>
-                  <div className="sa-cosmetic-copy">
-                    <div>
-                      <div className="sa-cosmetic-title-row">
-                        <h3>{product.name}</h3>
-                        {!starsPaymentsEnabled && (
-                          <span className="badge sa-badge-soon">Yakında</span>
-                        )}
-                      </div>
-                      <p className="muted">{product.description}</p>
-                    </div>
-                    <StarPrice value={product.price} />
-                  </div>
-                  <button
-                    className="button secondary sa-cosmetic-buy"
-                    type="button"
-                    disabled={!starsPaymentsEnabled || isAnyPurchasing}
-                    onClick={() => {
-                      if (starsPaymentsEnabled && onPurchase) {
-                        onPurchase(product.sku);
-                      }
-                    }}
-                  >
-                    {!starsPaymentsEnabled
-                      ? 'Satışlar yakında'
-                      : isThisPurchasing
-                        ? 'Ödeme açılıyor…'
-                        : 'Satın Al'}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
+          </article>
         ) : (
           <EmptyState
-            title="Kozmetik koleksiyon hazırlanıyor"
-            description="Gerçek ürünler mağazaya eklendiğinde çerçeve ve amblemler burada listelenecek."
+            title="Empire Pass henüz listelenmiyor"
+            description="Üyelik ürünü mağaza verisine eklendiğinde süre ve yıldız fiyatı burada görünecek."
           />
-        )}
-      </section>
+        ))}
+
+      {(category === 'all' || category === 'pass') && (
+        <section
+          className="panel sa-comparison"
+          aria-labelledby="pass-comparison-title"
+        >
+          <div className="sa-comparison-heading">
+            <div>
+              <p className="eyebrow">PLAN ÖZELLİKLERİ</p>
+              <h2 id="pass-comparison-title">Günlük akışına daha fazla alan</h2>
+            </div>
+            <span className="badge">Bilgilendirme</span>
+          </div>
+          <p className="muted sa-plan-note">
+            Bu avantajlar planlanan üyelik kapsamını gösterir; satışlar
+            başlayana kadar etkin değildir.
+          </p>
+          <div
+            className="sa-comparison-table"
+            role="table"
+            aria-label="Ücretsiz plan ve Empire Pass karşılaştırması"
+          >
+            <div className="sa-comparison-row sa-comparison-labels" role="row">
+              <span role="columnheader">Özellik</span>
+              <span role="columnheader">Ücretsiz</span>
+              <span role="columnheader">Pass</span>
+            </div>
+            {[
+              ['Çevrimdışı kazanç', '4 saat', '12 saat'],
+              ['Üretim kuyruğu', '1', '3'],
+              ['Günlük görev yenileme', '1', '3'],
+              ['Sezon puanı', '×1', '×1'],
+            ].map(([feature, free, premium]) => (
+              <div className="sa-comparison-row" role="row" key={feature}>
+                <span role="rowheader">{feature}</span>
+                <span role="cell">{free}</span>
+                <strong role="cell">{premium}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {(category === 'all' || category === 'bundles') && (
+        <section
+          className="sa-bundles"
+          aria-labelledby="bundles-title"
+          style={{ marginBottom: '24px' }}
+        >
+          <div className="sa-subheading">
+            <div>
+              <p className="eyebrow">SERMAYE PAKETLERİ</p>
+              <h2 id="bundles-title">Hızlı Başlangıç & Takviye</h2>
+            </div>
+            <p className="muted">İmparatorluğunu hızlandıracak paketler</p>
+          </div>
+          <div className="sa-cosmetic-grid">
+            <article className="panel sa-cosmetic-card">
+              <div className="sa-cosmetic-copy">
+                <div>
+                  <div className="sa-cosmetic-title-row">
+                    <h3>Başlangıç Paketi</h3>
+                    <span className="badge">Popüler</span>
+                  </div>
+                  <p className="muted">
+                    +50.000 Nakit · +500 Tık Enerjisi · Bronz Profil
+                  </p>
+                </div>
+                <StarPrice value={50} />
+              </div>
+              <button
+                className="button secondary sa-cosmetic-buy"
+                type="button"
+                disabled={!starsPaymentsEnabled || isAnyPurchasing}
+                onClick={() => {
+                  if (starsPaymentsEnabled && onPurchase)
+                    onPurchase('starter_bundle');
+                }}
+              >
+                {!starsPaymentsEnabled
+                  ? 'Satışlar yakında'
+                  : purchasingSku === 'starter_bundle'
+                    ? 'Ödeme açılıyor…'
+                    : 'Satın Al'}
+              </button>
+            </article>
+            <article className="panel sa-cosmetic-card">
+              <div className="sa-cosmetic-copy">
+                <div>
+                  <div className="sa-cosmetic-title-row">
+                    <h3>Mega Holding Fonu</h3>
+                    <span
+                      className="badge"
+                      style={{ backgroundColor: '#f1c99a', color: '#1a1a1a' }}
+                    >
+                      Avantajlı
+                    </span>
+                  </div>
+                  <p className="muted">
+                    +1.000.000 Nakit · +2.500 Enerji · VIP Altın Rozet
+                  </p>
+                </div>
+                <StarPrice value={250} />
+              </div>
+              <button
+                className="button secondary sa-cosmetic-buy"
+                type="button"
+                disabled={!starsPaymentsEnabled || isAnyPurchasing}
+                onClick={() => {
+                  if (starsPaymentsEnabled && onPurchase)
+                    onPurchase('mega_bundle');
+                }}
+              >
+                {!starsPaymentsEnabled
+                  ? 'Satışlar yakında'
+                  : purchasingSku === 'mega_bundle'
+                    ? 'Ödeme açılıyor…'
+                    : 'Satın Al'}
+              </button>
+            </article>
+          </div>
+        </section>
+      )}
+
+      {(category === 'all' || category === 'upgrades') && (
+        <section
+          className="sa-upgrades"
+          aria-labelledby="upgrades-title"
+          style={{ marginBottom: '24px' }}
+        >
+          <div className="sa-subheading">
+            <div>
+              <p className="eyebrow">OTOMASYON & ARAÇLAR</p>
+              <h2 id="upgrades-title">Tıklama & Çevrimdışı Güçlendiriciler</h2>
+            </div>
+            <p className="muted">Oyun ritmini ve birikim kapasitesini artır</p>
+          </div>
+          <div className="sa-cosmetic-grid">
+            <article className="panel sa-cosmetic-card">
+              <div className="sa-cosmetic-copy">
+                <div>
+                  <div className="sa-cosmetic-title-row">
+                    <h3>TapBot Lisansı</h3>
+                    <span className="badge">🤖 Otomatik</span>
+                  </div>
+                  <p className="muted">
+                    Oyun açıkken saniyede bir basar, kapalıyken depolar
+                  </p>
+                </div>
+                <StarPrice value={149} />
+              </div>
+              <button
+                className="button secondary sa-cosmetic-buy"
+                type="button"
+                disabled={!starsPaymentsEnabled || isAnyPurchasing}
+                onClick={() => {
+                  if (starsPaymentsEnabled && onPurchase)
+                    onPurchase('tapbot_license');
+                }}
+              >
+                {!starsPaymentsEnabled
+                  ? 'Satışlar yakında'
+                  : purchasingSku === 'tapbot_license'
+                    ? 'Ödeme açılıyor…'
+                    : 'Satın Al'}
+              </button>
+            </article>
+            <article className="panel sa-cosmetic-card">
+              <div className="sa-cosmetic-copy">
+                <div>
+                  <div className="sa-cosmetic-title-row">
+                    <h3>24s Çevrimdışı Kasa</h3>
+                    <span className="badge">⏰ 24 Saat</span>
+                  </div>
+                  <p className="muted">
+                    Çevrimdışı gelir toplama üst sınırını 24 saate çıkarır
+                  </p>
+                </div>
+                <StarPrice value={99} />
+              </div>
+              <button
+                className="button secondary sa-cosmetic-buy"
+                type="button"
+                disabled={!starsPaymentsEnabled || isAnyPurchasing}
+                onClick={() => {
+                  if (starsPaymentsEnabled && onPurchase)
+                    onPurchase('extender_24h');
+                }}
+              >
+                {!starsPaymentsEnabled
+                  ? 'Satışlar yakında'
+                  : purchasingSku === 'extender_24h'
+                    ? 'Ödeme açılıyor…'
+                    : 'Satın Al'}
+              </button>
+            </article>
+          </div>
+        </section>
+      )}
+
+      {(category === 'all' || category === 'cosmetics') && (
+        <section className="sa-cosmetics" aria-labelledby="cosmetics-title">
+          <div className="sa-subheading">
+            <div>
+              <p className="eyebrow">KOLEKSİYON</p>
+              <h2 id="cosmetics-title">Şehrinin imzası</h2>
+            </div>
+            <p className="muted">Yalnızca görsel özelleştirme</p>
+          </div>
+          {cosmetics.length > 0 ? (
+            <div className="sa-cosmetic-grid">
+              {cosmetics.map((product, index) => {
+                const isThisPurchasing = purchasingSku === product.sku;
+                return (
+                  <article className="panel sa-cosmetic-card" key={product.sku}>
+                    <div className="sa-cosmetic-art">
+                      <CosmeticArt variant={index === 0 ? 'frame' : 'emblem'} />
+                    </div>
+                    <div className="sa-cosmetic-copy">
+                      <div>
+                        <div className="sa-cosmetic-title-row">
+                          <h3>{product.name}</h3>
+                          {!starsPaymentsEnabled && (
+                            <span className="badge sa-badge-soon">Yakında</span>
+                          )}
+                        </div>
+                        <p className="muted">{product.description}</p>
+                      </div>
+                      <StarPrice value={product.price} />
+                    </div>
+                    <button
+                      className="button secondary sa-cosmetic-buy"
+                      type="button"
+                      disabled={!starsPaymentsEnabled || isAnyPurchasing}
+                      onClick={() => {
+                        if (starsPaymentsEnabled && onPurchase) {
+                          onPurchase(product.sku);
+                        }
+                      }}
+                    >
+                      {!starsPaymentsEnabled
+                        ? 'Satışlar yakında'
+                        : isThisPurchasing
+                          ? 'Ödeme açılıyor…'
+                          : 'Satın Al'}
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyState
+              title="Kozmetik koleksiyon hazırlanıyor"
+              description="Gerçek ürünler mağazaya eklendiğinde çerçeve ve amblemler burada listelenecek."
+            />
+          )}
+        </section>
+      )}
 
       <footer className="sa-support panel" aria-label="Mağaza desteği">
         <span className="sa-support-mark" aria-hidden="true">

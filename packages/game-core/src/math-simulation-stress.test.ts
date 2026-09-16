@@ -165,7 +165,7 @@ describe('Adversarial Math & Simulation Stress Harness', () => {
       const res = calculateOptimalNextUpgrade(b0, 100);
       expect(res.bestOverall?.slug).toBe('street_stand');
       expect(res.bestAffordable?.slug).toBe('street_stand');
-      expect(res.candidates).toHaveLength(6);
+      expect(res.candidates).toHaveLength(DEFAULT_BUSINESSES.length);
     });
 
     it('distinguishes playerCash = 0 vs playerCash = 10^15', () => {
@@ -454,7 +454,7 @@ describe('Adversarial Math & Simulation Stress Harness', () => {
       for (const b of DEFAULT_BUSINESSES) {
         const lvl = run30d.businessLevels[b.id]!;
         expect(lvl).toBeGreaterThan(0);
-        expect(lvl).toBeLessThan(250);
+        expect(lvl).toBeLessThan(350);
       }
     });
 

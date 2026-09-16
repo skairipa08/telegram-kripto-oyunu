@@ -1,7 +1,7 @@
-# BRIEFING — 2026-09-16T10:56:20Z
+# BRIEFING — 2026-09-16T15:43:00+03:00
 
 ## Mission
-Sentinel monitoring and lifecycle management for Project Empire Step 8 (Telegram Stars payments, pass entitlements, webhook security, pre-checkout verification) and Step 9 (Admin dashboard UI, RBAC governance for @Barandnz and @Mberked, config feature flags, and audit logging).
+Sentinel monitoring and lifecycle management for Custom Stakes in Risk (Crypto Crash), Adaptive Crash / Baiting Math Engine, and Extended Daily Streak Milestones (7d, 30d, 90d, 180d, 365d).
 
 ## 🔒 My Identity
 - Archetype: sentinel
@@ -24,8 +24,10 @@ Sentinel monitoring and lifecycle management for Project Empire Step 8 (Telegram
 - Victory Auditor 7: [None]
 - Orchestrator 8: effd4fe1-1d42-42a3-9936-4beeae0164ab (Completed)
 - Victory Auditor 8: [None]
-- Orchestrator 9: 2e32ba88-38e2-412d-876d-ed44df3fb85e (Active)
-- Victory Auditor 9: 71b9c170-7f67-49c8-8ac9-504a96ad3728 (Active)
+- Orchestrator 9: 2e32ba88-38e2-412d-876d-ed44df3fb85e (Completed)
+- Victory Auditor 9: 71b9c170-7f67-49c8-8ac9-504a96ad3728 (Completed)
+- Orchestrator 10: 8f48bf32-e611-43f8-a20c-dc51691359a0 (Completed)
+- Victory Auditor 10: 14a354cd-fde7-4cd8-ab7f-0f64bd59e43e (Completed — VICTORY CONFIRMED)
 
 ## 🔒 Key Constraints
 - No technical decisions — relay only
@@ -60,22 +62,30 @@ Sentinel monitoring and lifecycle management for Project Empire Step 8 (Telegram
 - [2026-09-16 Arcade Suite Overhaul]: 4 Games: Catizen-Style Merge, Dynasty Cipher Terminal, Notcoin Tap-to-Earn, Crypto Candlestick Crash
 - [2026-09-16 Arcade Suite Overhaul]: Zero layout shifts on 320px–390px mobile screens, fully integrated with Astra 6.0 theme
 - [2026-09-16 Arcade Suite Overhaul]: Update HANDOFF.md with game mechanics, mathematical formulas, and test evidence
+- [2026-09-16 Custom Stakes & Adaptive Crash & Daily Streaks]: Maximum 2 concurrent agents with strict domain isolation:
+  - Stream 1: Core Math, Adaptive Crash Engine & Streak Milestones (packages/game-core/src/crypto-crash.ts, packages/game-core/src/missions.ts, apps/api/src/arcade/)
+  - Stream 2: Frontend Risk Game & Streak Milestone UI (apps/web/src/components/crypto-crash-game.tsx, apps/web/src/screens/missions-screen.tsx, apps/web/src/components/arcade.css)
+- [2026-09-16 Custom Stakes & Adaptive Crash & Daily Streaks]: Free-range stake validation (min 10, max user balance)
+- [2026-09-16 Custom Stakes & Adaptive Crash & Daily Streaks]: Adaptive crash algorithm (frequent green runs on baseline/modest bets, early dump 1.00x-1.45x when stake >2.5x baseline or high bets after win streaks)
+- [2026-09-16 Custom Stakes & Adaptive Crash & Daily Streaks]: Streak milestones (7d: 1.0x SRU + 500 Cash, 30d: 2.5x SRU + 5,000 Cash, 90d: 5.0x SRU + 25,000 Cash, 180d: 10.0x SRU + 100,000 Cash, 365d: 25.0x SRU + 500,000 Cash + "İmparatorluk Kıdemlisi" Badge)
+- [2026-09-16 Custom Stakes & Adaptive Crash & Daily Streaks]: pnpm check passes with 0 errors (lint, format:check, typecheck, tests, build)
+- [2026-09-16 Custom Stakes & Adaptive Crash & Daily Streaks]: HANDOFF.md updated with new features and tests
 
 ## User Context
-- **Last user request**: Revamp and expand the Project Empire mini-game arcade suite (Catizen Merge, Dynasty Cipher, Notcoin Tap-to-Earn, Crypto Candlestick Crash) with strict 2-agent concurrency limit and domain isolation (Stream 1 math/economy vs Stream 2 interactive frontend UI).
+- **Last user request**: Implement free-text custom stake inputs in Risk (Crypto Crash), integrate dynamic adaptive house-edge/baiting curve, and extend daily login streaks with exponential milestone bonuses (7d, 30d, 90d, 180d, 365d).
 - **Pending clarifications**: none
-- **Delivered results**: Logged request to ORIGINAL_REQUEST.md, initialized Orchestrator 9 workspace.
+- **Delivered results**: Fully implemented, verified, challenged, forensically audited, and independently victory-confirmed (VICTORY CONFIRMED by Victory Auditor 6). All quality gates passed (60 test suites, 735 tests passed, 0 errors on pnpm check).
 
 ## Project Status
-- **Phase**: auditing
+- **Phase**: complete
 - **Route**: General -> teamwork_preview_orchestrator
-- **Active Orchestrator**: 2e32ba88-38e2-412d-876d-ed44df3fb85e (orchestrator 9 - claimed victory)
-- **Active Victory Auditor**: 71b9c170-7f67-49c8-8ac9-504a96ad3728 (teamwork_preview_victory_auditor_5)
-- **Active Tasks**: task-42 (Cron 1, progress `*/8 * * * *`), task-44 (Cron 2, liveness `*/10 * * * *`)
+- **Active Orchestrator**: None (Orchestrator 10 completed)
+- **Active Victory Auditor**: None (Auditor 6 delivered VICTORY CONFIRMED)
+- **Active Tasks**: None (All crons terminated)
 
 ## Victory Audit Status
 - **Triggered**: yes
-- **Verdict**: pending
+- **Verdict**: VICTORY CONFIRMED
 - **Retry count**: 0
 
 ## Artifact Index
@@ -83,5 +93,5 @@ Sentinel monitoring and lifecycle management for Project Empire Step 8 (Telegram
 - c:\Users\Administrator\Desktop\telegram kripto oyunu\ORIGINAL_REQUEST.md — Verbatim user request record at root
 - c:\Users\Administrator\Desktop\telegram kripto oyunu\HANDOFF.md — Project progress and verification handoff
 - c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\sentinel\BRIEFING.md — Sentinel persistent memory
-- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_orchestrator_9\progress.md — Orchestrator 9 progress tracker
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_orchestrator_10\progress.md — Orchestrator 10 progress tracker
 

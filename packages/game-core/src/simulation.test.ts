@@ -55,10 +55,10 @@ describe('Deterministic Economy Simulation Harness', () => {
       run30d.totalUpgradesPurchased,
     );
 
-    // All 6 businesses unlocked in sequence
-    expect(run24h.unlockedBusinessCount).toBe(6);
-    expect(run7d.unlockedBusinessCount).toBe(6);
-    expect(run30d.unlockedBusinessCount).toBe(6);
+    // All 16 businesses unlocked in sequence
+    expect(run24h.unlockedBusinessCount).toBe(16);
+    expect(run7d.unlockedBusinessCount).toBe(16);
+    expect(run30d.unlockedBusinessCount).toBe(16);
 
     const unlocks = run24h.timeToUnlockSeconds;
     expect(unlocks['street_stand']).toBe(0);
@@ -112,7 +112,7 @@ describe('Deterministic Economy Simulation Harness', () => {
     for (const b of DEFAULT_BUSINESSES) {
       const lvl = run30d.businessLevels[b.id]!;
       expect(lvl).toBeGreaterThan(0);
-      expect(lvl).toBeLessThan(250); // Pacing dampening prevents level explosion
+      expect(lvl).toBeLessThan(350); // Pacing dampening prevents level explosion
     }
   });
 

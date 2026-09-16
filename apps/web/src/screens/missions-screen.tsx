@@ -70,6 +70,69 @@ export const STREAK_MILESTONES: readonly StreakMilestone[] = [
   },
 ] as const;
 
+export const FALLBACK_LIFETIME_MISSIONS: readonly MissionView[] = [
+  {
+    id: 'lifetime_earn_1m',
+    title: 'İlk Milyon',
+    description: 'Kariyerinde toplam 1.000.000 nakite ulaş',
+    progress: 100,
+    target: 1000000,
+    reward: 100,
+    difficulty: 'lifetime',
+    status: 'in_progress',
+  },
+  {
+    id: 'lifetime_earn_10m',
+    title: 'Finansal Dev',
+    description: 'Kariyerinde toplam 10.000.000 nakite ulaş',
+    progress: 100,
+    target: 10000000,
+    reward: 250,
+    difficulty: 'lifetime',
+    status: 'in_progress',
+  },
+  {
+    id: 'lifetime_reach_level_50',
+    title: 'İmparatorluk Ölçeği',
+    description: 'Tüm işletmelerinde toplam 50 seviyeye ulaş',
+    progress: 1,
+    target: 50,
+    reward: 150,
+    difficulty: 'lifetime',
+    status: 'in_progress',
+  },
+  {
+    id: 'lifetime_invite_5',
+    title: 'Ağ Lideri',
+    description: 'İmparatorluğuna 5 arkadaşını davet et',
+    progress: 0,
+    target: 5,
+    reward: 80,
+    difficulty: 'lifetime',
+    status: 'in_progress',
+  },
+  {
+    id: 'lifetime_tap_level_10',
+    title: 'Tıklama Ustası',
+    description: 'Tıklama oyununda Çoklu Tık geliştirmesini seviye 10 yap',
+    progress: 1,
+    target: 10,
+    reward: 50,
+    difficulty: 'lifetime',
+    status: 'in_progress',
+  },
+  {
+    id: 'lifetime_merge_tier_20',
+    title: 'Kuantum Birleştirici',
+    description: 'Birleştirme oyununda Seviye 20 kutuya ulaş',
+    progress: 1,
+    target: 20,
+    reward: 120,
+    difficulty: 'lifetime',
+    status: 'in_progress',
+  },
+];
+
 type MissionsScreenProps = {
   resource: ScreenResource<MissionsView>;
   onClaim?: (id: string) => void;
@@ -78,7 +141,7 @@ type MissionsScreenProps = {
   claimFeedback?: ActionFeedback | null;
 };
 
-type MissionFilter = 'daily' | 'weekly';
+type MissionFilter = 'daily' | 'weekly' | 'lifetime';
 
 function MissionCard({
   mission,
@@ -198,11 +261,19 @@ export function MissionsScreen({
   }
 
   const { missions, streak } = resource.data;
-  const visibleMissions = missions.filter((mission) =>
-    filter === 'weekly'
-      ? mission.difficulty === 'weekly'
-      : mission.difficulty !== 'weekly',
-  );
+  const filteredMissions = missions.filter((mission) => {
+    if (filter === 'weekly') return mission.difficulty === 'weekly';
+    if (filter === 'lifetime')
+      return (mission.difficulty as string) === 'lifetime';
+    return (
+      mission.difficulty !== 'weekly' &&
+      (mission.difficulty as string) !== 'lifetime'
+    );
+  });
+  const visibleMissions =
+    filter === 'lifetime' && filteredMissions.length === 0
+      ? FALLBACK_LIFETIME_MISSIONS
+      : filteredMissions;
   const streakDays = Math.min(7, Math.max(0, streak));
 
   return (
@@ -382,6 +453,13 @@ export function MissionsScreen({
           >
             Haftalık
           </button>
+          <button
+            type="button"
+            aria-pressed={filter === 'lifetime'}
+            onClick={() => setFilter('lifetime')}
+          >
+            Genel
+          </button>
         </div>
       </div>
 
@@ -415,12 +493,16 @@ export function MissionsScreen({
           title={
             filter === 'daily'
               ? 'Bugünün görevleri tamam'
-              : 'Haftalık görev bulunmuyor'
+              : filter === 'weekly'
+                ? 'Haftalık görev bulunmuyor'
+                : 'Genel başarılar tamamlandı'
           }
           description={
             filter === 'daily'
               ? 'Yeni günlük hedefler açıldığında burada görünecek.'
-              : 'Yeni haftalık hedefler yayınlandığında görev defterine eklenecek.'
+              : filter === 'weekly'
+                ? 'Yeni haftalık hedefler yayınlandığında görev defterine eklenecek.'
+                : 'Tüm kalıcı kilometre taşları tamamlandı!'
           }
         />
       )}

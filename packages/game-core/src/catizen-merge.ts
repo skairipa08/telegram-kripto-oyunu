@@ -16,13 +16,45 @@ import {
 } from './minigames-config';
 
 /**
- * Retrieves the tier configuration for a given tier (1..12).
+ * Retrieves the tier configuration for a given tier (1..100).
+ * Tiers 1-12 use hand-crafted definitions; higher tiers up to 100 are dynamically computed.
  */
 export function getMergeTierConfig(
   tier: number,
   config: CatizenMergeConfig = DEFAULT_CATIZEN_CONFIG,
 ): CatizenMergeTier | undefined {
-  return config.tiers.find((t) => t.tier === tier);
+  if (tier < 1 || tier > 100) return undefined;
+  const staticTier = config.tiers.find((t) => t.tier === tier);
+  if (staticTier) return staticTier;
+
+  // Dynamically compute higher tiers up to 100
+  const baseRate = 1;
+  const passiveRatePerSec = Math.round(baseRate * Math.pow(2.2, tier - 1));
+  const mergeRewardCash = Math.round(10 * Math.pow(2.0, tier - 1));
+
+  return {
+    tier,
+    name: `Tier ${tier} Artifact`,
+    nameTr: `Seviye ${tier} Kasa`,
+    passiveRatePerSec,
+    mergeRewardCash,
+  };
+}
+
+/**
+ * Calculates the cash fee required to perform a merge for tier `tier`.
+ * Creates an economic governor preventing free instant scaling to tier 100.
+ */
+export function calculateMergeCost(tier: number): number {
+  if (tier < 1) return 0;
+  return Math.round(5 * Math.pow(1.5, tier - 1));
+}
+
+/**
+ * Calculates the assembly cooldown time in seconds for tier `tier`.
+ */
+export function calculateMergeCooldownSeconds(tier: number): number {
+  return Math.min(30, Math.max(1, Math.round(1 + Math.log2(tier) * 2)));
 }
 
 /**
