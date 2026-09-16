@@ -70,6 +70,7 @@ All workstreams and development steps are fully realized and verified:
 ### 4.1 Core Mathematical Models & Game Mechanics (`packages/game-core/src/`)
 
 #### A. Notcoin Tap Economy & Simulation Engine (`notcoin-tap.ts`, `minigames-config.ts`)
+
 1. **Dynamic Energy Regeneration**:
    - $E_{\max}(L_{\text{cap}}) = 1000 + 500 \times (L_{\text{cap}} - 1)$
    - $R_{\text{rech}}(L_{\text{rech}}) = 1 + 1 \times (L_{\text{rech}} - 1) \text{ energy/sec}$
@@ -90,6 +91,7 @@ All workstreams and development steps are fully realized and verified:
    - All 5 SKUs (`tap_bot_unlock`, `tap_offline_extender_6h`, `tap_offline_extender_12h`, `tap_offline_extender_24h`, `energy_boost`) feature `seasonPointsMultiplier: 1.0` and `bonusSeasonPoints: 0` permanently.
 
 #### B. Catizen-Style Merge Progression Economy (`catizen-merge.ts`)
+
 1. **12 Thematic Collectible Tiers**:
    - Tier 1: Bronz Çip (1 Cash/s, merge reward 10 Cash)
    - Tier 2: Gümüş Külçe (3 Cash/s, merge reward 22 Cash)
@@ -114,6 +116,7 @@ All workstreams and development steps are fully realized and verified:
    - Fuzzing across 1,000 randomized boards verified zero infinite loops, execution in $\le 11$ steps, and zero remaining duplicate pairs of the same tier.
 
 #### C. Crypto Candlestick "Moon or Doom" Crash Game Math (`crypto-crash.ts`)
+
 1. **Provably Fair HMAC-SHA256 Pareto Multiplier**:
    - Hash derived via $\text{HMAC-SHA256}(\text{serverSeed}, \text{clientSeed} + \text{':'} + \text{nonce})$.
    - First 52 bits parsed as uniform float $U \in [0, 1)$.
@@ -130,6 +133,7 @@ All workstreams and development steps are fully realized and verified:
    - Discrete ticks maintain price continuity: $\text{Open}_i = \text{Close}_{i-1}$.
 
 #### D. Dynasty Cipher Cyber-Hack Terminal (`dynasty-cipher.ts`)
+
 1. **Dynamic Pacing & Sequence Length**:
    - $L_{\text{seq}}(r) = \min(12, 3 + \lfloor(r - 1) / 2\rfloor)$.
 2. **Combo Multiplier & Daily Cap**:
@@ -229,6 +233,7 @@ pnpm check
 ```
 
 ### Verification Commands:
+
 ```bash
 # 1. Verify Game-Core unit & invariant tests
 pnpm vitest run packages/game-core

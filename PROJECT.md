@@ -1,6 +1,7 @@
 # Project: Project Empire Arcade Suite Overhaul
 
 ## Architecture
+
 Two strictly isolated streams respecting the user's CRITICAL constraint of Maximum 2 Concurrent Agents:
 
 1. **Stream 1 - Core Math Models, Simulation & Economy Engine**:
@@ -28,38 +29,42 @@ Two strictly isolated streams respecting the user's CRITICAL constraint of Maxim
      - Standalone `ArcadeScreen` and embedded `EmpireArcade` widget in `EmpireScreen`.
 
 ## Feature Inventory
+
 Every feature from the Survey phase is mapped to its assigned milestone:
-| # | Feature | Description | Milestone | Source |
-|---|---------|-------------|-----------|--------|
-| 1 | Notcoin Tap Core Math | Energy dynamics, tap scaling ($1.5^{\text{lvl}-1}$), crit hits, offline TapBot accumulator, Stars SKUs | M1 | Survey Stream 1 |
-| 2 | Catizen Merge Core Math | 12-tier emblem scaling, passive rates ($2.5^{k-1}$), parcel probabilities, $O(N)$ auto-merge solver | M1 | Survey Stream 1 |
-| 3 | Candlestick Crash Math | Provably fair HMAC-SHA256 Pareto distribution, 97% RTP invariant, candlestick generator, settlement | M1 | Survey Stream 1 |
-| 4 | Dynasty Cipher Core Math | Dynamic sequence length $L(r)$, combo multipliers ($1.0\times-3.0\times$), reward formula | M1 | Survey Stream 1 |
-| 5 | Shared DTOs & Schemas | Zod validation schemas and DTO types for all 4 arcade games in packages/shared | M1 | Survey Stream 1 |
-| 6 | API Arcade Store & Routes | REST endpoints for arcade game actions and balance settlements in apps/api/src/arcade/ | M1 | Survey Stream 1 |
-| 7 | Core Math Invariant Tests | Unit & stress test suites in packages/game-core proving energy conservation, RTP, solver termination | M1 | Survey Stream 1 |
-| 8 | Web Audio & Haptics Engine | Procedural sound synthesizer (AudioContext) & Telegram HapticFeedback abstraction | M2 | Survey Stream 2 |
-| 9 | Catizen Merge Component | 4x3 living board, drag/drop & click merge, particle burst, mystery parcel drops, auto-bot toggle | M2 | Survey Stream 2 |
-| 10 | Dynasty Cipher Component | Cyberpunk terminal, scanlines, decrypt pulse, combo multipliers, firewall breach progress | M2 | Survey Stream 2 |
-| 11 | Notcoin Tap Component | 3D tactile squish coin, floating digits, animated energy bar, dual-currency upgrade drawer | M2 | Survey Stream 2 |
-| 12 | Candlestick Crash Component | 60fps canvas chart, rising multiplier, stake selector, Boğa / Kârı Al button, win/crash animations | M2 | Survey Stream 2 |
-| 13 | Arcade CSS & Responsiveness | Astra 6.0 styling, 320px–390px mobile viewport zero overflow, reduced motion support | M2 | Survey Stream 2 |
-| 14 | Arcade Hub & Screen Integration | Standalone ArcadeScreen, EmpireArcade widget update, design preview support | M2 | Survey Stream 2 |
-| 15 | Monorepo Quality Gate | `pnpm check` (lint, format:check, typecheck, test, build) passes with 0 errors | M3 | Acceptance Criteria |
-| 16 | Adversarial Challenge & Audit | Challenger tests & Forensic Auditor verification with strict binary veto | M3 | Acceptance Criteria |
-| 17 | Handoff & Documentation | Update HANDOFF.md with mechanics, mathematical formulas, and test evidence | M4 | Acceptance Criteria |
+
+| #   | Feature                         | Description                                                                                            | Milestone | Source              |
+| --- | ------------------------------- | ------------------------------------------------------------------------------------------------------ | --------- | ------------------- |
+| 1   | Notcoin Tap Core Math           | Energy dynamics, tap scaling ($1.5^{\text{lvl}-1}$), crit hits, offline TapBot accumulator, Stars SKUs | M1        | Survey Stream 1     |
+| 2   | Catizen Merge Core Math         | 12-tier emblem scaling, passive rates ($2.5^{k-1}$), parcel probabilities, $O(N)$ auto-merge solver    | M1        | Survey Stream 1     |
+| 3   | Candlestick Crash Math          | Provably fair HMAC-SHA256 Pareto distribution, 97% RTP invariant, candlestick generator, settlement    | M1        | Survey Stream 1     |
+| 4   | Dynasty Cipher Core Math        | Dynamic sequence length $L(r)$, combo multipliers ($1.0\times-3.0\times$), reward formula              | M1        | Survey Stream 1     |
+| 5   | Shared DTOs & Schemas           | Zod validation schemas and DTO types for all 4 arcade games in packages/shared                         | M1        | Survey Stream 1     |
+| 6   | API Arcade Store & Routes       | REST endpoints for arcade game actions and balance settlements in apps/api/src/arcade/                 | M1        | Survey Stream 1     |
+| 7   | Core Math Invariant Tests       | Unit & stress test suites in packages/game-core proving energy conservation, RTP, solver termination   | M1        | Survey Stream 1     |
+| 8   | Web Audio & Haptics Engine      | Procedural sound synthesizer (AudioContext) & Telegram HapticFeedback abstraction                      | M2        | Survey Stream 2     |
+| 9   | Catizen Merge Component         | 4x3 living board, drag/drop & click merge, particle burst, mystery parcel drops, auto-bot toggle       | M2        | Survey Stream 2     |
+| 10  | Dynasty Cipher Component        | Cyberpunk terminal, scanlines, decrypt pulse, combo multipliers, firewall breach progress              | M2        | Survey Stream 2     |
+| 11  | Notcoin Tap Component           | 3D tactile squish coin, floating digits, animated energy bar, dual-currency upgrade drawer             | M2        | Survey Stream 2     |
+| 12  | Candlestick Crash Component     | 60fps canvas chart, rising multiplier, stake selector, Boğa / Kârı Al button, win/crash animations     | M2        | Survey Stream 2     |
+| 13  | Arcade CSS & Responsiveness     | Astra 6.0 styling, 320px–390px mobile viewport zero overflow, reduced motion support                   | M2        | Survey Stream 2     |
+| 14  | Arcade Hub & Screen Integration | Standalone ArcadeScreen, EmpireArcade widget update, design preview support                            | M2        | Survey Stream 2     |
+| 15  | Monorepo Quality Gate           | `pnpm check` (lint, format:check, typecheck, test, build) passes with 0 errors                         | M3        | Acceptance Criteria |
+| 16  | Adversarial Challenge & Audit   | Challenger tests & Forensic Auditor verification with strict binary veto                               | M3        | Acceptance Criteria |
+| 17  | Handoff & Documentation         | Update HANDOFF.md with mechanics, mathematical formulas, and test evidence                             | M4        | Acceptance Criteria |
 
 ## Milestones
-| # | Name | Scope | Dependencies | Status |
-|---|------|-------|-------------|--------|
-| M1 | Stream 1: Core Math Models & Economy Engine | packages/game-core/src/, packages/shared/src/, apps/api/src/arcade/ | none | IN_PROGRESS |
-| M2 | Stream 2: Rich Interactive Frontend Mini-Games UI | apps/web/src/components/, apps/web/src/screens/, apps/web/src/game/ | none | IN_PROGRESS |
-| M3 | Quality Gate, Adversarial & Forensic Verification | Full monorepo check, Reviewers, Challengers, Auditor | M1, M2 | PLANNED |
-| M4 | Final Handoff & Reporting | HANDOFF.md and completion report | M3 | PLANNED |
+
+| #   | Name                                              | Scope                                                               | Dependencies | Status      |
+| --- | ------------------------------------------------- | ------------------------------------------------------------------- | ------------ | ----------- |
+| M1  | Stream 1: Core Math Models & Economy Engine       | packages/game-core/src/, packages/shared/src/, apps/api/src/arcade/ | none         | IN_PROGRESS |
+| M2  | Stream 2: Rich Interactive Frontend Mini-Games UI | apps/web/src/components/, apps/web/src/screens/, apps/web/src/game/ | none         | IN_PROGRESS |
+| M3  | Quality Gate, Adversarial & Forensic Verification | Full monorepo check, Reviewers, Challengers, Auditor                | M1, M2       | PLANNED     |
+| M4  | Final Handoff & Reporting                         | HANDOFF.md and completion report                                    | M3           | PLANNED     |
 
 ## Interface Contracts
 
 ### Notcoin Tap Contract
+
 - `POST /arcade/tap/click`:
   - Request: `{ tapCount: number, requestId: string }`
   - Response: `{ apiVersion: 'v1', tapsExecuted: number, coinsEarned: number, newCash: number, remainingEnergy: number, criticalHitsCount: number, energyRechargeRate: number }`
@@ -71,6 +76,7 @@ Every feature from the Survey phase is mapped to its assigned milestone:
   - Response: `{ apiVersion: 'v1', claimedCash: number, newCash: number, offlineSecondsElapsed: number, botTapsCount: number }`
 
 ### Catizen Merge Contract
+
 - `POST /arcade/merge/action`:
   - Request: `{ sourceIndex: number, targetIndex: number, actionType: 'move' | 'merge' | 'unbox_parcel', requestId: string }`
   - Response: `{ apiVersion: 'v1', grid: number[], rewardCash: number, newCash: number, unlockedTier?: number }`
@@ -79,6 +85,7 @@ Every feature from the Survey phase is mapped to its assigned milestone:
   - Response: `{ apiVersion: 'v1', grid: number[], totalMergesExecuted: number, parcelsOpened: number, totalRewardCash: number, newCash: number, newPassiveRatePerSecond: number }`
 
 ### Crypto Candlestick Crash Contract
+
 - `POST /arcade/crash/start`:
   - Request: `{ stake: number, clientSeed?: string, requestId: string }`
   - Response: `{ apiVersion: 'v1', roundId: string, stake: number, serverSeedHash: string, startTime: string }`
@@ -87,11 +94,13 @@ Every feature from the Survey phase is mapped to its assigned milestone:
   - Response: `{ apiVersion: 'v1', roundId: string, status: 'won' | 'crashed', crashMultiplier: number, cashoutMultiplier: number, payoutCash: number, netProfit: number, newCash: number, serverSeed: string }`
 
 ### Dynasty Cipher Contract
+
 - `POST /arcade/cipher/submit`:
   - Request: `{ round: number, combo: number, completedSuccessfully: boolean, requestId: string }`
   - Response: `{ apiVersion: 'v1', round: number, combo: number, rewardCash: number, newCash: number }`
 
 ## Code Layout
+
 - Exclusive File Boundaries for Workers:
   - **Worker Stream 1 Owns Exclusively**:
     - `packages/game-core/src/minigames-config.ts`
