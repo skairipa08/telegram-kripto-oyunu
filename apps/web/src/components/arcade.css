@@ -878,14 +878,91 @@
   gap: 8px;
 }
 
+.crash-stake-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.8rem;
+}
+
+.crash-stake-label {
+  color: var(--muted, #a8b0bf);
+}
+
+.crash-stake-balance {
+  color: var(--text, #f4f0e8);
+  font-size: 0.78rem;
+}
+
+.crash-stake-balance strong {
+  color: var(--accent, #e1b47e);
+}
+
+.crash-stake-input-group {
+  width: 100%;
+}
+
+.crash-stake-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--surface-raised, #202736);
+  border: 1px solid rgba(150, 160, 180, 0.2);
+  border-radius: 12px;
+  padding: 2px 12px;
+  min-height: 44px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.crash-stake-input-wrapper:focus-within {
+  border-color: var(--accent, #e1b47e);
+  box-shadow: 0 0 8px rgba(225, 180, 126, 0.25);
+}
+
+.crash-stake-input-wrapper.has-error {
+  border-color: var(--red, #ff9e9e);
+  box-shadow: 0 0 8px rgba(255, 158, 158, 0.25);
+}
+
+.crash-stake-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text, #f4f0e8);
+  font-size: 1.05rem;
+  font-weight: 700;
+  min-height: 44px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.crash-stake-currency {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--accent, #e1b47e);
+  letter-spacing: 1px;
+}
+
+.crash-stake-validation-msg {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--red, #ff9e9e);
+  padding: 2px 4px;
+}
+
 .crash-chips-row {
   display: flex;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: clamp(4px, 1.2vw, 6px);
   width: 100%;
 }
 
 .crash-chip-btn {
-  flex: 1;
+  flex: 1 1 calc(16.6% - 6px);
+  min-width: 44px;
+  min-height: 44px;
   background: var(--surface-raised, #202736);
   border: 1px solid rgba(150, 160, 180, 0.2);
   color: var(--text, #f4f0e8);
@@ -894,7 +971,6 @@
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -947,6 +1023,203 @@
 }
 
 /* ============================================================
+   EXTENDED STREAK MILESTONE VISUAL TRACK STYLING
+   ============================================================ */
+.missions-milestones-track {
+  margin-top: 16px;
+  padding: clamp(14px, 3.5vw, 20px);
+  background: var(--surface-raised, #202736);
+  border: 1px solid var(--border, rgba(150, 160, 180, 0.18));
+  border-radius: var(--radius, 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.missions-milestones-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.missions-milestones-header h2 {
+  margin: 4px 0 0;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+.missions-milestones-sub {
+  font-size: 0.8rem;
+  color: var(--muted, #a8b0bf);
+}
+
+.missions-milestones-sub strong {
+  color: var(--accent, #e1b47e);
+}
+
+/* Conforms strictly to /repeat\(\s*\d+\s*,\s*minmax\(\s*0\s*,\s*1fr\s*\)\s*\)/ */
+.missions-milestones-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: clamp(8px, 1.8vw, 12px);
+  width: 100%;
+}
+
+.milestone-card {
+  background: var(--surface, #181e29);
+  border: 1px solid var(--border, rgba(150, 160, 180, 0.15));
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.milestone-card.is-achieved {
+  border-color: rgba(126, 210, 173, 0.4);
+  background: linear-gradient(
+    135deg,
+    rgba(126, 210, 173, 0.06),
+    var(--surface, #181e29)
+  );
+}
+
+.milestone-card.is-target {
+  border-color: rgba(225, 180, 126, 0.5);
+  box-shadow: 0 0 10px rgba(225, 180, 126, 0.15);
+}
+
+.milestone-card.is-locked {
+  opacity: 0.7;
+}
+
+.milestone-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.milestone-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.milestone-icon {
+  font-size: 1.25rem;
+}
+
+.milestone-title-group strong {
+  font-size: 0.9rem;
+  color: var(--text, #f4f0e8);
+}
+
+.milestone-badge-tag {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent, #e1b47e);
+}
+
+.milestone-tag-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.milestone-status-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.milestone-status-tag.achieved {
+  background: rgba(126, 210, 173, 0.15);
+  color: var(--green, #7ed2ad);
+  border: 1px solid rgba(126, 210, 173, 0.3);
+}
+
+.milestone-status-tag.target {
+  background: rgba(225, 180, 126, 0.2);
+  color: var(--accent, #e1b47e);
+  border: 1px solid var(--accent, #e1b47e);
+}
+
+.milestone-status-tag.locked {
+  background: rgba(150, 160, 180, 0.1);
+  color: var(--muted, #a8b0bf);
+  border: 1px solid rgba(150, 160, 180, 0.15);
+}
+
+.milestone-percent-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent, #e1b47e);
+}
+
+.milestone-rewards-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.milestone-reward-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(150, 160, 180, 0.15);
+  color: var(--text, #f4f0e8);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.milestone-reward-pill.badge {
+  background: rgba(225, 180, 126, 0.15);
+  border-color: rgba(225, 180, 126, 0.3);
+  color: var(--accent, #e1b47e);
+}
+
+.milestone-rewards-copy {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted, #a8b0bf);
+  line-height: 1.4;
+}
+
+.milestone-progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.milestone-progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--green, #7ed2ad),
+    var(--accent, #e1b47e)
+  );
+  transition: width 0.3s ease;
+}
+
+.milestone-footer-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--muted, #a8b0bf);
+}
+
+/* ============================================================
    RESPONSIVE OVERFLOW SAFEGUARDS (DOWN TO 320PX)
    ============================================================ */
 @media (max-width: 520px) {
@@ -971,6 +1244,19 @@
 }
 
 @media (max-width: 359px) {
+  .crash-chip-btn {
+    flex: 1 1 calc(33.33% - 4px);
+    font-size: 0.7rem;
+  }
+
+  .missions-milestones-track {
+    padding: 10px;
+  }
+
+  .milestone-card {
+    padding: 10px;
+  }
+
   .arcade-nav-tabs {
     gap: 4px;
   }

@@ -119,10 +119,112 @@ export function calculateMissionReward(
   return Math.round(multiplier * currentSRU);
 }
 
+export interface StreakMilestone {
+  readonly day: number;
+  readonly sruMultiplier: number;
+  readonly cashReward: number;
+  readonly badge?: string;
+  readonly titleTr: string;
+  readonly descriptionTr: string;
+}
+
+export const STREAK_MILESTONES: readonly StreakMilestone[] = [
+  {
+    day: 7,
+    sruMultiplier: 1.0,
+    cashReward: 500,
+    titleTr: '7 Günlük Seri',
+    descriptionTr: 'Bir haftalık kesintisiz imparatorluk disiplini.',
+  },
+  {
+    day: 30,
+    sruMultiplier: 2.5,
+    cashReward: 5_000,
+    titleTr: '1 Aylık Sadakat',
+    descriptionTr: '30 günlük kararlı büyüme ve azim.',
+  },
+  {
+    day: 90,
+    sruMultiplier: 5.0,
+    cashReward: 25_000,
+    titleTr: '3 Aylık Çeyrek Ustalığı',
+    descriptionTr: 'Üç aylık kesintisiz pazar hakimiyeti.',
+  },
+  {
+    day: 180,
+    sruMultiplier: 10.0,
+    cashReward: 100_000,
+    titleTr: '6 Aylık Yarım Yıl Hanedanı',
+    descriptionTr: 'Altı aylık stratejik imparatorluk yükselişi.',
+  },
+  {
+    day: 365,
+    sruMultiplier: 25.0,
+    cashReward: 500_000,
+    badge: 'imperial_veteran',
+    titleTr: '1 Yıllık İmparatorluk Kıdemlisi',
+    descriptionTr: 'Tam 365 günlük efsanevi sadakat ve liderlik.',
+  },
+] as const;
+
+export interface ExtendedStreakReward {
+  readonly points: number;
+  readonly cash: number;
+  readonly sruMultiplier: number;
+  readonly isCycleBonus: boolean;
+  readonly isMilestone: boolean;
+  readonly milestoneDay?: number | undefined;
+  readonly badge?: string | undefined;
+  readonly title?: string | undefined;
+}
+
+/**
+ * Calculates compounding extended streak milestone rewards.
+ * Day 7: 1.0x SRU + 500 Cash
+ * Day 30: 2.5x SRU + 5,000 Cash
+ * Day 90: 5.0x SRU + 25,000 Cash
+ * Day 180: 10.0x SRU + 100,000 Cash
+ * Day 365: 25.0x SRU + 500,000 Cash + "imperial_veteran" Badge
+ */
+export function calculateExtendedStreakReward(
+  streakDays: number,
+  currentSRU: number,
+): ExtendedStreakReward {
+  const milestone = STREAK_MILESTONES.find((m) => m.day === streakDays);
+
+  if (milestone) {
+    const points = Math.round(milestone.sruMultiplier * currentSRU);
+    return {
+      points,
+      cash: milestone.cashReward,
+      sruMultiplier: milestone.sruMultiplier,
+      isCycleBonus: true,
+      isMilestone: true,
+      milestoneDay: milestone.day,
+      badge: milestone.badge,
+      title: milestone.titleTr,
+    };
+  }
+
+  // 7-day cyclical bonus check (e.g. Day 14, 21, 28)
+  const isCycleBonus = streakDays > 0 && streakDays % 7 === 0;
+  const sruMultiplier = isCycleBonus ? 1.0 : STREAK_SRU_MULTIPLIER;
+  const points = Math.round(sruMultiplier * currentSRU);
+
+  return {
+    points,
+    cash: 0,
+    sruMultiplier,
+    isCycleBonus,
+    isMilestone: false,
+  };
+}
+
 /**
  * Calculates the Season Points reward for daily login streak.
  * Daily: 0.25 * SRU.
  * Day 7 (Cycle completion): 1.00 * SRU bonus.
+ * Harmonized with calculateExtendedStreakReward.
  */
 export function calculateStreakReward(
   streakDays: number,
@@ -131,19 +233,17 @@ export function calculateStreakReward(
   readonly points: number;
   readonly isCycleBonus: boolean;
 } {
-  const isCycleBonus = streakDays > 0 && streakDays % 7 === 0;
-  const multiplier = isCycleBonus ? 1.0 : STREAK_SRU_MULTIPLIER;
-  const points = Math.round(multiplier * currentSRU);
-
+  const extended = calculateExtendedStreakReward(streakDays, currentSRU);
   return {
-    points,
-    isCycleBonus,
+    points: extended.points,
+    isCycleBonus: extended.isCycleBonus,
   };
 }
 
 /**
  * Evaluates consecutive daily login streak.
  * Dates are ISO YYYY-MM-DD strings in UTC.
+ * Continuous increment: advances currentStreak + 1 past Day 7 up to Day 365+.
  */
 export function evaluateStreak(
   lastClaimDate: string | null,
@@ -177,8 +277,8 @@ export function evaluateStreak(
   );
 
   if (diffDays === 1) {
-    // Exactly consecutive day
-    const nextStreak = currentStreak >= 7 ? 1 : currentStreak + 1;
+    // Exactly consecutive day: continuous progression without 7-day modulo reset
+    const nextStreak = currentStreak + 1;
     return {
       canClaim: true,
       nextStreak,

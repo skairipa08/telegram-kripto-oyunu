@@ -39,6 +39,8 @@ describe('Designated Team Admins (@Barandnz, @Mberked) RBAC & Auto-Assignment', 
     const cookie = await harness.client.createSessionCookie(
       baranUser.sid,
       sessionSecret,
+      baranUser.iat,
+      baranUser.exp,
     );
 
     // 1. Direct RPC verification
@@ -87,6 +89,8 @@ describe('Designated Team Admins (@Barandnz, @Mberked) RBAC & Auto-Assignment', 
     const cookie = await harness.client.createSessionCookie(
       berkeUser.sid,
       sessionSecret,
+      berkeUser.iat,
+      berkeUser.exp,
     );
 
     // 1. Direct RPC verification
@@ -124,6 +128,8 @@ describe('Designated Team Admins (@Barandnz, @Mberked) RBAC & Auto-Assignment', 
     const cookie = await harness.client.createSessionCookie(
       regularUser.sid,
       sessionSecret,
+      regularUser.iat,
+      regularUser.exp,
     );
 
     const rpcRes = await harness.db.query<{ empire_admin_check_role: boolean }>(

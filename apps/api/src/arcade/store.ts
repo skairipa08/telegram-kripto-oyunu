@@ -12,9 +12,10 @@ import {
   executeUnboxParcel,
   solveAutoMergeBoard,
   DEFAULT_CATIZEN_CONFIG,
-  generateCrashMultiplier,
+  generateAdaptiveCrashMultiplier,
+  validateCrashStake,
+  type PlayerCrashAdaptiveContext,
   settleCrashBet,
-  DEFAULT_CRASH_CONFIG,
   calculateCipherReward,
 } from '@empire/game-core';
 import type { TapGameStateDto, MergeBoardStateDto } from '@empire/shared';
@@ -162,9 +163,14 @@ interface PlayerArcadeMemory {
       startTime: string;
       status: 'active' | 'won' | 'crashed';
       settled?: boolean;
+      adaptiveContext?: PlayerCrashAdaptiveContext;
     }
   >;
   crashNonce: number;
+  crashAdaptive: {
+    recentStakes: number[];
+    consecutiveWins: number;
+  };
   // Dynasty Cipher
   dailyCipherEarned: number;
   lastCipherClaimMs: number;
@@ -194,6 +200,10 @@ export class MemoryArcadeStore implements ArcadeStore {
         lastParcelDropMs: now,
         crashRounds: new Map(),
         crashNonce: 1,
+        crashAdaptive: {
+          recentStakes: [],
+          consecutiveWins: 0,
+        },
         dailyCipherEarned: 0,
         lastCipherClaimMs: now,
         requestCache: new Map(),
@@ -608,30 +618,33 @@ export class MemoryArcadeStore implements ArcadeStore {
       return cached;
     }
 
-    if (
-      stake < DEFAULT_CRASH_CONFIG.minStakeCash ||
-      stake > DEFAULT_CRASH_CONFIG.maxStakeCash
-    ) {
+    const validation = validateCrashStake(stake, p.cash);
+    if (!validation.valid) {
       return {
         roundId: '',
         stake,
         serverSeedHash: '',
         startTime: '',
-        error: 'INVALID_STAKE',
+        error: validation.error,
       };
     }
 
-    if (p.cash < stake) {
-      return {
-        roundId: '',
-        stake,
-        serverSeedHash: '',
-        startTime: '',
-        error: 'INSUFFICIENT_CASH',
-      };
-    }
+    const sanitizedStake = validation.sanitizedStake!;
+    p.cash -= sanitizedStake;
 
-    p.cash -= stake;
+    const avgStake =
+      p.crashAdaptive.recentStakes.length > 0
+        ? p.crashAdaptive.recentStakes.reduce((a, b) => a + b, 0) /
+          p.crashAdaptive.recentStakes.length
+        : sanitizedStake;
+
+    const adaptiveContext: PlayerCrashAdaptiveContext = {
+      recentStakes: [...p.crashAdaptive.recentStakes],
+      averageStake: avgStake,
+      consecutiveWins: p.crashAdaptive.consecutiveWins,
+      currentStake: sanitizedStake,
+    };
+
     const roundId = randomUUID();
     const serverSeed =
       randomUUID().replace(/-/g, '') + randomUUID().replace(/-/g, '');
@@ -641,18 +654,19 @@ export class MemoryArcadeStore implements ArcadeStore {
     const startTime = new Date().toISOString();
 
     p.crashRounds.set(roundId, {
-      stake,
+      stake: sanitizedStake,
       serverSeed,
       serverSeedHash,
       clientSeed,
       nonce: p.crashNonce++,
       startTime,
       status: 'active',
+      adaptiveContext,
     });
 
     const res = {
       roundId,
-      stake,
+      stake: sanitizedStake,
       serverSeedHash,
       startTime,
     };
@@ -689,10 +703,11 @@ export class MemoryArcadeStore implements ArcadeStore {
       };
     }
 
-    const crashResult = generateCrashMultiplier(
+    const crashResult = generateAdaptiveCrashMultiplier(
       round.serverSeed,
       round.clientSeed,
       round.nonce,
+      round.adaptiveContext,
     );
 
     const settlement = settleCrashBet({
@@ -706,6 +721,14 @@ export class MemoryArcadeStore implements ArcadeStore {
 
     if (settlement.status === 'won') {
       p.cash += settlement.payoutCash;
+      p.crashAdaptive.consecutiveWins += 1;
+    } else {
+      p.crashAdaptive.consecutiveWins = 0;
+    }
+
+    p.crashAdaptive.recentStakes.push(round.stake);
+    if (p.crashAdaptive.recentStakes.length > 10) {
+      p.crashAdaptive.recentStakes.shift();
     }
 
     const res = {

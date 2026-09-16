@@ -8,6 +8,67 @@ import {
   SectionTitle,
 } from '../game/ui';
 import './empire-missions.css';
+import '../components/arcade.css';
+
+export interface StreakMilestone {
+  readonly days: number;
+  readonly label: string;
+  readonly period: string;
+  readonly sruMultiplier: string;
+  readonly cashBonus: number;
+  readonly badgeName?: string;
+  readonly icon: string;
+  readonly description: string;
+}
+
+export const STREAK_MILESTONES: readonly StreakMilestone[] = [
+  {
+    days: 7,
+    label: '7 Gün',
+    period: '1 Hafta',
+    sruMultiplier: '1.0x SRU',
+    cashBonus: 500,
+    icon: '⚡',
+    description: '+500 Nakit · 1.0x Sezon Puanı',
+  },
+  {
+    days: 30,
+    label: '30 Gün',
+    period: '1 Ay',
+    sruMultiplier: '2.5x SRU',
+    cashBonus: 5000,
+    icon: '🔥',
+    description: '+5.000 Nakit · 2.5x Sezon Puanı',
+  },
+  {
+    days: 90,
+    label: '90 Gün',
+    period: '3 Ay',
+    sruMultiplier: '5.0x SRU',
+    cashBonus: 25000,
+    icon: '🛡️',
+    description: '+25.000 Nakit · 5.0x Sezon Puanı',
+  },
+  {
+    days: 180,
+    label: '180 Gün',
+    period: '6 Ay',
+    sruMultiplier: '10.0x SRU',
+    cashBonus: 100000,
+    icon: '💎',
+    description: '+100.000 Nakit · 10.0x Sezon Puanı',
+  },
+  {
+    days: 365,
+    label: '365 Gün',
+    period: '1 Yıl',
+    sruMultiplier: '25.0x SRU',
+    cashBonus: 500000,
+    badgeName: 'İmparatorluk Kıdemlisi',
+    icon: '👑',
+    description: '+500.000 Nakit · 25.0x SRU · İmparatorluk Kıdemlisi Rozeti',
+  },
+] as const;
 
 type MissionsScreenProps = {
   resource: ScreenResource<MissionsView>;
@@ -172,6 +233,129 @@ export function MissionsScreen({
             );
           })}
         </ol>
+      </article>
+
+      {/* Extended Streak Milestones Visual Track */}
+      <article
+        className="panel missions-milestones-track"
+        aria-label="Kıdem Kilometre Taşları"
+      >
+        <div className="missions-milestones-header">
+          <div>
+            <p className="eyebrow">KIDEM KİLOMETRE TAŞLARI</p>
+            <h2>Uzun Vadeli Seri Hedefleri</h2>
+          </div>
+          <span className="missions-milestones-sub">
+            Mevcut Seri: <strong>{formatNumber(streak)} gün</strong>
+          </span>
+        </div>
+
+        <div
+          className="missions-milestones-grid"
+          role="list"
+          aria-label="Seri Kilometre Taşları"
+        >
+          {STREAK_MILESTONES.map((milestone, idx) => {
+            const isAchieved = streak >= milestone.days;
+            const prevAchieved =
+              idx === 0 || streak >= STREAK_MILESTONES[idx - 1]!.days;
+            const isCurrentTarget = !isAchieved && prevAchieved;
+            const progressPct = Math.min(
+              100,
+              Math.round((streak / milestone.days) * 100),
+            );
+            const remainingDays = Math.max(0, milestone.days - streak);
+
+            return (
+              <div
+                key={milestone.days}
+                role="listitem"
+                className={`milestone-card ${
+                  isAchieved
+                    ? 'is-achieved'
+                    : isCurrentTarget
+                      ? 'is-target'
+                      : 'is-locked'
+                }`}
+              >
+                <div className="milestone-card-top">
+                  <div className="milestone-title-group">
+                    <span className="milestone-icon" aria-hidden="true">
+                      {milestone.icon}
+                    </span>
+                    <div>
+                      <strong>
+                        {milestone.label} ({milestone.period})
+                      </strong>
+                      {milestone.badgeName && (
+                        <span className="milestone-badge-tag">
+                          {milestone.badgeName}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="milestone-tag-group">
+                    <span
+                      className={`milestone-status-tag ${
+                        isAchieved
+                          ? 'achieved'
+                          : isCurrentTarget
+                            ? 'target'
+                            : 'locked'
+                      }`}
+                    >
+                      {isAchieved
+                        ? '✓ AÇILDI'
+                        : isCurrentTarget
+                          ? 'HEDEF'
+                          : '🔒 KİLİTLİ'}
+                    </span>
+                    <span className="milestone-percent-tag">
+                      %{progressPct}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="milestone-rewards-row">
+                  <span className="milestone-reward-pill">
+                    +{formatNumber(milestone.cashBonus)} Nakit
+                  </span>
+                  <span className="milestone-reward-pill">
+                    {milestone.sruMultiplier}
+                  </span>
+                  {milestone.badgeName && (
+                    <span className="milestone-reward-pill badge">
+                      🏆 {milestone.badgeName}
+                    </span>
+                  )}
+                </div>
+
+                <p className="milestone-rewards-copy">
+                  {milestone.description}
+                </p>
+
+                <div className="milestone-progress-track" aria-hidden="true">
+                  <div
+                    className="milestone-progress-fill"
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+
+                <div className="milestone-footer-info">
+                  <small>
+                    {isAchieved
+                      ? 'Ödül hakkı tamamlandı'
+                      : `${remainingDays} gün kaldı`}
+                  </small>
+                  <small>
+                    {formatNumber(Math.min(streak, milestone.days))} /{' '}
+                    {formatNumber(milestone.days)} gün
+                  </small>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </article>
 
       <div className="missions-toolbar">

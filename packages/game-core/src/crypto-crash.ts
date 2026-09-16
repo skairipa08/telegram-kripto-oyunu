@@ -23,44 +23,183 @@ export interface CrashMultiplierResult {
   rawMultiplier: number;
 }
 
+export interface PlayerCrashAdaptiveContext {
+  readonly recentStakes: readonly number[];
+  readonly averageStake: number;
+  readonly consecutiveWins: number;
+  readonly currentStake: number;
+}
+
+export interface AdaptiveCrashResult extends CrashMultiplierResult {
+  readonly isAdaptiveBiased: boolean;
+  readonly riskScore: number;
+  readonly stakeRatio: number;
+}
+
+export interface CrashStakeValidationResult {
+  readonly valid: boolean;
+  readonly error?: 'INVALID_STAKE' | 'INSUFFICIENT_CASH';
+  readonly sanitizedStake?: number;
+  readonly message?: string;
+}
+
 /**
- * Derives a provably fair crash multiplier using HMAC-SHA256 and Pareto inverse CDF.
+ * Validates free-range stake: 10 <= stake <= userBalance.
+ * Rejects non-numbers, negative values, stakes exceeding user balance or exceeding global max.
+ */
+export function validateCrashStake(
+  stake: unknown,
+  userBalance: number,
+  config: Partial<CryptoCrashConfig> = DEFAULT_CRASH_CONFIG,
+): CrashStakeValidationResult {
+  if (
+    typeof stake !== 'number' ||
+    !Number.isFinite(stake) ||
+    Number.isNaN(stake)
+  ) {
+    return {
+      valid: false,
+      error: 'INVALID_STAKE',
+      message: 'Geçersiz yatırım tutarı',
+    };
+  }
+
+  const minStake = config.minStakeCash ?? DEFAULT_CRASH_CONFIG.minStakeCash;
+  const maxStake = config.maxStakeCash ?? DEFAULT_CRASH_CONFIG.maxStakeCash;
+  const integerStake = Math.floor(stake);
+
+  if (integerStake < minStake) {
+    return {
+      valid: false,
+      error: 'INVALID_STAKE',
+      message: `Minimum yatırım ${minStake} Nakit olmalıdır`,
+    };
+  }
+
+  if (integerStake > maxStake) {
+    return {
+      valid: false,
+      error: 'INVALID_STAKE',
+      message: `Maksimum yatırım ${maxStake} Nakit sınırını aşıyor`,
+    };
+  }
+
+  if (integerStake > userBalance) {
+    return {
+      valid: false,
+      error: 'INSUFFICIENT_CASH',
+      message: 'Yetersiz bakiye',
+    };
+  }
+
+  return { valid: true, sanitizedStake: integerStake };
+}
+
+/**
+ * Calculates risk severity k_risk in [0, 1] based on player recent stake jump ratio (lambda = S / S_avg)
+ * and consecutive wins W.
+ *
+ * Dynamics:
+ * - Normal bets (lambda <= 1.5, W <= 1) => riskScore = 0
+ * - Spike bets (lambda > 1.5) => stakePenalty ramps up
+ * - Winning runs (W >= 2, lambda > 1.0) => streakPenalty ramps up
+ */
+export function calculateCrashRiskScore(
+  currentStake: number,
+  averageStake: number,
+  consecutiveWins: number,
+): { riskScore: number; stakeRatio: number } {
+  const cur = Math.max(0, currentStake);
+  const avg = averageStake > 0 ? averageStake : cur > 0 ? cur : 10;
+  const stakeRatio = cur / avg;
+
+  const stakePenalty = 0.8 * Math.max(0, (stakeRatio - 1.5) / 2.0);
+  const streakPenalty =
+    0.3 *
+    Math.max(0, consecutiveWins - 1) *
+    Math.max(0, (stakeRatio - 1.0) / 1.5);
+
+  const rawRisk = stakePenalty + streakPenalty;
+  const riskScore = Math.max(0, Math.min(1.0, rawRisk));
+
+  return { riskScore, stakeRatio };
+}
+
+/**
+ * Provably fair adaptive crash multiplier generator.
  *
  * Invariants:
- * 1. Deterministic: identical serverSeed, clientSeed, and nonce always produce the exact same multiplier.
- * 2. House Edge: 1 in 33 (~3.03%) instant crashes at 1.00x, guaranteeing expected player RTP of 97.0%.
- * 3. Bounded: clamped between minMultiplier (1.00x) and maxMultiplier (1000.00x).
+ * 1. Deterministic: serverSeed, clientSeed, nonce, and context deterministically define the crash point.
+ * 2. Unbiased engagement: when riskScore is 0 (normal bets or context omitted), preserves standard Pareto CDF (P(M < 1.50) ~ 35.35%).
+ * 3. House edge protection: when player spikes stake or rides win streak (k_risk -> 1.0),
+ *    shifts crash probability toward early dump [1.01x - 1.48x], scaling P(M < 1.50) up to 75%-80%.
  */
-export function generateCrashMultiplier(
+export function generateAdaptiveCrashMultiplier(
   serverSeed: string,
   clientSeed: string,
   nonce: number | string,
+  context?: PlayerCrashAdaptiveContext,
   config: CryptoCrashConfig = DEFAULT_CRASH_CONFIG,
-): CrashMultiplierResult {
+): AdaptiveCrashResult {
   const hash = createHmac('sha256', serverSeed)
     .update(`${clientSeed}:${nonce}`)
     .digest('hex');
 
-  // Parse first 13 hex characters (52 bits) to stay within Number.MAX_SAFE_INTEGER
-  const hexPart = hash.slice(0, 13);
-  const h = parseInt(hexPart, 16);
+  // Slice 1: Uniform float U in [0, 1) from 52 bits
+  const hexPart1 = hash.slice(0, 13);
+  const h1 = parseInt(hexPart1, 16);
+  const U = h1 / Math.pow(2, 52);
 
-  // 1 in 33 instant house crash check (~3.03% probability)
-  const isInstantCrash = h % config.instantCrashRateModulo === 0;
+  // Slice 2: Uniform float V in [0, 1) from next 52 bits (13..26)
+  const hexPart2 = hash.slice(13, 26);
+  const h2 = parseInt(hexPart2, 16);
+  const V = h2 / Math.pow(2, 52);
 
+  // Calculate adaptive risk score
+  let riskScore = 0;
+  let stakeRatio = 1.0;
+  if (context) {
+    const risk = calculateCrashRiskScore(
+      context.currentStake,
+      context.averageStake,
+      context.consecutiveWins,
+    );
+    riskScore = risk.riskScore;
+    stakeRatio = risk.stakeRatio;
+  }
+
+  const biasProbability = 0.65 * riskScore;
+  const isAdaptiveBiased = riskScore > 0 && V < biasProbability;
+
+  if (isAdaptiveBiased) {
+    // Early dump shift: strictly bounded between 1.01x and 1.48x
+    const rawDump = 1.01 + 0.47 * U;
+    const crashMultiplier = Math.floor(rawDump * 100) / 100;
+    return {
+      crashMultiplier,
+      hash,
+      isInstantCrash: false,
+      rawMultiplier: rawDump,
+      isAdaptiveBiased: true,
+      riskScore,
+      stakeRatio,
+    };
+  }
+
+  // Standard Pareto CDF path
+  const isInstantCrash = h1 % config.instantCrashRateModulo === 0;
   if (isInstantCrash) {
     return {
       crashMultiplier: config.minMultiplier,
       hash,
       isInstantCrash: true,
       rawMultiplier: config.minMultiplier,
+      isAdaptiveBiased: false,
+      riskScore,
+      stakeRatio,
     };
   }
 
-  // Uniform float U in [0, 1)
-  const U = h / Math.pow(2, 52);
-
-  // Pareto inverse CDF: raw = 1.00 / (1 - U)
   const rawMultiplier = 1.0 / (1 - U);
   const truncated = Math.floor(rawMultiplier * 100) / 100;
   const crashMultiplier = Math.max(
@@ -73,7 +212,30 @@ export function generateCrashMultiplier(
     hash,
     isInstantCrash: false,
     rawMultiplier,
+    isAdaptiveBiased: false,
+    riskScore,
+    stakeRatio,
   };
+}
+
+/**
+ * Derives a provably fair crash multiplier using HMAC-SHA256 and Pareto inverse CDF.
+ * Fully backward-compatible: delegates to generateAdaptiveCrashMultiplier with optional context.
+ */
+export function generateCrashMultiplier(
+  serverSeed: string,
+  clientSeed: string,
+  nonce: number | string,
+  config: CryptoCrashConfig = DEFAULT_CRASH_CONFIG,
+  context?: PlayerCrashAdaptiveContext,
+): CrashMultiplierResult {
+  return generateAdaptiveCrashMultiplier(
+    serverSeed,
+    clientSeed,
+    nonce,
+    context,
+    config,
+  );
 }
 
 /**

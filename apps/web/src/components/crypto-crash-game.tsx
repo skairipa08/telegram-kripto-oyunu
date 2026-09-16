@@ -3,13 +3,16 @@ import {
   calculateCrashPayout,
   calculateCrashProfit,
   calculateMultiplierAtTime,
-  DEFAULT_STAKES,
   formatMultiplier,
   generateCrashPoint,
   generateNextCandle,
   getMultiplierTier,
+  MAX_STAKE,
+  MIN_STAKE,
   type Candlestick,
 } from '../game/crypto-crash-model';
+
+export const QUICK_CHIPS = [10, 50, 100, 250, 500] as const;
 import {
   playCrashSound,
   playTapSound,
@@ -30,8 +33,13 @@ export function CryptoCrashGame({
   playerCash = 1000,
   onReward,
 }: CryptoCrashGameProps) {
+  const initialStake =
+    playerCash >= MIN_STAKE ? Math.min(100, playerCash) : MIN_STAKE;
   const [phase, setPhase] = useState<GamePhase>('idle');
-  const [stake, setStake] = useState<number>(100);
+  const [stake, setStake] = useState<number>(initialStake);
+  const [rawStakeInput, setRawStakeInput] = useState<string>(
+    String(initialStake),
+  );
   const [multiplier, setMultiplier] = useState<number>(1.0);
   const [crashPoint, setCrashPoint] = useState<number>(2.0);
   const [countdown, setCountdown] = useState<number>(3);
@@ -228,10 +236,70 @@ export function CryptoCrashGame({
     drawChart(1.0, false);
   }, []);
 
+  const numericStake = parseInt(rawStakeInput, 10);
+  const isFormatValid =
+    !isNaN(numericStake) &&
+    /^\d+$/.test(rawStakeInput.trim()) &&
+    String(numericStake) === rawStakeInput.trim();
+  const isBelowMin = isFormatValid && numericStake < MIN_STAKE;
+  const isAboveBalance = isFormatValid && numericStake > playerCash;
+  const isStakeValid = isFormatValid && !isBelowMin && !isAboveBalance;
+
+  let validationMessage: string | null = null;
+  if (!rawStakeInput.trim()) {
+    validationMessage = `Lütfen bir yatırım tutarı girin (Min ${MIN_STAKE} Nakit).`;
+  } else if (!isFormatValid) {
+    validationMessage = 'Lütfen geçerli bir pozitif tam sayı girin.';
+  } else if (isBelowMin) {
+    validationMessage = `Minimum yatırım ${MIN_STAKE} Nakit olmalıdır.`;
+  } else if (isAboveBalance) {
+    validationMessage = `Yetersiz bakiye! Maksimum: ${playerCash} Nakit`;
+  }
+
+  function handleStakeInputChange(val: string) {
+    const digitsOnly = val.replace(/\D/g, '');
+    const normalized = digitsOnly.replace(/^0+(?=\d)/, '');
+    setRawStakeInput(normalized);
+    const parsed = parseInt(normalized, 10);
+    if (!isNaN(parsed)) {
+      setStake(parsed);
+    }
+  }
+
+  function handleStakeBlur() {
+    if (
+      !rawStakeInput.trim() ||
+      isNaN(numericStake) ||
+      numericStake < MIN_STAKE
+    ) {
+      setStake(MIN_STAKE);
+      setRawStakeInput(String(MIN_STAKE));
+    } else if (playerCash > 0 && numericStake > playerCash) {
+      const clamped = Math.max(MIN_STAKE, playerCash);
+      setStake(clamped);
+      setRawStakeInput(String(clamped));
+    }
+  }
+
+  function handleSelectChip(chip: number) {
+    setStake(chip);
+    setRawStakeInput(String(chip));
+    playTapSound();
+    hapticTap();
+  }
+
+  function handleMaxStake() {
+    const maxVal = Math.max(MIN_STAKE, Math.min(playerCash, MAX_STAKE));
+    setStake(maxVal);
+    setRawStakeInput(String(maxVal));
+    playTapSound();
+    hapticTap();
+  }
+
   function handleStartRound() {
     if (phase !== 'idle' && phase !== 'crashed' && phase !== 'cashed_out')
       return;
-    if (stake <= 0) return;
+    if (!isStakeValid || stake <= 0) return;
 
     playTapSound();
     hapticTap();
@@ -331,39 +399,56 @@ export function CryptoCrashGame({
 
       {/* Stake Selector */}
       <div className="crash-stake-bar">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: '0.8rem',
-          }}
-        >
-          <span style={{ color: 'var(--muted)' }}>Yatırım Tutarı</span>
-          <span style={{ color: 'var(--text)', fontWeight: 700 }}>
-            {stake} Nakit
+        <div className="crash-stake-top-row">
+          <span className="crash-stake-label">Yatırım Tutarı</span>
+          <span className="crash-stake-balance">
+            Bakiye: <strong>{playerCash} Nakit</strong>
           </span>
         </div>
 
+        <div className="crash-stake-input-group">
+          <div
+            className={`crash-stake-input-wrapper ${!isStakeValid ? 'has-error' : ''}`}
+          >
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              className="crash-stake-input"
+              value={rawStakeInput}
+              onChange={(e) => handleStakeInputChange(e.target.value)}
+              onBlur={handleStakeBlur}
+              disabled={phase === 'running' || phase === 'countdown'}
+              aria-label="Yatırım Tutarı"
+              placeholder={`Min ${MIN_STAKE}`}
+            />
+            <span className="crash-stake-currency">NAKİT</span>
+          </div>
+        </div>
+
+        {/* Real-time Validation Error / Hint */}
+        {!isStakeValid && validationMessage && (
+          <div className="crash-stake-validation-msg" role="alert">
+            {validationMessage}
+          </div>
+        )}
+
         <div className="crash-chips-row">
-          {DEFAULT_STAKES.map((chip) => (
+          {QUICK_CHIPS.map((chip) => (
             <button
               key={chip}
+              type="button"
               className={`crash-chip-btn ${stake === chip ? 'active' : ''}`}
-              onClick={() => {
-                setStake(chip);
-                playTapSound();
-              }}
+              onClick={() => handleSelectChip(chip)}
               disabled={phase === 'running' || phase === 'countdown'}
             >
               +{chip}
             </button>
           ))}
           <button
+            type="button"
             className="crash-chip-btn"
-            onClick={() => {
-              setStake(Math.min(playerCash, 5000));
-              playTapSound();
-            }}
+            onClick={handleMaxStake}
             disabled={phase === 'running' || phase === 'countdown'}
           >
             MAKS
@@ -384,9 +469,9 @@ export function CryptoCrashGame({
         <button
           className="crash-main-btn start"
           onClick={handleStartRound}
-          disabled={stake > playerCash && playerCash > 0}
+          disabled={!isStakeValid}
         >
-          🚀 BOĞA BAŞLAT ({stake} NAKİT)
+          🚀 BOĞA BAŞLAT ({isStakeValid ? stake : 0} NAKİT)
         </button>
       )}
     </div>

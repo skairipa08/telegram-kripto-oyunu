@@ -483,6 +483,95 @@ describe('Arcade Game Suite API Routes Integration', () => {
 
       expect(res.status).toBe(400);
     });
+
+    it('POST /arcade/crash/start rejects stake exceeding player balance with INSUFFICIENT_CASH', async () => {
+      const res = await app.request(
+        '/arcade/crash/start',
+        {
+          method: 'POST',
+          headers: {
+            Origin: origin,
+            Cookie: testUser.cookie,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            stake: 9_999_999, // user starts with 10_000
+            requestId: randomUUID(),
+          }),
+        },
+        env,
+      );
+
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error.code).toBe('INSUFFICIENT_CASH');
+    });
+
+    it('POST /arcade/crash/start accepts custom free-range stake and tracks adaptive history across rounds', async () => {
+      // Round 1: Custom stake 350
+      const startRes1 = await app.request(
+        '/arcade/crash/start',
+        {
+          method: 'POST',
+          headers: {
+            Origin: origin,
+            Cookie: testUser.cookie,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            stake: 350,
+            requestId: randomUUID(),
+          }),
+        },
+        env,
+      );
+
+      expect(startRes1.status).toBe(200);
+      const data1 = await startRes1.json();
+      expect(data1.stake).toBe(350);
+
+      // Cashout Round 1 at safe 1.01x
+      const cashoutRes1 = await app.request(
+        '/arcade/crash/cashout',
+        {
+          method: 'POST',
+          headers: {
+            Origin: origin,
+            Cookie: testUser.cookie,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            roundId: data1.roundId,
+            claimMultiplier: 1.01,
+            requestId: randomUUID(),
+          }),
+        },
+        env,
+      );
+      expect(cashoutRes1.status).toBe(200);
+
+      // Round 2: Custom stake 750
+      const startRes2 = await app.request(
+        '/arcade/crash/start',
+        {
+          method: 'POST',
+          headers: {
+            Origin: origin,
+            Cookie: testUser.cookie,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            stake: 750,
+            requestId: randomUUID(),
+          }),
+        },
+        env,
+      );
+
+      expect(startRes2.status).toBe(200);
+      const data2 = await startRes2.json();
+      expect(data2.stake).toBe(750);
+    });
   });
 
   describe('Dynasty Cipher Endpoints', () => {

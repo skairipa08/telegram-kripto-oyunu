@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   calculateMissionReward,
   calculateStreakReward,
+  calculateExtendedStreakReward,
+  STREAK_MILESTONES,
   DEFAULT_MISSIONS,
   evaluateStreak,
   getIsoWeekDateString,
@@ -61,6 +63,97 @@ describe('missions and streak formulas', () => {
     });
   });
 
+  describe('calculateExtendedStreakReward & STREAK_MILESTONES', () => {
+    const sru = 400;
+
+    it('has all 5 distinct milestone tiers defined', () => {
+      expect(STREAK_MILESTONES).toHaveLength(5);
+      const days = STREAK_MILESTONES.map((m) => m.day);
+      expect(days).toEqual([7, 30, 90, 180, 365]);
+    });
+
+    it('awards 0.25x SRU and 0 Cash for non-milestone regular days', () => {
+      const reward = calculateExtendedStreakReward(1, sru);
+      expect(reward.points).toBe(100);
+      expect(reward.cash).toBe(0);
+      expect(reward.sruMultiplier).toBe(0.25);
+      expect(reward.isCycleBonus).toBe(false);
+      expect(reward.isMilestone).toBe(false);
+    });
+
+    it('awards 1.00x SRU and 0 Cash for intermediate 7-day cyclical bonuses', () => {
+      const reward14 = calculateExtendedStreakReward(14, sru);
+      expect(reward14.points).toBe(400);
+      expect(reward14.cash).toBe(0);
+      expect(reward14.sruMultiplier).toBe(1.0);
+      expect(reward14.isCycleBonus).toBe(true);
+      expect(reward14.isMilestone).toBe(false);
+
+      const reward21 = calculateExtendedStreakReward(21, sru);
+      expect(reward21.points).toBe(400);
+      expect(reward21.cash).toBe(0);
+      expect(reward21.sruMultiplier).toBe(1.0);
+      expect(reward21.isCycleBonus).toBe(true);
+      expect(reward21.isMilestone).toBe(false);
+    });
+
+    it('awards Milestone 1 (Day 7): 1.0x SRU + 500 Cash', () => {
+      const reward = calculateExtendedStreakReward(7, sru);
+      expect(reward.points).toBe(400); // 1.0 * 400
+      expect(reward.cash).toBe(500);
+      expect(reward.sruMultiplier).toBe(1.0);
+      expect(reward.isCycleBonus).toBe(true);
+      expect(reward.isMilestone).toBe(true);
+      expect(reward.milestoneDay).toBe(7);
+      expect(reward.title).toBe('7 Günlük Seri');
+    });
+
+    it('awards Milestone 2 (Day 30 / 1 Ay): 2.5x SRU + 5,000 Cash', () => {
+      const reward = calculateExtendedStreakReward(30, sru);
+      expect(reward.points).toBe(1000); // 2.5 * 400
+      expect(reward.cash).toBe(5_000);
+      expect(reward.sruMultiplier).toBe(2.5);
+      expect(reward.isCycleBonus).toBe(true);
+      expect(reward.isMilestone).toBe(true);
+      expect(reward.milestoneDay).toBe(30);
+      expect(reward.title).toBe('1 Aylık Sadakat');
+    });
+
+    it('awards Milestone 3 (Day 90 / 3 Ay): 5.0x SRU + 25,000 Cash', () => {
+      const reward = calculateExtendedStreakReward(90, sru);
+      expect(reward.points).toBe(2000); // 5.0 * 400
+      expect(reward.cash).toBe(25_000);
+      expect(reward.sruMultiplier).toBe(5.0);
+      expect(reward.isCycleBonus).toBe(true);
+      expect(reward.isMilestone).toBe(true);
+      expect(reward.milestoneDay).toBe(90);
+      expect(reward.title).toBe('3 Aylık Çeyrek Ustalığı');
+    });
+
+    it('awards Milestone 4 (Day 180 / 6 Ay): 10.0x SRU + 100,000 Cash', () => {
+      const reward = calculateExtendedStreakReward(180, sru);
+      expect(reward.points).toBe(4000); // 10.0 * 400
+      expect(reward.cash).toBe(100_000);
+      expect(reward.sruMultiplier).toBe(10.0);
+      expect(reward.isCycleBonus).toBe(true);
+      expect(reward.isMilestone).toBe(true);
+      expect(reward.milestoneDay).toBe(180);
+      expect(reward.title).toBe('6 Aylık Yarım Yıl Hanedanı');
+    });
+
+    it('awards Milestone 5 (Day 365 / 1 Yıl): 25.0x SRU + 500,000 Cash + imperial_veteran badge', () => {
+      const reward = calculateExtendedStreakReward(365, sru);
+      expect(reward.points).toBe(10_000); // 25.0 * 400
+      expect(reward.cash).toBe(500_000);
+      expect(reward.sruMultiplier).toBe(25.0);
+      expect(reward.isCycleBonus).toBe(true);
+      expect(reward.isMilestone).toBe(true);
+      expect(reward.milestoneDay).toBe(365);
+      expect(reward.badge).toBe('imperial_veteran');
+      expect(reward.title).toBe('1 Yıllık İmparatorluk Kıdemlisi');
+    });
+  });
+
   describe('evaluateStreak', () => {
     it('allows claim and starts streak at 1 if never claimed before', () => {
       const result = evaluateStreak(null, '2026-09-14', 0);
@@ -83,15 +176,43 @@ describe('missions and streak formulas', () => {
       expect(result.wasReset).toBe(false);
     });
 
-    it('cycles back to day 1 after day 7 on consecutive day', () => {
+    it('continues incrementally past day 7 on consecutive day', () => {
       const result = evaluateStreak('2026-09-13', '2026-09-14', 7);
       expect(result.canClaim).toBe(true);
-      expect(result.nextStreak).toBe(1);
+      expect(result.nextStreak).toBe(8);
       expect(result.wasReset).toBe(false);
+    });
+
+    it('continues incrementally through extended milestones (30, 90, 180, 365 days)', () => {
+      expect(evaluateStreak('2026-09-13', '2026-09-14', 29).nextStreak).toBe(
+        30,
+      );
+      expect(evaluateStreak('2026-09-13', '2026-09-14', 30).nextStreak).toBe(
+        31,
+      );
+      expect(evaluateStreak('2026-09-13', '2026-09-14', 89).nextStreak).toBe(
+        90,
+      );
+      expect(evaluateStreak('2026-09-13', '2026-09-14', 179).nextStreak).toBe(
+        180,
+      );
+      expect(evaluateStreak('2026-09-13', '2026-09-14', 364).nextStreak).toBe(
+        365,
+      );
+      expect(evaluateStreak('2026-09-13', '2026-09-14', 365).nextStreak).toBe(
+        366,
+      );
     });
 
     it('resets streak to 1 if a day is missed', () => {
       const result = evaluateStreak('2026-09-11', '2026-09-14', 5);
+      expect(result.canClaim).toBe(true);
+      expect(result.nextStreak).toBe(1);
+      expect(result.wasReset).toBe(true);
+    });
+
+    it('resets long streaks back to 1 if a day is missed', () => {
+      const result = evaluateStreak('2026-09-10', '2026-09-14', 180);
       expect(result.canClaim).toBe(true);
       expect(result.nextStreak).toBe(1);
       expect(result.wasReset).toBe(true);

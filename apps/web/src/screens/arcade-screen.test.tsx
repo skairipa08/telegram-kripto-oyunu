@@ -171,15 +171,31 @@ describe('ArcadeScreen and Mini-Games Suite', () => {
       expect(markup).toContain('PİYASA BEKLEMEDE');
       expect(markup).toContain('Yatırım Tutarı');
 
-      // Chips row
+      // Chips row includes +10, +50, +100, +250, +500, and MAKS
+      expect(markup).toContain('+10');
       expect(markup).toContain('+50');
       expect(markup).toContain('+100');
       expect(markup).toContain('+250');
       expect(markup).toContain('+500');
       expect(markup).toContain('MAKS');
 
+      // Custom numeric stake input
+      expect(markup).toContain('crash-stake-input');
+      expect(markup).toContain('crash-stake-currency');
+      expect(markup).toContain('NAKİT');
+
       // Launch button
       expect(markup).toContain('BOĞA BAŞLAT');
+    });
+
+    it('renders with validation error and disables launch button when player cash is below minimum stake', () => {
+      const markup = renderToStaticMarkup(
+        <CryptoCrashGame preview playerCash={5} />,
+      );
+
+      expect(markup).toContain('crash-stake-validation-msg');
+      expect(markup).toContain('Yetersiz bakiye! Maksimum: 5 Nakit');
+      expect(markup).toContain('disabled=""');
     });
   });
 
