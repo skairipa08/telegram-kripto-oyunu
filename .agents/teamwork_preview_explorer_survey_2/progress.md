@@ -1,15 +1,14 @@
-# Progress
+# Progress — teamwork_preview_explorer_survey_2
 
-Last visited: 2026-09-14T12:09:00Z
+Last visited: 2026-09-14T18:06:40Z
+Status: In Progress
 
-- [x] Initialized workspace files (DISPATCH.md, BRIEFING.md, progress.md)
-- [x] Read ORIGINAL_REQUEST.md
-- [x] Inspect monorepo root (pnpm workspace, package.json, Vitest, PGlite)
-- [x] Survey packages/game-core (exports, formulas, structure, test coverage)
-- [x] Survey packages/shared (types, schemas, DTOs, Zod version)
-- [x] Survey apps/api (framework, routing, controllers, services, database access)
-- [x] Survey supabase/migrations/ (tables, indexes, constraints, functions)
-- [x] Analyze 4 target domains: Leaderboards, Monetization/Stars, Remote Config/Feature Flags, Analytics
-- [x] Write codebase_report.md
-- [x] Write handoff.md
-- [x] Send message to parent
+## Steps
+- [x] Received dispatch and initialized metadata (DISPATCH.md, BRIEFING.md, progress.md)
+- [ ] Read authoritative request from .agents/ORIGINAL_REQUEST.md
+- [ ] Inspect apps/api/src/index.ts (mounting, dual prefix, router composition, dependency injection)
+- [ ] Inspect apps/api/src/economy/routes.ts (store injection, existing routes, auth context)
+- [ ] Inspect apps/api/src/auth/routes.ts and other routes (auth middleware, error handling, Zod validation, response formats)
+- [ ] Evaluate route organization options for new endpoints (/economy/claim, /economy/upgrade, /game/state, /missions, /streak, /referral)
+- [ ] Synthesize findings and write analysis.md
+- [ ] Write handoff.md and report to parent orchestrator

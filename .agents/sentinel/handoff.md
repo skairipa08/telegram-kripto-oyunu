@@ -1,31 +1,35 @@
-# Sentinel Handoff Report — Project Empire (Steps 7, 8, 9, 11)
+# Sentinel Handoff Report — Project Empire Arcade Suite Overhaul
 
 ## Observation
-- The user requested implementation of the backend, data engineering, and game logic modules for Project Empire (Steps 7, 8, 9, and 11) covering:
-  - R1: Leaderboards Engine & Season Freeze (Blueprint R6)
-  - R2: Stars Monetization & Pass Entitlement Backend (Blueprint R7)
-  - R3: Admin Remote Config & Feature Flags (Blueprint R8)
-  - R4: Analytics Event Pipeline & Cohort Models (Blueprint R10)
-  - R5: Strict Domain Boundary (No UI/CSS modifications, no anti-cheat/exploit alterations; reserved for Astra 6.0)
-- The Sentinel recorded the request, routed execution to `teamwork_preview_orchestrator`, scheduled dual monitoring crons, and supervised execution.
-- The implementation swarm delivered the SQL migrations, pure game-core formulas, shared Zod schemas, and Cloudflare Worker API routes.
-- The project orchestrator claimed completion, triggering the mandatory independent Victory Audit by `teamwork_preview_victory_auditor`.
-- The Victory Auditor independently verified all requirements, timeline provenance, anti-P2W guardrails, R5 domain boundaries, and executed the unified quality gate (`pnpm check`).
+- The user requested revamping and expanding the Project Empire mini-game arcade suite:
+  - R1: Catizen-Style Merge Game Overhaul (`CatizenMergeGame`) with 10+ tiers, idle coin generation, mystery parcel drops, auto-merge bot.
+  - R2: Dynasty Cipher Terminal Revamp (`DynastyCipherGame`) with cyber terminal styling, dynamic sequence pacing, combo multipliers, time-attack pressure.
+  - R3: Notcoin Tap-to-Earn Clicker Game (`NotcoinTapGame`) with 3D tactile coin squish/tilt, dynamic energy pool, dual-currency upgrade drawer (Cash & Telegram Stars), TapBot offline earnings accumulator, and game-core economic balancing.
+  - R4: Crypto Candlestick "Moon or Doom" Crash Game (`CryptoCrashGame`) with real-time 60fps chart, rising multiplier, Boğa/Kârı Al button, provably fair / random walk math.
+  - Architecture constraint: Strict maximum of 2 concurrent agents with domain isolation (Stream 1: Core Math Models, Simulation & Economy Engine; Stream 2: Rich Interactive Frontend Mini-Games & Mini App UI).
+  - Mobile responsiveness: 320px–390px zero horizontal overflow, Astra 6.0 theme integration.
+  - Quality gates: `pnpm check` (lint, format:check, typecheck, test, build), unit & stress tests in `packages/game-core`.
+- The Sentinel recorded the request in `.agents/ORIGINAL_REQUEST.md` and `ORIGINAL_REQUEST.md`.
+- Evaluated routing per Routing Decision Table: Routed to `teamwork_preview_orchestrator` (General route).
+- Spawned `teamwork_preview_orchestrator_9` (conversation ID `2e32ba88-38e2-412d-876d-ed44df3fb85e`).
+- Established dual Sentinel monitoring crons: task-42 (Cron 1: Progress Reporting every 8 mins) and task-44 (Cron 2: Liveness Check every 10 mins).
 
 ## Logic Chain
-1. **User Request Intake**: Request was saved verbatim to `.agents/ORIGINAL_REQUEST.md` and `ORIGINAL_REQUEST.md`.
-2. **Routing Decision**: As a multi-module engineering effort spanning database migrations, core formulas, shared DTOs, API routes, and testing gates, the task was routed to `teamwork_preview_orchestrator` per the General route.
-3. **Execution & Supervision**: The orchestrator decomposed the work across explorers, workers, reviewers, challengers, and forensic auditors. Dual crons monitored progress every 8 minutes and liveness every 10 minutes.
-4. **Mandatory Post-Victory Verification**: Upon victory claim, `teamwork_preview_victory_auditor` was dispatched with zero shared context to audit code provenance, cheating/facade avoidance, and independently execute test suites.
-5. **Verdict & Teardown**: The Victory Auditor returned `VICTORY CONFIRMED` (0 errors in `pnpm check`, 17 test files, 137/137 tests passing, strict anti-P2W locks and R5 boundaries verified). Both crons were cancelled and all subagents terminated cleanly.
+1. **User Request Intake**: Appended verbatim user prompt under UTC timestamp `2026-09-16T11:18:25Z` to `.agents/ORIGINAL_REQUEST.md` and `ORIGINAL_REQUEST.md`.
+2. **Routing Decision**: Task requires full-stack game development across math models, simulation, interactive UI components, tests, and monorepo verification. Evaluated against Document Review (no document), Math/Proof Large Team (not requested), Math/Proof (not pure math proof), SWE Light (not single self-contained light change). Routed to `teamwork_preview_orchestrator`.
+3. **Subagent & Workspace Initialization**: Created `.agents/teamwork_preview_orchestrator_9/` directory and initialized `progress.md`. Dispatched `teamwork_preview_orchestrator_9` with full scope and 2-agent concurrency / boundary constraints.
+4. **Sentinel Monitoring Setup**: Configured Cron 1 (`*/8 * * * *`, task-42) for progress reporting and Cron 2 (`*/10 * * * *`, task-44) for liveness tracking.
+5. **Awaiting Orchestration**: Sentinel will supervise execution, monitor dual streams, and trigger mandatory independent Victory Audit when orchestrator claims completion.
 
 ## Caveats
-- **UI/UX Boundary**: All visual components, pages, and CSS styles remain untouched in `apps/web` as strictly mandated for Astra 6.0.
-- **Anti-Fraud/Cheat Boundary**: Advanced graph-based Sybil clustering, external auth penetration hardening, and IP anomaly mitigation remain untouched as strictly mandated for Astra 6.0.
+- Concurrency limit: Maximum 2 concurrent agents strictly enforced across Stream 1 and Stream 2.
+- Mobile layout: Strict requirement of zero layout shifts and zero horizontal overflow on 320px–390px mobile screens.
+- Quality gates: Must achieve 0 errors on `pnpm check` and exhaustive unit/stress test coverage in `packages/game-core`.
 
 ## Conclusion
-Project Empire Steps 7, 8, 9, and 11 are completely implemented, verified, and audited with 100% compliance against all acceptance criteria and quality gates.
+Project Empire Arcade Suite Overhaul has been initiated. Orchestrator 9 is actively coordinating Stream 1 (Core Math/Economy) and Stream 2 (Frontend UI), monitored by dual Sentinel crons.
 
 ## Verification Method
-- Independent post-victory audit via `teamwork_preview_victory_auditor_1`.
-- Clean execution of `pnpm check` (ESLint 0 warnings/errors, Prettier check 100% formatted, TypeScript strict typecheck across all 4 packages, Vitest 137 passing tests across 17 suites, Vite production build, and Cloudflare Wrangler deploy dry-run).
+- Sentinel monitoring crons active (task-42, task-44).
+- Progress tracking via `.agents/teamwork_preview_orchestrator_9/progress.md`.
+- Post-victory independent audit to be executed by `teamwork_preview_victory_auditor` upon completion claim.

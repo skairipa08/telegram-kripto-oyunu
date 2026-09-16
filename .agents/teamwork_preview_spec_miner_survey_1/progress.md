@@ -1,16 +1,16 @@
-# Progress Tracker
+# Progress — teamwork_preview_spec_miner_survey_1
 
-Last visited: 2026-09-14T15:08:00+03:00
+Last visited: 2026-09-14T18:14:30Z
 
-## Status
-- [x] Initialized DISPATCH.md and BRIEFING.md
-- [x] Read ORIGINAL_REQUEST.md
-- [x] Located blueprint file: `Project_Empire_Master_Blueprint_v1.0.docx` in repository root and extracted full text
-- [x] Probed Blueprint R6 (Leaderboards Engine & Season Freeze)
-- [x] Probed Blueprint R7 (Stars Monetization & Pass Entitlement Backend)
-- [x] Probed Blueprint R8 (Admin Remote Config & Feature Flags)
-- [x] Probed Blueprint R10 / Section 18 (Analytics Event Pipeline & Cohort Models)
-- [x] Probed related discovered features / schemas / formulas / constraints
-- [x] Generated spec_report.md
-- [x] Write handoff.md
-- [x] Send completion message to parent
+- [x] Received dispatch assignment
+- [x] Initialized workspace metadata (DISPATCH.md, BRIEFING.md, progress.md)
+- [x] Inspected ORIGINAL_REQUEST.md
+- [x] Inspected packages/shared/src/index.ts (DTOs and Zod validation schemas)
+- [x] Inspected apps/api/src/economy/store.ts (EconomyStore & SupabaseEconomyStore method signatures, error handling)
+- [x] Inspected supabase/migrations/202609140007_game_loop_apis.sql (8 RPC functions, params, return values, errors)
+- [x] Inspected apps/api/src/auth/test-db.ts (PGlite test harness registration gap)
+- [x] Inspected existing route patterns (apps/api/src/economy/routes.ts, shop, leaderboard, index.ts)
+- [ ] Waiting for background baseline `pnpm check`
+- [ ] Generate comprehensive analysis.md
+- [ ] Generate handoff.md
+- [ ] Send completion message to parent orchestrator

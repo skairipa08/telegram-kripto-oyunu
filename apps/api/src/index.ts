@@ -13,6 +13,12 @@ import type { AnalyticsStore } from './analytics/store';
 import { createAnalyticsRoutes } from './analytics/routes';
 import type { EconomyStore } from './economy/store';
 import { createEconomyRoutes } from './economy/routes';
+import type { FraudStore } from './fraud/store';
+import { createFraudRoutes } from './fraud/routes';
+import type { AdminStore } from './admin/store';
+import { createAdminRoutes } from './admin/routes';
+import type { ArcadeStore } from './arcade/store';
+import { createArcadeRoutes } from './arcade/routes';
 
 const healthHandler = (c: { json: (data: HealthResponse) => Response }) =>
   c.json({
@@ -28,6 +34,9 @@ export interface AppStoreFactories {
   makeConfigStore?: (env: Bindings) => ConfigStore;
   makeAnalyticsStore?: (env: Bindings) => AnalyticsStore;
   makeEconomyStore?: (env: Bindings) => EconomyStore;
+  makeFraudStore?: (env: Bindings) => FraudStore;
+  makeAdminStore?: (env: Bindings) => AdminStore;
+  makeArcadeStore?: (env: Bindings) => ArcadeStore;
 }
 
 export function createApp(
@@ -96,11 +105,45 @@ export function createApp(
   app.route('/', economy);
   app.route('/api', economy);
 
+  // 7. Anti-fraud & Admin review routes
+  const fraud = createFraudRoutes(
+    factories.makeFraudStore,
+    factories.makeAuthStore,
+    now,
+  );
+  app.route('/', fraud);
+  app.route('/api', fraud);
+
+  // 8. Admin governance & feature flags routes
+  const admin = createAdminRoutes(
+    factories.makeAdminStore,
+    factories.makeAuthStore,
+    now,
+  );
+  app.route('/', admin);
+  app.route('/api', admin);
+
+  // 9. Arcade routes (Notcoin Tap, Catizen Merge, Candlestick Crash, Dynasty Cipher)
+  const arcade = createArcadeRoutes(
+    factories.makeArcadeStore,
+    factories.makeAuthStore,
+    now,
+  );
+  app.route('/', arcade);
+  app.route('/api', arcade);
+
   app.notFound((c) =>
     c.json({ apiVersion: 'v1', error: { code: 'NOT_FOUND' } }, 404),
   );
 
   return app;
 }
+
+export { createFraudRoutes } from './fraud/routes';
+export type { FraudStore } from './fraud/store';
+export { createAdminRoutes } from './admin/routes';
+export type { AdminStore } from './admin/store';
+export { createArcadeRoutes } from './arcade/routes';
+export type { ArcadeStore } from './arcade/store';
 
 export default createApp();

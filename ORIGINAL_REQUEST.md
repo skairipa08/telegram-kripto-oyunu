@@ -117,3 +117,478 @@ Create an offline economy simulation runner in packages/game-core (and scripts/)
 - [ ] Existing 137 tests remain 100% green; new tests bring coverage even higher.
 - [ ] Full handoff documentation updated in HANDOFF.md.
 
+## 2026-09-14T17:53:29Z
+
+Complete the missing game loop API endpoints for Project Empire — the Telegram idle business game. The SQL migration and store layer are already written; the team must wire up routes, update the test harness, write tests, and verify everything passes `pnpm check`.
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: demo
+
+## Context — What Already Exists
+
+The monorepo has a complete backend with 226 passing tests across 22 files. The following are **already on disk and must NOT be rewritten**:
+
+- `supabase/migrations/202609140007_game_loop_apis.sql` — 8 new RPC functions: `empire_claim_offline_earnings`, `empire_upgrade_business`, `empire_get_game_state`, `empire_bind_referral`, `empire_get_referral_status`, `empire_get_active_missions`, `empire_claim_mission`, `empire_get_streak`
+- `apps/api/src/economy/store.ts` — `EconomyStore` interface and `SupabaseEconomyStore` already extended with all 8 new methods (claim, upgrade, getGameState, bindReferral, getReferralStatus, getActiveMissions, claimMission, getStreak)
+- `packages/shared/src/index.ts` — All DTOs already defined: `ClaimCashRequest/Response`, `UpgradeBusinessRequest/Response`, `BindReferralRequest/Response`, `ClaimMissionRequest/Response`, `PlayerMissionInstance`, `PlayerStreakDto`, `PlayerReferralOverview`, `PlayerState`
+
+Existing working endpoints (in `apps/api/src/economy/routes.ts`): `GET /economy/roi`, `GET /economy/simulation`.
+
+## Requirements
+
+### R1. Economy Game Loop Routes
+Add `POST /economy/claim` (offline earnings claim) and `POST /economy/upgrade` (business upgrade) to the existing economy routes file (`apps/api/src/economy/routes.ts`). Both must require auth session, validate request bodies with the existing Zod schemas from `@empire/shared`, call the corresponding store methods, and return properly typed responses. Error cases (`INSUFFICIENT_CASH`, `BUSINESS_NOT_FOUND`, etc.) must return appropriate HTTP 4xx codes.
+
+### R2. Game State, Mission, Referral & Streak Routes
+Create new route modules or extend existing ones for:
+- `GET /game/state` — Full combined player state (auth required)
+- `GET /missions/active` — Current day's active missions (auth required)
+- `POST /missions/:id/claim` — Claim a completed mission reward (auth required)
+- `GET /streak` — Current streak status (auth required)
+- `POST /referral/bind` — Bind a referral code (auth required)
+- `GET /referral/status` — Referral overview (auth required)
+
+All routes must be mounted in `apps/api/src/index.ts` at both `/` and `/api` prefixes (follow the existing pattern for auth, leaderboard, shop, config, analytics, economy routes).
+
+### R3. Test Database Harness Extension
+Update `apps/api/src/auth/test-db.ts` to register the new migration file `202609140007_game_loop_apis.sql` and add RPC dispatch cases for all 8 new functions. Follow the existing pattern exactly (switch/case on RPC name, map parameters, execute SQL via PGlite transaction).
+
+### R4. Workspace Integrity
+- Do NOT modify any UI/UX components in `apps/web/` (reserved for Astra 6.0)
+- Do NOT modify anti-cheat/anti-fraud algorithms (reserved for Astra 6.0)
+- Do NOT rewrite the SQL migration, store methods, or shared DTOs — they are already complete
+- Preserve all existing tests and functionality
+
+## Acceptance Criteria
+
+### Game Loop Functionality
+- [ ] `POST /economy/claim` returns `ClaimCashResponse` with correct `claimedAmount`, `newBalance`, `claimedAt`, `isCapped` fields
+- [ ] `POST /economy/upgrade` with valid `businessSlug` deducts cash and returns updated business state
+- [ ] `POST /economy/upgrade` with insufficient cash returns 400 with `INSUFFICIENT_CASH`
+- [ ] `POST /economy/upgrade` with invalid slug returns 400 with `BUSINESS_NOT_FOUND`
+- [ ] `GET /game/state` returns combined player economy state, businesses, season info
+- [ ] `POST /referral/bind` with valid code applies +500 cash referral boost
+- [ ] `POST /referral/bind` with self-referral returns error
+- [ ] `GET /referral/status` returns referral code, invite counts, badges
+- [ ] `GET /missions/active` returns array of today's mission instances
+- [ ] `GET /streak` returns current streak data with `canClaimToday` flag
+- [ ] All endpoints return 401 for unauthenticated requests
+
+### Quality Gates
+- [ ] `pnpm check` (lint, format:check, typecheck, test, build) exits with code 0
+- [ ] All new routes have at least one integration test per endpoint using the PGlite test harness
+- [ ] No regressions: all 226 existing tests continue to pass
+- [ ] All changes documented in `HANDOFF.md`
+
+## 2026-09-14T19:27:24Z
+
+Complete the missing game loop API endpoints for Project Empire — the Telegram idle business game — and wire them up to the newly created game screens in `apps/web`. The SQL migration and store layer are already written on disk; the team must implement the HTTP routes, update the local test database harness, write comprehensive integration tests, connect the frontend actions, and verify everything passes `pnpm check`.
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: demo
+
+## Requirements
+
+### R1. Economy Game Loop Routes
+Implement `POST /economy/claim` (offline earnings claim) and `POST /economy/upgrade` (business upgrade) in `apps/api/src/economy/routes.ts`.
+- Require authenticated session cookie.
+- Validate request bodies using existing Zod schemas from `@empire/shared`.
+- Call store methods (`claimOfflineEarnings`, `upgradeBusiness`).
+- Return properly typed HTTP responses with correct status codes (400 for `INSUFFICIENT_CASH` or `BUSINESS_NOT_FOUND`, 401 for unauthorized).
+
+### R2. Game State, Mission, Referral & Streak Routes
+Create route modules and mount them in `apps/api/src/index.ts` under both `/` and `/api` prefixes:
+- `GET /game/state` — Full combined player economy, businesses, and season state.
+- `GET /missions/active` — Current active daily and weekly missions.
+- `POST /missions/:id/claim` — Claim a completed mission reward.
+- `GET /streak` — Current streak status and claimable flag.
+- `POST /referral/bind` — Bind a referral code and apply the +500 Cash bonus.
+- `GET /referral/status` — Current user's referral code, count, and tier badges.
+
+### R3. Test Database Harness Extension
+Update `apps/api/src/auth/test-db.ts`:
+- Register migration `202609140007_game_loop_apis.sql`.
+- Add RPC dispatch cases for all 8 new functions (`empire_claim_offline_earnings`, `empire_upgrade_business`, `empire_get_game_state`, `empire_bind_referral`, `empire_get_referral_status`, `empire_get_active_missions`, `empire_claim_mission`, `empire_get_streak`) via PGlite transactions.
+
+### R4. Frontend Live Game Connection
+Update `apps/web/src/game/live-game.tsx`:
+- Pass `onClaim` and `onUpgrade` handlers to `EmpireScreen` to trigger `POST /economy/claim` and `POST /economy/upgrade`.
+- Wire `MissionsScreen` to `GET /api/missions/active` and `POST /api/missions/:id/claim`.
+- Wire `FriendsScreen` to `GET /api/referral/status` and `POST /api/referral/bind`.
+
+### R5. Workspace Integrity & Quality Gates
+- Preserve all existing 232 passing unit and integration tests.
+- Add integration tests for all new endpoints.
+- Ensure `pnpm check` (lint, format:check, typecheck, test, build) exits with code 0.
+- Document all changes in `HANDOFF.md`.
+
+## Acceptance Criteria
+
+### API Functionality & Verification
+- [ ] `POST /economy/claim` successfully claims offline earnings and returns updated balance.
+- [ ] `POST /economy/upgrade` upgrades business level and deducts cash; rejects when cash is insufficient with 400 `INSUFFICIENT_CASH`.
+- [ ] `GET /game/state` returns full player state.
+- [ ] `POST /referral/bind` applies referral boost (+500 Cash) and rejects self-referral.
+- [ ] `GET /referral/status` returns referral link data and tier stats.
+- [ ] `GET /missions/active` and `POST /missions/:id/claim` return and fulfill missions.
+- [ ] `GET /streak` returns current streak day and claimability.
+- [ ] All endpoints enforce authentication and return 401 for unauthenticated requests.
+
+### Quality & Build Verification
+- [ ] `pnpm check` (eslint, prettier, typecheck, vitest, build) passes with 0 errors.
+- [ ] Integration tests verify all new endpoints against the PGlite test harness.
+- [ ] `HANDOFF.md` updated with progress and verification results.
+
+
+## 2026-09-15T06:14:17Z
+
+Design and implement the independent R9 Anti-Fraud and Reward Review System for Project Empire (Telegram crypto idle business game), strictly preserving all Codex/Sol game-loop files, frontend UI screens, and payment modules.
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: demo
+
+## Boundaries & Constraints (Strict)
+- **DO NOT TOUCH** Codex/Sol game-loop files:
+  - `supabase/migrations/202609140007_game_loop_apis.sql`
+  - `apps/api/src/auth/test-db.ts`
+  - `apps/api/src/economy/**`
+  - `apps/web/src/game/**`
+- **DO NOT TOUCH** visual screens or styling (`apps/web/src/screens/**`, CSS).
+- **DO NOT TOUCH** payment/shop system (`apps/api/src/shop/**`).
+- Use `supabase/migrations/202609140008_anti_fraud.sql` for database schema migration.
+- Keep the test database environment identical to the real migration (do NOT create test-only compatibility columns).
+- Do NOT deploy, push, or merge to git remotes.
+- Document all modified/added files, test results, known boundaries, and next steps in `HANDOFF.md`.
+
+---
+
+## Requirements
+
+### R1. Fraud Detection Signals & Explainable Risk Scoring Engine
+Implement deterministic fraud detection signals and risk scoring in `packages/game-core`:
+- Detect suspicious economy velocity (abnormal cash/season point gain rates exceeding physical maximum production).
+- Detect replay and burst requests (rapid successive actions violating debounce/rate ceilings).
+- Detect multi-account and IP/device clustering anomalies (same IP/fingerprint across multiple accounts).
+- Detect referral abuse and sybil rings (chains of accounts self-referring or circular invite trees).
+- Calculate normalized risk score (0–100) with explainable reason codes (e.g. `RAPID_BURST_REQUESTS`, `VELOCITY_CAP_EXCEEDED`, `DEVICE_CLUSTER_DETECTED`, `CIRCULAR_REFERRAL_SUSPECT`).
+
+### R2. Database Schema & RLS Migration (`202609140008_anti_fraud.sql`)
+Author `supabase/migrations/202609140008_anti_fraud.sql`:
+- Create tables:
+  - `fraud_flags`: logs detected suspicious events, risk score, reason codes, target entity (user, transaction, reward).
+  - `frozen_rewards`: holds pending/frozen reward claims with status (`frozen`, `approved`, `rejected`), amounts, and lock timestamps.
+  - `admin_roles`: assigns roles (`admin`, `superadmin`, `auditor`) to authorized user IDs.
+- Configure strict Row Level Security (RLS) on all tables; revoke public/anon/authenticated access and grant permissions strictly to `service_role`.
+- Create stored procedures/functions for flag creation, reward freezing, admin review, and audit logging with `security definer` / `security invoker` set to public schema.
+
+### R3. Admin Review, Decision & Audit APIs
+Implement admin API endpoints in `apps/api/src/fraud` (or mounted under `/admin/fraud` and `/api/admin/fraud`):
+- Role-based access control (RBAC): require valid session and verify the authenticated user possesses an active admin role; return 403 `FORBIDDEN` for unauthorized users and 401 for unauthenticated.
+- `GET /admin/fraud/flags`: list flagged events with filtering by status, user, risk level, and date.
+- `GET /admin/fraud/frozen`: list currently frozen rewards pending review.
+- `POST /admin/fraud/review`: submit review decision (`approve` or `reject`) with mandatory admin notes/reasoning.
+  - On `approve`: unfreeze reward and credit balance to player balance via atomic ledger entry.
+  - On `reject`: permanently cancel frozen reward and record reason.
+  - Record audit log entry in `admin_audit_logs` capturing admin ID, target, old/new values, and justification.
+
+### R4. Test Database Harness Extension & Quality Verification
+- Create an independent test harness runner for anti-fraud tests (e.g. `apps/api/src/fraud/test-db.ts` or standalone test setup) that executes real migrations including `202609140008_anti_fraud.sql` without modifying `apps/api/src/auth/test-db.ts`.
+- Write unit tests in `packages/game-core` for all risk scoring and signal detection algorithms.
+- Write comprehensive integration tests in `apps/api` covering flag creation, reward freezing, RBAC authorization, admin approve/reject flows, audit logs, and 401/403 security boundaries.
+- Ensure all 252 existing tests continue to pass and `pnpm check` exits with code 0.
+
+---
+
+## Acceptance Criteria
+
+### Security & Fraud Detection
+- [ ] Risk scoring function produces deterministic scores (0–100) and structured reason codes for velocity, replay, clustering, and referral abuse.
+- [ ] Suspicious rewards are quarantined in `frozen_rewards` with status `frozen` and not immediately credited to player balances.
+- [ ] Direct access to fraud tables by unauthenticated, anon, or regular users is blocked by RLS policies.
+
+### Admin Review & RBAC API
+- [ ] Non-admin authenticated users attempting to access `/admin/fraud/*` receive HTTP 403 `FORBIDDEN`.
+- [ ] Unauthenticated requests to `/admin/fraud/*` receive HTTP 401 `UNAUTHORIZED`.
+- [ ] `GET /admin/fraud/flags` returns paginated list of fraud flags with risk scores and reason codes.
+- [ ] `GET /admin/fraud/frozen` returns active frozen rewards.
+- [ ] `POST /admin/fraud/review` with decision `approve` releases frozen rewards to player balance and logs audit entry.
+- [ ] `POST /admin/fraud/review` with decision `reject` cancels frozen reward and logs audit entry.
+
+### Workspace Integrity & Quality Gates
+- [ ] No changes made to `supabase/migrations/202609140007_game_loop_apis.sql`, `apps/api/src/auth/test-db.ts`, `apps/api/src/economy/**`, `apps/web/src/game/**`, `apps/web/src/screens/**`, or `apps/api/src/shop/**`.
+- [ ] All 252 existing tests continue to pass (0 regressions).
+- [ ] All new anti-fraud unit and integration tests pass cleanly.
+- [ ] `pnpm check` (lint, format:check, typecheck, test, build) completes with exit code 0.
+- [ ] `HANDOFF.md` updated with full documentation of changed files, test results, known boundaries, and next steps.
+
+## 2026-09-15T07:19:14Z
+
+Complete the mission and referral progression lifecycle for Project Empire (daily/weekly mission assignment, real-time action progress, daily streak claiming, qualified referral milestone verification) and establish production launch readiness (real PostgreSQL concurrency & load tests, monitoring telemetry, backup, and rollback runbooks).
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: demo
+
+## Boundaries & Constraints
+- Preserve existing game loop functionality and anti-fraud boundaries.
+- Keep all UI/visual components in `apps/web/src/screens/` isolated (do not modify styling or screen layout).
+- All new database schema modifications or migrations must use sequential numbering (e.g. `202609140009_missions_and_launch.sql` if a new migration is required, or extend existing test runners cleanly).
+- Real PostgreSQL / PGlite tests must verify actual transaction isolation and row locking (`FOR UPDATE`).
+- Do not perform git push, release, or remote deployments.
+- Document all modified files, test outputs, concurrency benchmarks, and runbooks in `HANDOFF.md`.
+
+---
+
+## Requirements
+
+### R1. Mission Pool Assignment & Real-Time Action Progression
+Implement the end-to-end mission lifecycle:
+- Automated assignment: assign 3 daily missions (1 easy, 1 normal, 1 hard) and 1 weekly mission to the player upon daily login / state initialization if not already assigned for the current calendar date/week.
+- Action progression hooks:
+  - Increment mission progress on player game actions (`POST /economy/claim` increments `claim_cash_*` and `claim_offline_4h` when duration criteria met; `POST /economy/upgrade` increments `upgrade_any_*`, `reach_milestone`, `upgrade_factory_tier`).
+  - When `progress >= target`, transition mission instance status to `completed`.
+- Claiming rewards: `POST /missions/:id/claim` awards Season Points (`round(multiplier * currentSRU)`), transitions status to `claimed`, increments `season_scores.mission_points` and player balance atomically with duplicate prevention.
+
+### R2. Daily Streak Evaluation & Claim Endpoint
+Implement complete streak mechanics:
+- Endpoint: `POST /streak/claim` (and `/api/streak/claim`).
+- Evaluate consecutive days:
+  - If last claim was yesterday (UTC date - 1), increment `current_streak` by 1.
+  - If Day 7 reached and claimed, award cycle bonus (1.0x SRU) and reset cycle counter cleanly.
+  - If a day was missed (> 1 day elapsed), reset `current_streak` to 1.
+  - Reject duplicate claims on the same calendar day with 400 `ALREADY_CLAIMED`.
+- Update `player_streaks` and credit Season Points atomically to `player_balances.season_points` and active `season_scores`.
+
+### R3. Qualified Referral Progression & Referrer Rewards
+Complete the qualified referral lifecycle:
+- Trigger milestone evaluations when an invitee progresses:
+  - `activation`: invitee completes first business upgrade (highest level >= 1) -> 0.5x SRU.
+  - `retained_d2`: invitee logs in across >= 2 distinct calendar days -> 1.0x SRU.
+  - `retained_d7`: invitee active on >= 4 distinct days within 7 days -> 2.0x SRU.
+  - `progression`: invitee total empire levels >= 10 -> 1.5x SRU.
+- Mark `referrals.status = 'qualified'`, update `is_qualified = true` with `qualified_at = now()`.
+- Insert `referral_events` rows and provide an endpoint / automated routine to claim pending referral rewards, updating the referrer's Season Points and tier stats.
+
+### R4. Real PostgreSQL Concurrency & Load Stress Harness
+Author rigorous concurrency and load test suites under real transaction conditions:
+- Test concurrent racing balance updates: multiple parallel requests claiming cash or upgrading simultaneously must preserve invariant balance consistency without double-spend or negative balances.
+- Test concurrent streak and mission claim race conditions: simultaneous requests with the same session must execute exactly once (idempotent row locks via `FOR UPDATE`).
+- Test concurrent referral bindings: simultaneous binding of referral codes must cleanly handle unique constraints without deadlocks.
+- Load benchmark script (`pnpm test:load` or standalone simulation): simulate 100+ virtual concurrent players performing interleaved game loop cycles, verifying database connection pool stability, zero unhandled errors, and throughput latency metrics.
+
+### R5. Production Operations Runbook: Monitoring, Backup & Rollback Plan
+Create comprehensive operational documentation in `docs/ops/`:
+- `MONITORING.md`: Telemetry architecture, KPI metrics (`dau`, `qap`, `sru`, error rate, p95/p99 latency), health check probes, and anomaly alert thresholds.
+- `BACKUP_AND_DISASTER_RECOVERY.md`: Automated snapshot policies, WAL archiving, Point-In-Time-Recovery (PITR) procedures, and recovery time/point objectives (RTO < 15m, RPO < 1m).
+- `ROLLBACK_PLAN.md`: Reversible migration scripts for all database migrations (0001 through latest), feature flag kill-switches (`feature.referrals`, `feature.token`, `feature.stars_payments`), and emergency API circuit-breaker procedures.
+
+---
+
+## Acceptance Criteria
+
+### Missions & Streak
+- [ ] Players receive 3 daily + 1 weekly mission instances upon first action/state fetch of the calendar day.
+- [ ] Upgrading businesses and claiming offline cash automatically advances relevant mission progress and flips status to `completed` upon target completion.
+- [ ] `POST /missions/:id/claim` awards Season Points and rejects uncompleted or already claimed missions.
+- [ ] `POST /streak/claim` awards daily points (and Day 7 cycle bonus), advances streak counter, and prevents same-day double claims.
+
+### Referral Qualification
+- [ ] Invitee progression triggers qualification milestones (`activation`, `retained_d2`, `retained_d7`, `progression`).
+- [ ] Referrer correctly receives milestone rewards upon qualification, updating invite counts and unlocking badges.
+
+### Concurrency & Performance
+- [ ] Concurrency test suite runs 20+ parallel racing requests against PGlite/Postgres with zero race conditions or double crediting.
+- [ ] Load simulation executes 100 concurrent player sessions without deadlocks or unhandled exceptions.
+
+### Operations Runbooks
+- [ ] `docs/ops/MONITORING.md`, `docs/ops/BACKUP_AND_DISASTER_RECOVERY.md`, and `docs/ops/ROLLBACK_PLAN.md` created with actionable, production-ready procedures.
+
+### Quality Gates
+- [ ] All existing test suites continue to pass with 0 regressions.
+- [ ] `pnpm check` (lint, format:check, typecheck, test, build) completes with exit code 0.
+- [ ] `HANDOFF.md` updated with progress, test results, benchmarks, and next steps.
+
+## 2026-09-16T06:00:11Z
+
+# Teamwork Project Prompt — Draft
+
+> Status: Launched
+> Goal: Execute prompt via teamwork_preview multi-agent system
+> Requested team: Maximum 4 concurrent agents with strict sub-domain context isolation (each agent only accesses its assigned files and responsibilities)
+
+Implement Step 8 (Telegram Stars payments, pass entitlements, webhook security, pre-checkout verification) and Step 9 (Admin dashboard UI, RBAC governance for @Barandnz and @Mberked, config feature flags, and audit logging) for Project Empire.
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: demo
+
+## Architecture & Agent Boundary Constraints (Max 4 Concurrent Agents)
+To prevent context pollution and token waste, the teamwork execution MUST divide work into at most 4 specialized, strictly isolated streams:
+
+1. **Stream 1 - Payment Backend & Webhook Security Agent**:
+   - Scope: `apps/api/src/shop/`, `packages/shared/src/`
+   - Only reads and modifies payment routing, invoice creation, Telegram webhook verification, and entitlement store.
+2. **Stream 2 - Shop & Stars Mini App UI Agent**:
+   - Scope: `apps/web/src/screens/shop-screen.tsx`, `apps/web/src/screens/shop-analytics.css`, `apps/web/src/game/`
+   - Only reads and modifies shop view rendering, Telegram `openInvoice` trigger, purchase status feedback, and feature flag gate.
+3. **Stream 3 - Admin Backend & Governance Agent**:
+   - Scope: `apps/api/src/config/`, `apps/api/src/fraud/`, `apps/api/src/admin/`, `supabase/migrations/`
+   - Only reads and modifies admin endpoints, RBAC enforcement (`empire_admin_check_role` for `@Barandnz` and `@Mberked`), feature flag store, and audit logging.
+4. **Stream 4 - Admin UI Dashboard Agent**:
+   - Scope: `apps/web/src/screens/admin-screen.tsx`, `apps/web/src/admin/`, `apps/web/src/shell/`
+   - Only reads and modifies the visual admin management interface (feature flag switches, fraud review queue, system status KPIs).
+
+---
+
+## Requirements
+
+### R1. Telegram Stars (XTR) Payment Backend & Webhook Security (Adım 8)
+- Implement invoice generation endpoint (`POST /shop/invoice`) returning a compliant Telegram Stars invoice or link.
+- Webhook verification & handler (`POST /shop/webhook` or Telegram updates handler):
+  - Validate `X-Telegram-Bot-Api-Secret-Token` header against configured secret.
+  - Handle `pre_checkout_query`: validate payload, currency (`XTR`), invoice existence, and return `answerPreCheckoutQuery` with `ok: true` (or explanatory error).
+  - Handle `successful_payment`: atomically mark invoice as paid, credit entitlements (Empire Pass, cosmetic badges), record ledger transaction, and ensure idempotent execution (replay-safe).
+  - Provide refund / support status lookup endpoint (`GET /shop/invoices/:id`).
+
+### R2. Shop Frontend & Mini App Payment Flow (Adım 8)
+- Update `ShopScreen` to support seamless Telegram Stars purchasing:
+  - If `feature.stars_payments` is enabled, allow clicking purchase to initiate `Telegram.WebApp.openInvoice`.
+  - Listen for invoice status (`paid`, `cancelled`, `failed`, `pending`) and update UI optimistically with clear user feedback.
+  - If disabled, display "Yakında" (Coming Soon) badge and prevent transaction submission.
+  - Ensure zero layout shift on 320px–390px mobile screens.
+
+### R3. Admin Backend & Feature Flag Governance (Adım 9)
+- Enforce strict RBAC on all admin endpoints:
+  - Verify caller session belongs to an authorized superadmin (`@Barandnz` or `@Mberked` or role = `superadmin`). Return 403 `FORBIDDEN` for unauthorized users.
+- Provide feature flag management API:
+  - Dynamic toggles for `feature.stars_payments`, `feature.maintenance_mode`, `feature.referrals`, `economy.multiplier`.
+  - Idempotent updates with audit logging (`admin_audit_logs` storing admin username, action, before/after values, and timestamp).
+- Provide fraud queue review API:
+  - List flagged suspicious accounts with risk scores.
+  - Endpoints to approve, reject, or unfreeze flagged accounts.
+
+### R4. Admin Web Dashboard UI (Adım 9)
+- Create a dedicated, responsive Admin Panel view in `apps/web`:
+  - Accessible only when user has admin privileges (`@Barandnz` or `@Mberked`).
+  - **Feature Flags Tab**: visual switches to toggle Stars payments, maintenance mode, referral rewards in real-time.
+  - **Fraud Review Tab**: visual table of flagged accounts with quick action buttons (İncele, Onayla, Dondurmayı Kaldır).
+  - **Audit Log Tab**: chronological feed of recent administrative changes.
+- Seamlessly integrate with existing Astra 6.0 theme (dark/light) without altering player screens.
+
+---
+
+## Acceptance Criteria
+
+### Stars Payments (Step 8)
+- [ ] Pre-checkout query validates currency (`XTR`), price, and payload, responding with `ok: true`.
+- [ ] Successful payment webhook atomically grants Empire Pass / cosmetic item and records transaction.
+- [ ] Duplicate payment webhooks with the same `telegram_payment_charge_id` execute idempotently without double-granting.
+- [ ] Shop UI integrates with Telegram Mini App `openInvoice` and respects the `feature.stars_payments` toggle.
+
+### Admin Panel & Governance (Step 9)
+- [ ] Admin API endpoints strictly reject non-admin users (403 FORBIDDEN) and allow `@Barandnz` & `@Mberked`.
+- [ ] Feature flag updates persist to database and write an immutable record to `admin_audit_logs`.
+- [ ] Admin Web UI enables toggling feature flags and viewing/resolving flagged fraud cases.
+- [ ] Admin screen is hidden from standard players and cleanly styled for both mobile (360px+) and desktop.
+
+### Quality & Performance Gates
+- [ ] Unit & integration test suites cover invoice generation, webhook verification, admin RBAC, and fraud review.
+- [ ] Monorepo verification passes with 0 errors: `pnpm check` (lint, format:check, typecheck, test, build).
+- [ ] `HANDOFF.md` updated with completed changes, test results, and operational instructions.
+
+## 2026-09-16T11:18:25Z
+
+# Teamwork Project Prompt — Draft
+
+> Status: Launched
+> Goal: Execute prompt via teamwork_preview multi-agent system
+> Requested team: Maximum 2 concurrent agents with strict domain isolation (Core Economy & Math Engine vs. Frontend Interactive Mini-Games UI)
+
+Revamp and expand the Project Empire mini-game arcade suite: overhaul the merge game into a vibrant Catizen-style item progression experience, elevate the Cipher game into a thrilling cyber-hack terminal, build a full-featured Notcoin-style Tap-to-Earn game with Cash & Telegram Stars upgrades and strict economic balance, and create a brand-new Crypto Candlestick "Moon or Doom" Crash game.
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: demo
+
+## Architecture & Agent Boundary Constraints (Max 2 Concurrent Agents)
+To respect the user's strict maximum 2-agent concurrency limit and isolate responsibilities:
+
+1. **Stream 1 - Core Math Models, Simulation & Economy Engine**:
+   - Scope: `packages/game-core/src/`, `packages/shared/src/`, `apps/api/src/`
+   - Responsibilities:
+     - Mathematical formulas for Notcoin Tap economy: energy regeneration curve, tap power scaling (`base * 1.5^lvl`), offline TapBot accumulator formulas, and Telegram Stars purchase SKU bindings.
+     - Catizen-style merge progression economy: tier multipliers (Tier 1 to 10+), idle cash generation rates per second, drop parcel spawn probabilities, and auto-merge macro solver.
+     - Crypto Candlestick / Crash game math: provably fair random walk / multiplier curve, crash point distribution, risk/reward payout calculation.
+     - Exhaustive mathematical unit tests and invariant proofs (preventing hyper-inflation or infinite loops).
+2. **Stream 2 - Rich Interactive Frontend Mini-Games & Mini App UI**:
+   - Scope: `apps/web/src/components/`, `apps/web/src/screens/`, `apps/web/src/game/`
+   - Responsibilities:
+     - **Catizen-Style Merge Overhaul**: Visual tier progression with vibrant collectible emblems, smooth drag/drop & click merge, particle burst feedback, periodic mystery box parcel drops, idle DPS coin counters, and intelligent auto-bot toggle.
+     - **Dynasty Cipher Terminal Revamp**: Cyberpunk terminal styling, audio/visual decrypt pulse, combo multipliers, time-attack pressure, and satisfying hack progress bar.
+     - **Notcoin Tap-to-Earn Game**: Big tactile coin with 3D squish tilt, floating damage/coin digits on click, animated energy bar, and upgrade drawer featuring both In-Game Cash and Telegram Stars (TapBot, Multitap, Energy Max, Offline Time Extender).
+     - **Crypto Candlestick "Moon or Doom" Crash Game**: Real-time animated canvas/SVG candlestick line, rising multiplier (1.00x -> 10.00x+), Boğa (Long) / Ayı (Short) or instant cash-out button, and win/crash animations.
+     - Zero layout shifts on 320px–390px mobile screens, fully integrated with Astra 6.0 theme.
+
+---
+
+## Requirements
+
+### R1. Catizen-Style Merge Game Overhaul (`CatizenMergeGame`)
+- Transform the static grid into a living, responsive merge board (3x3 or 4x3):
+  - 10+ distinct thematic tiers (e.g. Bronz Çip -> Gümüş Külçe -> Altın Kasa -> Platin Sunucu -> Kripto Çekirdek -> Kuantum Düğüm vb.).
+  - Active idle generation: each item on the board generates passive coins per second (visible floating tickers).
+  - Mystery parcel drops: every 15-20s, a gift box drops on an empty slot; clicking unboxes a random tier-1 or tier-2 item.
+  - Sound/visual juice: bounce animations on drop, particle burst on merge, level-up splash toast.
+  - Intelligent Auto-Bot: toggled or purchased assistant that automatically merges matching lowest-tier items and opens parcels smoothly.
+
+### R2. Dynasty Cipher Terminal Revamp (`DynastyCipherGame`)
+- Upgrade the memory game into a high-stakes crypto terminal hacking minigame:
+  - Dynamic sequence pacing: faster cadence, visual glitch/decrypt particle effects upon correct inputs.
+  - Combo streaks: consecutive perfect rounds build a multiplier (1.5x -> 2.0x -> 3.0x payout).
+  - Terminal feedback: audio-visual key clicks, firewall progress gauge, and clear win/loss animations.
+
+### R3. Notcoin Tap-to-Earn Clicker Game (`NotcoinTapGame`)
+- Implement the canonical Telegram tap-to-earn mechanic:
+  - Central 3D tactile coin/emblem with squish deformation and tilt on touch/click.
+  - Floating coin numbers (+1, +5 CRIT!) on tap with trajectory physics.
+  - Dynamic energy pool (e.g. 1,000 max), depleting per tap and refilling at steady rate.
+  - Dual-currency Upgrade Drawer:
+    - **Multitap**: +1 coin per tap (upgradeable with in-game Cash & Telegram Stars).
+    - **Energy Capacity**: +500 energy cap per level.
+    - **Recharging Speed**: +1 energy/sec recovery per level.
+    - **TapBot (Auto-Tapper)**: Auto-taps when idle and collects earnings up to offline time limit.
+    - **Offline Safe Extender**: Extends TapBot offline collection time (from 3h to 6h, 12h, 24h via Stars).
+  - Rigorous economic balancing in `@empire/game-core` to guarantee sustainable sink/faucet ratios.
+
+### R4. New Game: Crypto Candlestick "Moon or Doom" Crash Game (`CryptoCrashGame`)
+- High-intensity crypto market mini-game:
+  - Real-time animated green/red candlestick chart with rising profit multiplier (1.00x upwards).
+  - Player places stake and chooses "BOĞA (Rally)" with a manual "KÂRI AL" (Cash Out) button before the market dumps/crashes!
+  - Thrilling 10-15s rounds with dynamic chart ticks, tension sound/visual feedback, and payout multipliers.
+
+---
+
+## Acceptance Criteria
+
+### Catizen Merge Overhaul
+- [ ] Board supports drag/drop and click merge with bounce & particle animations.
+- [ ] Items on board produce passive coins/sec, and mystery gift parcels periodically land on open slots.
+- [ ] Auto-Merge Bot cleans and merges matching pairs automatically without deadlocks.
+
+### Cipher Terminal
+- [ ] Sequence inputs feel snappy with cyber-decrypt visuals and combo streak multipliers.
+- [ ] Round difficulty scales progressively with clear visual feedback.
+
+### Notcoin Tap-to-Earn
+- [ ] Responsive multi-touch tap target with 3D squish and floating text digits.
+- [ ] Energy depletion and regeneration loop functions smoothly and persists state.
+- [ ] Upgrade shop supports both In-Game Cash and Telegram Stars purchases with idempotent transaction handling.
+- [ ] TapBot calculates and credits offline earnings up to configured cap upon returning to the game.
+
+### Crypto Candlestick Crash Game
+- [ ] Candlestick chart animates smoothly at 60fps with clear multiplier readout.
+- [ ] Cash-out button instantly secures winnings before the randomized crash point.
+
+### Quality & Performance Gates
+- [ ] Monorepo verification passes with 0 errors: `pnpm check` (lint, format:check, typecheck, test, build).
+- [ ] All new game models covered by comprehensive unit & stress tests in `packages/game-core`.
+- [ ] Mobile responsive layout tested for 320px–390px screens with zero horizontal overflow.
+- [ ] `HANDOFF.md` updated with game mechanics, mathematical formulas, and test evidence.
+

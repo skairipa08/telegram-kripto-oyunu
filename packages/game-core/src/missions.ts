@@ -209,3 +209,87 @@ export function evaluateStreak(
 export function isMissionCompleted(progress: number, target: number): boolean {
   return progress >= target;
 }
+
+/**
+ * Deterministic string hashing function (FNV-1a 32-bit).
+ */
+export function hashString(str: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+/**
+ * Returns the Monday date string (YYYY-MM-DD) for the given date in UTC.
+ */
+export function getIsoWeekDateString(dateInput: string | Date): string {
+  const d =
+    typeof dateInput === 'string'
+      ? new Date(dateInput)
+      : new Date(dateInput.getTime());
+  const day = d.getUTCDay();
+  // Monday is 1, Sunday is 0 -> diff to Monday:
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  d.setUTCDate(d.getUTCDate() + diffToMonday);
+  return d.toISOString().slice(0, 10);
+}
+
+export interface SelectedMissionPool {
+  readonly daily: MissionDefinition[];
+  readonly weekly: MissionDefinition[];
+  readonly all: MissionDefinition[];
+}
+
+/**
+ * Deterministically selects 3 daily missions (1 easy, 1 normal, 1 hard)
+ * and 1 weekly mission for a given user and calendar date.
+ */
+export function selectMissionPool(
+  userId: string,
+  dateStr: string,
+  pool: readonly MissionDefinition[] = DEFAULT_MISSIONS,
+): SelectedMissionPool {
+  const normalizedDate = dateStr.slice(0, 10);
+  const weekMonday = getIsoWeekDateString(normalizedDate);
+
+  const easyMissions = pool.filter((m) => m.difficulty === 'easy');
+  const normalMissions = pool.filter((m) => m.difficulty === 'normal');
+  const hardMissions = pool.filter((m) => m.difficulty === 'hard');
+  const weeklyMissions = pool.filter((m) => m.difficulty === 'weekly');
+
+  const selectedDaily: MissionDefinition[] = [];
+
+  if (easyMissions.length > 0) {
+    const idx =
+      hashString(`${userId}:${normalizedDate}:easy`) % easyMissions.length;
+    selectedDaily.push(easyMissions[idx]!);
+  }
+
+  if (normalMissions.length > 0) {
+    const idx =
+      hashString(`${userId}:${normalizedDate}:normal`) % normalMissions.length;
+    selectedDaily.push(normalMissions[idx]!);
+  }
+
+  if (hardMissions.length > 0) {
+    const idx =
+      hashString(`${userId}:${normalizedDate}:hard`) % hardMissions.length;
+    selectedDaily.push(hardMissions[idx]!);
+  }
+
+  const selectedWeekly: MissionDefinition[] = [];
+  if (weeklyMissions.length > 0) {
+    const idx =
+      hashString(`${userId}:${weekMonday}:weekly`) % weeklyMissions.length;
+    selectedWeekly.push(weeklyMissions[idx]!);
+  }
+
+  return {
+    daily: selectedDaily,
+    weekly: selectedWeekly,
+    all: [...selectedDaily, ...selectedWeekly],
+  };
+}

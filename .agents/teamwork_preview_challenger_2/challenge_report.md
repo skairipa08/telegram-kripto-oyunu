@@ -1,158 +1,151 @@
-# Adversarial Challenge Report — Remote Config, Feature Flags & Analytics Pipeline
+# Adversarial Challenge Report: Admin RBAC, Feature Flags & Governance (Requirement R3)
 
-**Agent**: `teamwork_preview_challenger_2`  
-**Role**: EMPIRICAL CHALLENGER (critic, specialist)  
-**Timestamp**: 2026-09-14T15:26:30Z  
-**Overall Risk Assessment**: LOW (Robust, fully verified)
-
----
-
-## 1. Challenge Summary
-
-We conducted adversarial stress-testing against the implementation of **Remote Config & Feature Flags (M3 / Blueprint R8)** and **Analytics Pipeline & Cohort Models (M4 / Blueprint R10)**. 
-
-Every test scenario was executed empirically using vitest test runners against both pure formulas in `@empire/game-core`, shared schema contracts in `@empire/shared`, and database integration RPCs running in `@electric-sql/pglite` WASM PostgreSQL.
-
-All 27 adversarial stress tests and fuzzing vectors **PASSED** with zero unhandled exceptions, zero data corruptions, and 100% adherence to the Blueprint contracts.
+**Author**: teamwork_preview_challenger_2 (Empirical Challenger)  
+**Date**: 2026-09-16  
+**Status**: COMPLETE  
+**Overall Risk Assessment**: LOW (Core security controls are robust; 1 calculation bug discovered in metrics display)
 
 ---
 
-## 2. Adversarial Challenges & Stress Scenarios
+## Executive Summary
 
-### Challenge 1: Remote Config Corrupt Objects, Out-of-Bounds Numbers & Prototype Pollution
-- **Assumption Challenged**: Does `resolveEconomyConfig` survive deeply malformed inputs (non-objects, null, undefined, functions, Symbols, prototype pollution) without throwing exceptions, and does it guarantee that invalid numbers safely fall back to `DEFAULT_ECONOMY_CONFIG` while strictly preserving valid numbers?
-- **Attack Scenarios Tested**:
-  1. Root object passed as `null`, `undefined`, `42`, `"corrupt"`, `true`, `[1, 2, 3]`, `() => {}`, and `Symbol('attack')`.
-  2. Prototype pollution injection payload: `{"__proto__": {"polluted": true}, "constructor": {"prototype": {"polluted": true}}}`.
-  3. Extreme numeric overrides: `Infinity`, `-Infinity`, `NaN`, `Number.MAX_SAFE_INTEGER`, `Number.MIN_SAFE_INTEGER`.
-  4. Non-negative boundary violations: negative values for `offlineCapFreeSec` (-14400), `passPriceStars` (-250), `referralBindWindowMin` (-30), `upgradeCostGrowth` (-1.5).
-  5. Negative allowance verification: `seasonSruExponent` (-0.35) specifically allowed to be negative per economy design.
-  6. String coercion: valid numeric strings `'28800'`, `'500'`, `'1.25'` properly parsed; garbage strings `'not_a_number'`, `'10slots'`, `'-15'` cleanly fall back.
-- **Empirical Result**: **PASS**. `resolveEconomyConfig` never crashed, cleanly rejected prototype pollution attempts, sanitized out-of-bounds numbers back to defaults, permitted negative values only where explicitly designed (`seasonSruExponent`), and guaranteed all 20 canonical Section 18 keys exist with finite values.
+We performed empirical adversarial challenge and stress testing against Requirement R3 (Admin RBAC, Feature Flags & Governance). We authored and executed `apps/api/src/admin/rbac-governance-stress.test.ts`, comprising 12 automated adversarial test cases that attacked authentication gates, role privileges, session forgery, username case normalization, spoofing attempts, concurrent idempotency replays, audit log immutability, and multi-reward account unfreezing with ledger balances.
+
+All 6 test files across `apps/api/src/admin/`, `apps/api/src/config/`, and `apps/api/src/fraud/` (total 64 tests) passed with 100% green exit code.
+
+During testing, we discovered an empirical aggregation bug in the SQL stored procedure `empire_admin_get_flagged_accounts` (`supabase/migrations/202609140011_admin_governance.sql`), where joining `fraud_flags` and `frozen_rewards` simultaneously produces a Cartesian product that inflates `totalFrozenCash` and `totalFrozenSeasonPoints` display metrics by the number of active flags on the account.
 
 ---
 
-### Challenge 2: Feature Flags & Strict False Defaulting of `feature.token`
-- **Assumption Challenged**: Does `feature.token` strictly default to `false` under every possible absent, falsy, truthy, or malformed state, resisting even an explicit caller request for `fallback = true`?
-- **Attack Scenarios Tested**:
-  1. Absent states: `flags = null`, `flags = undefined`, `flags = {}`.
-  2. Malformed falsy/truthy types: `1`, `0`, `'1'`, `'0'`, `'yes'`, `'no'`, `'TRUE'`, `'FALSE'`, `[]`, `{}`, `NaN`, `null`, `undefined`.
-  3. Forced fallback bypass: `isFeatureEnabled({}, 'feature.token', true)` and `isFeatureEnabled(null, 'feature.token', true)`.
-  4. Dual key format: checked both `'feature.token'` and `'featureToken'`.
-  5. Explicit enable: only boolean `true` and string `'true'` evaluate to `true`.
-- **Empirical Result**: **PASS**. `isFeatureEnabled` enforces a hard guard:
-  ```typescript
-  return flagKey === 'feature.token' || flagKey === 'featureToken' ? false : fallback;
-  ```
-  `feature.token` strictly evaluates to `false` in all absent and malformed states, even when the caller passes `fallback = true`. It transitions to `true` if and only if explicitly set to boolean `true` or `'true'`.
+## Challenges & Stress Test Results
+
+### 1. RBAC Attack Vectors & Authentication Resistance
+- **Attack Scenario**: Send unauthenticated requests without session cookies, with malformed tokens, with expired cookies, or with forged signature secrets to all admin endpoints across `/admin/*` and `/api/admin/*`.
+  - **Result**: PASS. 100% of unauthenticated requests return HTTP 401 with `{ apiVersion: 'v1', error: { code: 'UNAUTHORIZED' } }`.
+- **Attack Scenario**: Send authenticated requests from regular players without superadmin roles.
+  - **Result**: PASS. 100% of requests return HTTP 403 with `{ apiVersion: 'v1', error: { code: 'FORBIDDEN' } }`.
+- **Attack Scenario**: Impersonate designated admins with suffix or prefix spoofing (`Barandnz_official`, `admin_mberked`, `Barandnz1`).
+  - **Result**: PASS. All spoofing attempts strictly fail with HTTP 403 FORBIDDEN.
+- **Attack Scenario**: Exploit `auditor` role to perform mutations on feature flags, config, or account unfreezing.
+  - **Result**: PASS. `auditor` is strictly prevented from executing any mutations (all return HTTP 403 FORBIDDEN).
+- **Attack Scenario**: Case variation bypass testing on designated admins (`Barandnz`, `BARANDNZ`, `Mberked`, `MBERKED`, `mberked`).
+  - **Result**: PASS. All case variants correctly resolve and grant HTTP 200 OK access.
+
+### 2. Feature Flag Dynamic Toggles, Idempotency & Audit Logs
+- **Attack Scenario**: Dynamic modification of `feature.stars_payments`, `feature.maintenance_mode`, `feature.referrals`, and `economy.multiplier`.
+  - **Result**: PASS. Changes persist immediately in `public.economy_config` and reflect on `GET /admin/feature-flags`.
+- **Attack Scenario**: Replay attack with 10 concurrent requests sharing the identical `requestId` UUID.
+  - **Result**: PASS. All 10 requests succeed with HTTP 200 and return identical payload; exactly 1 audit record is created in `public.admin_audit_logs`.
+- **Attack Scenario**: Replay tampering: Attacker reuses a previous `requestId` but attempts to modify `value` or `reason`.
+  - **Result**: PASS. The database stored procedure detects the existing `p_request_id`, preserves the original state without executing modifications, and returns the original cached response.
+- **Verification of Audit Fields**:
+  - `admin_username`: Verified persisted as authenticated admin username.
+  - `action`: Verified as `set_feature_flag` or `update_config`.
+  - `target_key`: Verified matching key.
+  - `old_value` and `new_value`: Verified exact JSON values.
+  - `reason`: Verified matching reason string.
+  - `created_at`: Verified valid timestamp.
+
+### 3. Fraud Account Unfreezing & Multi-Reward Settlement
+- **Attack Scenario**: User suspended with risk score 95, 2 active fraud flags, 3 frozen rewards (totaling 50,000 cash, 1,000 season points), and 1 previously rejected reward.
+  - **Result**: PASS.
+    - User status restored to `active` and `risk_score` reset to `0`.
+    - All 3 frozen rewards updated to `approved`.
+    - Previously rejected reward remains `rejected` (untouched).
+    - All active fraud flags updated to `resolved`.
+    - Player balances accurately incremented by +50,000 cash and +1,000 season points.
+    - Exactly 3 entries inserted into `public.reward_ledger` with reason `reward_unfrozen_approved` and 64-char SHA256 hex idempotency keys.
+    - Audit log entry recorded with action `unfreeze_account`.
+    - Replay of unfreeze request with same `requestId` returns cached response and does NOT double-credit balances.
+- **Alias Parity**: Verified `/admin/fraud/accounts/:id/resolve` functions identically to `/unfreeze`.
 
 ---
 
-### Challenge 3: Audit Trail Completeness & Immutability Under Config Mutations
-- **Assumption Challenged**: Does every mutation through `/admin/config` and database RPC `empire_config_update` reliably create an immutable audit trail entry in `admin_audit_logs`?
-- **Attack Scenarios Tested**:
-  1. Mutation of economy parameter (`economy.offline_cap_free_sec`) records `action = 'update_config'`, `target_type = 'economy_config'`, `old_value`, `new_value`, and `admin_user_id`.
-  2. Mutation of feature flag (`feature.token`) records `action = 'set_feature_flag'`, `target_type = 'feature_flag'`, `new_value = true`.
-  3. Reason length constraint: long reasons (>256 characters) are safely truncated to 256 characters without throwing a SQL error.
-  4. Table permissions: public and authenticated roles are revoked from `admin_audit_logs`. `service_role` has `select`, `insert`, `update`; no `delete` grant exists.
-- **Empirical Result**: **PASS**. Verified that each mutation generates a unique `auditLogId`, persists the complete transition state to `admin_audit_logs`, properly classifies feature flags vs economy constants, and enforces 256-character truncation on reasons.
+## Discovered Vulnerability: Cartesian Join Metric Inflation
+
+### Description
+In `supabase/migrations/202609140011_admin_governance.sql`, stored procedure `empire_admin_get_flagged_accounts`:
+```sql
+  from (
+    select
+      u.id,
+      ...
+      count(distinct f.id) filter (where f.status in ('pending', 'investigating')) as pending_flags_count,
+      count(distinct r.id) filter (where r.status = 'frozen') as frozen_rewards_count,
+      coalesce(sum(r.amount_cash) filter (where r.status = 'frozen'), 0) as total_frozen_cash,
+      coalesce(sum(r.amount_season_points) filter (where r.status = 'frozen'), 0) as total_frozen_points,
+      ...
+    from public.users u
+    left join public.fraud_flags f on f.user_id = u.id and f.status in ('pending', 'investigating')
+    left join public.frozen_rewards r on r.user_id = u.id and r.status = 'frozen'
+    where u.risk_score > 0 or f.id is not null or r.id is not null
+    group by u.id, u.telegram_user_id, u.username, u.first_name, u.risk_score, u.status, u.created_at
+  ) sub;
+```
+
+### Attack / Failure Scenario
+When a user has $M$ active fraud flags and $N$ frozen rewards, joining `public.fraud_flags` and `public.frozen_rewards` simultaneously produces $M \times N$ joined rows.
+- `count(distinct r.id)` is correct ($N$) because of `DISTINCT`.
+- `sum(r.amount_cash)` lacks `DISTINCT`, causing each frozen reward amount to be summed $M$ times (multiplied by the number of fraud flags).
+- In our test case with 2 flags and 3 rewards totaling 50,000 Cash and 1,000 Season Points, `totalFrozenCash` was reported as 100,000 Cash and `totalFrozenSeasonPoints` was reported as 2,000 Season Points.
+
+### Severity & Impact
+- **Severity**: LOW-MEDIUM (Dashboard metrics display flaw).
+- **Blast Radius**: Does NOT affect wallet balances or unfreezing logic (since `empire_admin_unfreeze_account` iterates over `frozen_rewards` rows independently). Only distorts the overview metrics shown in the admin queue for accounts with multiple concurrent flags.
+
+### Recommended Fix
+Aggregate `fraud_flags` and `frozen_rewards` in separate subqueries before joining to `users`:
+```sql
+    select
+      u.id,
+      u.telegram_user_id,
+      u.username,
+      u.first_name,
+      u.risk_score,
+      u.status,
+      u.created_at,
+      coalesce(f.pending_flags_count, 0) as pending_flags_count,
+      coalesce(r.frozen_rewards_count, 0) as frozen_rewards_count,
+      coalesce(r.total_frozen_cash, 0) as total_frozen_cash,
+      coalesce(r.total_frozen_points, 0) as total_frozen_points,
+      coalesce(f.highest_severity, 'none') as highest_severity
+    from public.users u
+    left join (
+      select
+        user_id,
+        count(*) as pending_flags_count,
+        case
+          max(case
+            when severity = 'critical' then 4
+            when severity = 'high' then 3
+            when severity = 'medium' then 2
+            when severity = 'low' then 1
+            else 0
+          end)
+          when 4 then 'critical'
+          when 3 then 'high'
+          when 2 then 'medium'
+          when 1 then 'low'
+          else 'none'
+        end as highest_severity
+      from public.fraud_flags
+      where status in ('pending', 'investigating')
+      group by user_id
+    ) f on f.user_id = u.id
+    left join (
+      select
+        user_id,
+        count(*) as frozen_rewards_count,
+        sum(amount_cash) as total_frozen_cash,
+        sum(amount_season_points) as total_frozen_points
+      from public.frozen_rewards
+      where status = 'frozen'
+      group by user_id
+    ) r on r.user_id = u.id
+    where u.risk_score > 0 or f.pending_flags_count > 0 or r.frozen_rewards_count > 0
+```
 
 ---
 
-### Challenge 4: Analytics Taxonomy Fuzzing & Ingestion Payload Constraints
-- **Assumption Challenged**: Can non-canonical event names, SQL injection payloads, XSS strings, or oversized request batches bypass the analytics validation layer?
-- **Attack Scenarios Tested**:
-  1. 21 canonical events: All 21 names from Blueprint Section 18 verified valid.
-  2. Malicious event name fuzzing:
-     - Whitespace: `' '`, `'\t'`, `'\n'`, `'app_open '`, `' app_open'`.
-     - Casing / casing variations: `'APP_OPEN'`, `'App_Open'`, `'app-open'`, `'app_opened'`.
-     - Injection attacks: `"app_open' OR '1'='1"`, `"app_open; DROP TABLE analytics_events;"`, `"<script>alert('xss')</script>"`.
-     - Homoglyphs / Unicode: `'app_open🚀'`, Cyrillic `'арр_ореn'`.
-     - Object prototype pollution: `'__proto__'`, `'constructor'`, `'toString'`, `'valueOf'`.
-     - 10,000-character string: `'A'.repeat(10000)`.
-  3. Payload constraints on `trackAnalyticsEventsRequestSchema`:
-     - Empty array (`events: []`): rejected (min 1).
-     - Oversized array (51 events): rejected (max 50).
-     - Allowed upper bound (50 events): accepted.
-     - Extra root properties: rejected (schema is `.strict()`).
-     - Non-UUID `requestId`: rejected.
-- **Empirical Result**: **PASS**. All non-canonical, malformed, and adversarial payloads were rejected with HTTP 400 Bad Request or Zod validation errors.
-
----
-
-### Challenge 5: Cohort Retention Under Leap Years, Cross-Midnight Sessions & Sparse Activity
-- **Assumption Challenged**: Can leap days (Feb 29), year-end boundaries (Dec 31 to Jan 1), sub-second cross-midnight sessions, non-UTC timezone offsets, or sparse/repetitive logs cause off-by-one errors in D1, D2, or D7 retention metrics?
-- **Attack Scenarios Tested**:
-  1. Leap year 2024 boundary:
-     - Signup `2024-02-28` -> D1 is `2024-02-29` (leap day), D2 is `2024-03-01`, D7 is `2024-03-06`. Retention rates evaluated to 1.0.
-     - Signup on leap day `2024-02-29` -> D1 is `2024-03-01`, D2 is `2024-03-02`, D7 is `2024-03-07`.
-     - Non-leap year 2025: `2025-02-28` + 1 day = `2025-03-01`.
-  2. Year-end rollover:
-     - Signup `2026-12-31T23:50:00Z` -> D1 is `2027-01-01`, D7 is `2027-01-07`. Evaluated accurately.
-  3. Millisecond cross-midnight session:
-     - Session 1 at `2026-09-14T23:59:59.999Z` (D0) and Session 2 at `2026-09-15T00:00:00.001Z` (D1) -> 2ms difference correctly credits D1 retention.
-  4. Timezone offset normalization:
-     - Input `2026-09-15T01:30:00+05:30` (UTC: `2026-09-14T20:00:00Z`) correctly normalized to `2026-09-14` (Day 0, NOT Day 1).
-     - Input `2026-09-15T06:00:00+05:30` (UTC: `2026-09-15T00:30:00Z`) correctly normalized to `2026-09-15` (Day 1).
-  5. Sparse and repetitive activity:
-     - 50 duplicate sessions on D1 counted exactly once.
-     - Activity exclusively on D7 counted as D7=1, D1=0, D2=0.
-     - Activity on non-cohort days (D3, D5, D9) yields D1=0, D2=0, D7=0.
-     - Immediate churn (0 active dates) yields D1=0, D2=0, D7=0 without error.
-  6. Referral retention milestones (`retained_d2`, `retained_d7`):
-     - Day 7 session (`2026-09-08T23:59:59Z`) included in window -> qualifies.
-     - Day 8 session (`2026-09-09T00:00:01Z`) outside window -> does not qualify for D7.
-  7. KPI calculations (`calculateActivationRate`, `calculatePayerConversion`, `calculateARPPU`):
-     - Division by zero (0 total, 0 payers) returns 0.
-     - Negative numbers return 0.
-     - Float rounding matches specified precision (4 decimals for rates, 2 decimals for ARPPU).
-- **Empirical Result**: **PASS**. All calendar-day arithmetic, leap year logic, cross-midnight sessions, and timezone normalizations are completely deterministic and mathematically sound.
-
----
-
-## 3. Stress Test Results Matrix
-
-| # | Stress Scenario | Expected Behavior | Actual Behavior | Result |
-|---|-----------------|-------------------|-----------------|:------:|
-| 1 | `resolveEconomyConfig(null/undefined/42/"str"/true/fn)` | Returns `DEFAULT_ECONOMY_CONFIG` | Returned exact default config | **PASS** |
-| 2 | Prototype pollution `{"__proto__": ...}` | No prototype pollution, returns default | Object clean, no polluted keys | **PASS** |
-| 3 | Extreme numbers (`NaN`, `±Infinity`) | Falls back to default constants | Normalized to valid finite defaults | **PASS** |
-| 4 | Negative values on non-negative fields | Falls back to default constants | Reverted to default constants | **PASS** |
-| 5 | Negative value on `seasonSruExponent` | Preserves valid negative exponent | Accepted `-0.35` | **PASS** |
-| 6 | String-encoded numbers vs corrupt strings | Parses valid numbers, rejects corrupt | Valid parsed, corrupt defaulted | **PASS** |
-| 7 | All 20 Section 18 keys present | Full key coverage | All 20 keys defined and finite | **PASS** |
-| 8 | `feature.token` absent or corrupt | Strictly evaluates to `false` | Evaluated to `false` | **PASS** |
-| 9 | `feature.token` with `fallback = true` | Guard overrides fallback to `false` | Evaluated to `false` | **PASS** |
-| 10 | `feature.token` explicitly `true` / `'true'` | Evaluates to `true` | Evaluated to `true` | **PASS** |
-| 11 | Audit entry formatting with >256 char reason | Truncates reason to 256 chars | Truncated to 256 chars | **PASS** |
-| 12 | Database RPC `empire_config_update` audit log | Inserts audit entry in `admin_audit_logs` | Created immutable audit row | **PASS** |
-| 13 | Audit log classification | `update_config` vs `set_feature_flag` | Correct target type and action | **PASS** |
-| 14 | Database override fallback on DB corrupt value | Public config serves default | Served default (250 Stars) | **PASS** |
-| 15 | 21 canonical analytics event names | All 21 evaluate to `true` | All 21 accepted | **PASS** |
-| 16 | Non-canonical names (SQLi, XSS, Unicode, case) | All evaluate to `false` | All rejected | **PASS** |
-| 17 | `trackAnalyticsEventsRequestSchema` min/max limits | 0 rejects, 50 passes, 51 rejects | Enforced limits strictly | **PASS** |
-| 18 | Strict request schema extra fields | Extra root properties rejected | Rejected invalid payload | **PASS** |
-| 19 | Leap year Feb 28/29 to March 1 (2024) | D1=Feb 29, D2=Mar 1, D7=Mar 6 | Exactly matched leap calendar | **PASS** |
-| 20 | Non-leap year Feb 28 to March 1 (2025) | D1=Mar 1 | Handled 28-day Feb accurately | **PASS** |
-| 21 | Year-end rollover Dec 31 to Jan 1 | Rollover increments year to 2027 | Correctly spanned year boundary | **PASS** |
-| 22 | Millisecond cross-midnight session | 2ms across midnight registers D1 | D1 accurately credited | **PASS** |
-| 23 | Non-UTC timezone offset (+05:30) | Normalized to UTC calendar date | Prevented premature D1 credit | **PASS** |
-| 24 | Repetitive / duplicate sessions on D1 | Deduplicated, counted once | Counted as 1 user | **PASS** |
-| 25 | Sparse / zero activity history | Handled without error | Rates 0.0, no NaN or crash | **PASS** |
-| 26 | Referral retention window boundary (Day 7 vs 8) | Day 7 in window, Day 8 excluded | Exactly evaluated window | **PASS** |
-| 27 | KPI models division by zero & rounding | Returns 0 on zero/negative, rounded | Protected, rounded cleanly | **PASS** |
-
----
-
-## 4. Unchallenged Areas
-
-- **UI / Frontend Components (`apps/web`)**: Out of scope per Requirement R5 and Blueprint Section 18 boundary isolation.
-- **Anti-Cheat / Anti-Fraud Production Engines**: Out of scope per Requirement R5 (reserved for Astra 6.0).
-
----
-
-## 5. Verdict
-
-**APPROVE**
-
-Remote Config, Feature Flags, and Analytics Pipeline have been empirically challenged under adversarial inputs, extreme conditions, fuzzing vectors, and calendar edge cases. The implementation is robust, production-grade, and free of defects.
+## Verdict: APPROVE
+The core security requirements for Requirement R3 (RBAC enforcement, authentication guardrails, auditor restrictions, designated admin casing, dynamic feature toggles, concurrency idempotency, and fraud unfreeze ledger accuracy) are fully satisfied and robust against adversarial attack.

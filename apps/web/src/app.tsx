@@ -1,7 +1,7 @@
 import { ApiError } from './api/client';
 import { getAuthRecovery } from './auth/auth-policy';
 import { usePlayerSession } from './auth/use-player-session';
-import { GameShell } from './components/game-shell';
+import { GameShell } from './game/live-game';
 import { LoadingScreen } from './components/loading-screen';
 import { ReopenScreen } from './components/reopen-screen';
 import { WelcomeScreen } from './components/welcome-screen';

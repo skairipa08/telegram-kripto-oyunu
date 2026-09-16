@@ -30,6 +30,10 @@ export interface TelegramWebApp {
   expand(): void;
   onEvent(event: TelegramWebAppEvent, callback: () => void): void;
   offEvent(event: TelegramWebAppEvent, callback: () => void): void;
+  openInvoice?(
+    url: string,
+    callback?: (status: 'paid' | 'cancelled' | 'failed' | 'pending') => void,
+  ): void;
 }
 
 declare global {

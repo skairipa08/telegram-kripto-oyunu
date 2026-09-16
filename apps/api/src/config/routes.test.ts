@@ -18,6 +18,7 @@ const env: Bindings = {
 let database: Awaited<ReturnType<typeof createTestDatabase>>;
 let app: ReturnType<typeof createApp>;
 let adminUser: { cookie: string; userId: string };
+let playerUser: { cookie: string; userId: string };
 
 function initData(id: number, username: string) {
   const fields = {
@@ -52,21 +53,39 @@ describe('Remote Config & Admin Audit Routes', () => {
       () => now,
     );
 
-    const res = await app.request(
+    // 1. Authenticate designated superadmin (@Barandnz)
+    const resAdmin = await app.request(
       '/auth/telegram',
       {
         method: 'POST',
         headers: { Origin: origin, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          initData: initData(301, 'config_admin'),
+          initData: initData(301, 'barandnz'),
           requestId: crypto.randomUUID(),
         }),
       },
       env,
     );
-    const cookie = res.headers.get('set-cookie')?.split(';')[0];
-    const body = (await res.json()) as { user: { id: string } };
-    adminUser = { cookie: cookie ?? '', userId: body.user.id };
+    const adminCookie = resAdmin.headers.get('set-cookie')?.split(';')[0];
+    const adminBody = (await resAdmin.json()) as { user: { id: string } };
+    adminUser = { cookie: adminCookie ?? '', userId: adminBody.user.id };
+
+    // 2. Authenticate non-admin regular player
+    const resPlayer = await app.request(
+      '/auth/telegram',
+      {
+        method: 'POST',
+        headers: { Origin: origin, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          initData: initData(302, 'player_one'),
+          requestId: crypto.randomUUID(),
+        }),
+      },
+      env,
+    );
+    const playerCookie = resPlayer.headers.get('set-cookie')?.split(';')[0];
+    const playerBody = (await resPlayer.json()) as { user: { id: string } };
+    playerUser = { cookie: playerCookie ?? '', userId: playerBody.user.id };
   });
 
   it('provides public config without authentication with feature.token strictly false', async () => {
@@ -107,6 +126,29 @@ describe('Remote Config & Admin Audit Routes', () => {
       env,
     );
     expect(res.status).toBe(401);
+  });
+
+  it('rejects non-admin player config mutation requests with 403 FORBIDDEN', async () => {
+    const res = await app.request(
+      '/admin/config',
+      {
+        method: 'POST',
+        headers: {
+          Cookie: playerUser.cookie,
+          Origin: origin,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          key: 'pass.price_stars',
+          value: 999,
+          requestId: crypto.randomUUID(),
+        }),
+      },
+      env,
+    );
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe('FORBIDDEN');
   });
 
   it('mutates remote configuration and creates admin audit log trail', async () => {

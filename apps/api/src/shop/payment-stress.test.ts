@@ -47,6 +47,8 @@ function initData(id: number, username: string) {
   }).toString();
 }
 
+import { createTestShopStore } from './test-helper';
+
 describe('Empirical Payment Idempotency & Anti-P2W Stress Harness', () => {
   beforeAll(async () => {
     database = await createTestDatabase();
@@ -54,7 +56,7 @@ describe('Empirical Payment Idempotency & Anti-P2W Stress Harness', () => {
       {
         makeAuthStore: () => database.store,
         makeLeaderboardStore: () => database.leaderboardStore,
-        makeShopStore: () => database.shopStore,
+        makeShopStore: () => createTestShopStore(database),
         makeConfigStore: () => database.configStore,
         makeAnalyticsStore: () => database.analyticsStore,
       },

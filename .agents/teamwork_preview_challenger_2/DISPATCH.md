@@ -1,21 +1,35 @@
-# Dispatch for teamwork_preview_challenger_2
+## 2026-09-16T11:43:04Z
 
 You are teamwork_preview_challenger_2.
 Your working directory is: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_challenger_2
-Parent Orchestrator: teamwork_preview_orchestrator_1
+Your identity: teamwork_preview_challenger_2
+Authoritative User Request: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md (MUST read the entire file, especially the latest section dated 2026-09-16T11:18:25Z).
+Master Project Architecture: c:\Users\Administrator\Desktop\telegram kripto oyunu\PROJECT.md
+Stream 2 Worker Handoff: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_worker_stream2\handoff.md
 
-Read c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md.
-Read c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_orchestrator_1\PROJECT.md.
-Read worker handoff at: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_worker_m1\handoff.md.
+OBJECTIVE:
+Empirically stress-test, adversarially probe, and challenge the Stream 2 frontend components, client models, styling, and mobile responsiveness.
 
-Task:
-Empirically challenge and stress-test Remote Config and Analytics:
-1. Remote config: Test deeply corrupted config objects, null values, extreme numbers, unknown keys, ensuring fallback to default constants never crashes and always preserves valid defaults.
-2. Feature flags: Verify feature.token strictly defaults to false under all absent or malformed states, and only evaluates to true when explicitly set to true.
-3. Audit logs: Verify that every mutation creates an immutable audit trail entry.
-4. Analytics: Fuzz the 21 canonical events validator with invalid names, missing payloads, malicious strings.
-5. Cohorts: Stress-test D1, D2, D7 retention calculations with leap years, timezone offsets, cross-midnight sessions, and sparse activity histories.
-6. Run builds and tests to verify everything passes cleanly.
+CHALLENGE TEST VECTORS:
+1. Mobile Responsiveness & Viewport Stress (320px–390px):
+   - Inspect `apps/web/src/components/arcade.css` and all 4 game components for any fixed width > 290px that could cause horizontal scroll on a 320px screen.
+   - Verify that all grids use `repeat(N, minmax(0, 1fr))` with percentage/clamp gaps.
+   - Verify that all interactive controls have minimum 44px touch targets.
+2. Adversarial Interaction & State Handling:
+   - Catizen Merge: Test invalid drag targets (drag onto different tier, drag onto parcel, drag onto empty slot, drag out of bounds). Ensure board state is never corrupted.
+   - Notcoin Tap: Test rapid clicks with 0 energy. Ensure energy meter never goes negative and buttons do not break.
+   - Dynasty Cipher: Test time-attack timer expiration. Ensure setInterval timers are cleared cleanly without memory leaks or double firing.
+   - Crypto Crash: Test rapid clicks on Boğa / Kârı Al button during state transitions (countdown -> running -> cashed_out -> crashed). Ensure payout is calculated accurately without double crediting.
+3. Audio Synthesizer & Telegram Haptics:
+   - Verify Web Audio synthesizer handles muted state cleanly without throwing UnhandledRejection or AudioContext errors in headless / un-interacted environments.
+   - Verify Telegram HapticFeedback safely falls back to navigator.vibrate or no-op when window.Telegram is undefined.
+4. Execute Test Commands:
+   - Run `pnpm --filter @empire/web test`
+   - Run `pnpm --filter @empire/web build`
+   - Document commands and verbatim outputs.
 
-Write your challenge findings to challenge_report.md and produce handoff.md with verdict: APPROVE or REJECT.
-Send a message back to parent when done.
+OUTPUT:
+Write your report to:
+c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_challenger_2\handoff.md
+Include unambiguous verdict: `VERDICT: APPROVE` or `VERDICT: REQUEST_CHANGES`.
+When done, send a message to orchestrator with verdict and handoff path.

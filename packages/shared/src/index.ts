@@ -432,6 +432,53 @@ export type FulfillPaymentResponse = z.infer<
   typeof fulfillPaymentResponseSchema
 >;
 
+export const invoiceStatusDtoSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  sku: z.string(),
+  starsAmount: z.number().int().positive(),
+  status: z.enum(['pending', 'completed', 'failed', 'refunded']),
+  telegramPaymentChargeId: z.string().nullable(),
+  invoicePayload: z.string(),
+  currency: z.literal('XTR').default('XTR'),
+  createdAt: z.iso.datetime(),
+  completedAt: z.iso.datetime().nullable(),
+});
+export type InvoiceStatusDto = z.infer<typeof invoiceStatusDtoSchema>;
+
+export const invoiceStatusResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  invoice: invoiceStatusDtoSchema,
+});
+export type InvoiceStatusResponse = z.infer<typeof invoiceStatusResponseSchema>;
+
+export const telegramPreCheckoutQuerySchema = z.object({
+  id: z.string(),
+  from: z.object({
+    id: z.number(),
+    is_bot: z.boolean().optional(),
+    first_name: z.string().optional(),
+    username: z.string().optional(),
+  }),
+  currency: z.string(),
+  total_amount: z.number().int().positive(),
+  invoice_payload: z.string(),
+});
+export type TelegramPreCheckoutQuery = z.infer<
+  typeof telegramPreCheckoutQuerySchema
+>;
+
+export const telegramSuccessfulPaymentSchema = z.object({
+  currency: z.string(),
+  total_amount: z.number().int().positive(),
+  invoice_payload: z.string(),
+  telegram_payment_charge_id: z.string(),
+  provider_payment_charge_id: z.string().optional(),
+});
+export type TelegramSuccessfulPayment = z.infer<
+  typeof telegramSuccessfulPaymentSchema
+>;
+
 // --- Step 9: Admin Remote Config & Feature Flags DTO Schemas (Blueprint R8) ---
 
 export const economyConfigDtoSchema = z.object({
@@ -591,3 +638,322 @@ export const analyticsMetricsResponseSchema = z.object({
 export type AnalyticsMetricsResponse = z.infer<
   typeof analyticsMetricsResponseSchema
 >;
+
+// --- Requirement R3: Anti-Fraud & Admin Review DTO Schemas ---
+
+export const adminFraudFlagDtoSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  targetType: z.enum(['user', 'reward', 'transaction', 'referral', 'session']),
+  targetId: z.string(),
+  riskScore: z.number().int().min(0).max(100),
+  reasonCodes: z.array(z.string()).min(1),
+  severity: z.enum(['low', 'medium', 'high', 'critical']),
+  status: z.enum(['pending', 'investigating', 'resolved', 'dismissed']),
+  metadata: z.record(z.string(), z.unknown()),
+  reviewedBy: z.string().uuid().nullable(),
+  reviewedAt: z.string().nullable(),
+  resolutionNotes: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  user: z
+    .object({
+      telegramId: z.string(),
+      username: z.string().nullable(),
+      firstName: z.string(),
+      status: z.string(),
+      userRiskScore: z.number().int(),
+    })
+    .optional(),
+});
+export type AdminFraudFlagDto = z.infer<typeof adminFraudFlagDtoSchema>;
+
+export const adminFraudFlagsResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  flags: z.array(adminFraudFlagDtoSchema),
+  total: z.number().int().nonnegative(),
+  limit: z.number().int().positive().optional(),
+  offset: z.number().int().nonnegative().optional(),
+});
+export type AdminFraudFlagsResponse = z.infer<
+  typeof adminFraudFlagsResponseSchema
+>;
+
+export const adminFrozenRewardDtoSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  fraudFlagId: z.string().uuid().nullable(),
+  rewardType: z.enum([
+    'cash_claim',
+    'mission_reward',
+    'referral_bonus',
+    'streak_bonus',
+    'airdrop',
+  ]),
+  amountCash: z.number().int().nonnegative(),
+  amountSeasonPoints: z.number().int().nonnegative(),
+  status: z.enum(['frozen', 'approved', 'rejected']),
+  freezeReason: z.string(),
+  sourceRefId: z.string().nullable(),
+  metadata: z.record(z.string(), z.unknown()),
+  frozenAt: z.string(),
+  reviewedBy: z.string().uuid().nullable(),
+  reviewedAt: z.string().nullable(),
+  reviewNotes: z.string().nullable(),
+  user: z
+    .object({
+      telegramId: z.string(),
+      username: z.string().nullable(),
+      firstName: z.string(),
+      currentCash: z.number().int().nullable().optional(),
+      currentSeasonPoints: z.number().int().nullable().optional(),
+    })
+    .optional(),
+});
+export type AdminFrozenRewardDto = z.infer<typeof adminFrozenRewardDtoSchema>;
+
+export const adminFrozenRewardsResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  rewards: z.array(adminFrozenRewardDtoSchema),
+  total: z.number().int().nonnegative(),
+  limit: z.number().int().positive().optional(),
+  offset: z.number().int().nonnegative().optional(),
+});
+export type AdminFrozenRewardsResponse = z.infer<
+  typeof adminFrozenRewardsResponseSchema
+>;
+
+export const adminFraudReviewRequestSchema = z
+  .object({
+    rewardId: z.string().uuid(),
+    decision: z.enum(['approve', 'reject']),
+    reason: z.string().min(1).max(1000),
+  })
+  .strict();
+export type AdminFraudReviewRequest = z.infer<
+  typeof adminFraudReviewRequestSchema
+>;
+
+export const adminFraudReviewResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  success: z.boolean(),
+  decision: z.enum(['approved', 'rejected']),
+  frozenRewardId: z.string().uuid(),
+  creditedCash: z.number().int().nonnegative().optional(),
+  creditedSeasonPoints: z.number().int().nonnegative().optional(),
+  canceledCash: z.number().int().nonnegative().optional(),
+  canceledSeasonPoints: z.number().int().nonnegative().optional(),
+  newCash: z.number().int().nonnegative().optional(),
+  newSeasonPoints: z.number().int().nonnegative().optional(),
+  reviewedAt: z.string(),
+});
+export type AdminFraudReviewResponse = z.infer<
+  typeof adminFraudReviewResponseSchema
+>;
+
+// ============================================================================
+// 12. Arcade Minigames Schemas & DTOs
+// ============================================================================
+
+// --- Notcoin Tap ---
+export const tapGameStateDtoSchema = z.object({
+  energy: z.number().int().nonnegative(),
+  maxEnergy: z.number().int().positive(),
+  rechargeRate: z.number().int().positive(),
+  multitapLevel: z.number().int().positive(),
+  energyCapacityLevel: z.number().int().positive(),
+  rechargeSpeedLevel: z.number().int().positive(),
+  tapPower: z.number().int().positive(),
+  tapBotUnlocked: z.boolean(),
+  tapBotOfflineCapSeconds: z.number().int().positive(),
+  lastEnergyUpdateAt: z.string(),
+  lastTapBotClaimAt: z.string(),
+  unclaimedTapBotCash: z.number().int().nonnegative(),
+});
+export type TapGameStateDto = z.infer<typeof tapGameStateDtoSchema>;
+
+export const tapClickRequestSchema = z
+  .object({
+    tapCount: z.number().int().min(1).max(100),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type TapClickRequest = z.infer<typeof tapClickRequestSchema>;
+
+export const tapClickResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  tapsExecuted: z.number().int().nonnegative(),
+  coinsEarned: z.number().int().nonnegative(),
+  newCash: z.number().int().nonnegative(),
+  remainingEnergy: z.number().int().nonnegative(),
+  criticalHitsCount: z.number().int().nonnegative(),
+  energyRechargeRate: z.number().int().positive(),
+});
+export type TapClickResponse = z.infer<typeof tapClickResponseSchema>;
+
+export const tapUpgradeRequestSchema = z
+  .object({
+    upgradeType: z.enum([
+      'multitap',
+      'capacity',
+      'recharge_speed',
+      'unlock_bot',
+    ]),
+    currency: z.enum(['cash', 'stars']),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type TapUpgradeRequest = z.infer<typeof tapUpgradeRequestSchema>;
+
+export const tapUpgradeResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  upgradeType: z.string(),
+  newLevel: z.number().int().positive(),
+  cashCost: z.number().int().nonnegative(),
+  newCash: z.number().int().nonnegative(),
+});
+export type TapUpgradeResponse = z.infer<typeof tapUpgradeResponseSchema>;
+
+export const tapClaimBotRequestSchema = z
+  .object({
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type TapClaimBotRequest = z.infer<typeof tapClaimBotRequestSchema>;
+
+export const tapClaimBotResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  claimedCash: z.number().int().nonnegative(),
+  newCash: z.number().int().nonnegative(),
+  offlineSecondsElapsed: z.number().int().nonnegative(),
+  botTapsCount: z.number().int().nonnegative(),
+});
+export type TapClaimBotResponse = z.infer<typeof tapClaimBotResponseSchema>;
+
+// --- Catizen Merge ---
+export const mergeBoardStateDtoSchema = z.object({
+  grid: z.array(z.number().int()),
+  passiveRatePerSecond: z.number().int().nonnegative(),
+  unclaimedPassiveCash: z.number().int().nonnegative(),
+  lastPassiveClaimAt: z.string(),
+  nextParcelDropSeconds: z.number().int().nonnegative(),
+});
+export type MergeBoardStateDto = z.infer<typeof mergeBoardStateDtoSchema>;
+
+export const mergeActionRequestSchema = z
+  .object({
+    sourceIndex: z.number().int().min(0).max(15),
+    targetIndex: z.number().int().min(0).max(15),
+    actionType: z.enum(['move', 'merge', 'unbox_parcel']),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type MergeActionRequest = z.infer<typeof mergeActionRequestSchema>;
+
+export const mergeActionResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  grid: z.array(z.number().int()),
+  rewardCash: z.number().int().nonnegative(),
+  newCash: z.number().int().nonnegative(),
+  unlockedTier: z.number().int().optional(),
+});
+export type MergeActionResponse = z.infer<typeof mergeActionResponseSchema>;
+
+export const mergeAutoRequestSchema = z
+  .object({
+    autoUnbox: z.boolean(),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type MergeAutoRequest = z.infer<typeof mergeAutoRequestSchema>;
+
+export const mergeAutoResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  grid: z.array(z.number().int()),
+  totalMergesExecuted: z.number().int().nonnegative(),
+  parcelsOpened: z.number().int().nonnegative(),
+  totalRewardCash: z.number().int().nonnegative(),
+  newCash: z.number().int().nonnegative(),
+  newPassiveRatePerSecond: z.number().int().nonnegative(),
+});
+export type MergeAutoResponse = z.infer<typeof mergeAutoResponseSchema>;
+
+export const mergeClaimPassiveRequestSchema = z
+  .object({
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type MergeClaimPassiveRequest = z.infer<
+  typeof mergeClaimPassiveRequestSchema
+>;
+
+export const mergeClaimPassiveResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  claimedCash: z.number().int().nonnegative(),
+  newCash: z.number().int().nonnegative(),
+  elapsedSeconds: z.number().int().nonnegative(),
+});
+export type MergeClaimPassiveResponse = z.infer<
+  typeof mergeClaimPassiveResponseSchema
+>;
+
+// --- Crypto Crash ---
+export const crashStartRequestSchema = z
+  .object({
+    stake: z.number().int().min(10).max(10_000_000),
+    clientSeed: z.string().min(1).max(128).optional(),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type CrashStartRequest = z.infer<typeof crashStartRequestSchema>;
+
+export const crashStartResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  roundId: z.string().uuid(),
+  stake: z.number().int().positive(),
+  serverSeedHash: z.string(),
+  startTime: z.string(),
+});
+export type CrashStartResponse = z.infer<typeof crashStartResponseSchema>;
+
+export const crashCashoutRequestSchema = z
+  .object({
+    roundId: z.string().uuid(),
+    claimMultiplier: z.number().positive(),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type CrashCashoutRequest = z.infer<typeof crashCashoutRequestSchema>;
+
+export const crashCashoutResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  roundId: z.string().uuid(),
+  status: z.enum(['won', 'crashed']),
+  crashMultiplier: z.number(),
+  cashoutMultiplier: z.number(),
+  payoutCash: z.number().int().nonnegative(),
+  netProfit: z.number().int(),
+  newCash: z.number().int().nonnegative(),
+  serverSeed: z.string(),
+});
+export type CrashCashoutResponse = z.infer<typeof crashCashoutResponseSchema>;
+
+// --- Dynasty Cipher ---
+export const cipherSubmitRequestSchema = z
+  .object({
+    round: z.number().int().min(1),
+    combo: z.number().int().min(1),
+    completedSuccessfully: z.boolean(),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type CipherSubmitRequest = z.infer<typeof cipherSubmitRequestSchema>;
+
+export const cipherSubmitResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  round: z.number().int().positive(),
+  combo: z.number().int().positive(),
+  rewardCash: z.number().int().nonnegative(),
+  newCash: z.number().int().nonnegative(),
+});
+export type CipherSubmitResponse = z.infer<typeof cipherSubmitResponseSchema>;

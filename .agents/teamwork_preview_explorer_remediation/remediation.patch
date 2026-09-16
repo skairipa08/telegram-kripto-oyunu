@@ -1,0 +1,73 @@
+diff --git a/apps/api/src/admin/routes.ts b/apps/api/src/admin/routes.ts
+index 1111111..2222222 100644
+--- a/apps/api/src/admin/routes.ts
++++ b/apps/api/src/admin/routes.ts
+@@ -1,4 +1,4 @@
+-import { Hono } from 'hono';
++import { Hono, type Context } from 'hono';
+ import { bodyLimit } from 'hono/body-limit';
+ import { z } from 'zod';
+ import type { Bindings } from '../auth/env';
+@@ -53,3 +53,3 @@
+   // Helper for session and RBAC check
+-  const checkSuperadmin = async (c: any) => {
++  const checkSuperadmin = async (c: Context<{ Bindings: Bindings }>) => {
+     const authStore = makeAuthStore(c.env);
+@@ -195,5 +195,3 @@
+-    let body: { reason?: string | undefined; requestId?: string | undefined } = {
+-      reason: 'Account unfreeze by admin',
+-    };
++    let body: z.infer<typeof unfreezeAccountSchema>;
+     try {
+       const raw = await c.req.json().catch(() => ({}));
+@@ -248,5 +246,3 @@
+-    let body: { reason?: string | undefined; requestId?: string | undefined } = {
+-      reason: 'Account resolved by admin',
+-    };
++    let body: z.infer<typeof unfreezeAccountSchema>;
+     try {
+       const raw = await c.req.json().catch(() => ({}));
+diff --git a/apps/api/src/shop/adversarial-challenge.test.ts b/apps/api/src/shop/adversarial-challenge.test.ts
+index 3333333..4444444 100644
+--- a/apps/api/src/shop/adversarial-challenge.test.ts
++++ b/apps/api/src/shop/adversarial-challenge.test.ts
+@@ -160,3 +160,4 @@
+-      const openEnv: Bindings = { ...env, TELEGRAM_WEBHOOK_SECRET: undefined };
++      const openEnv: Bindings = { ...env };
++      delete openEnv.TELEGRAM_WEBHOOK_SECRET;
+       const res = await app.request(
+@@ -472,3 +473,3 @@
+-        metadata: any;
++        metadata: unknown;
+       }>(
+diff --git a/apps/api/src/shop/routes.ts b/apps/api/src/shop/routes.ts
+index 5555555..6666666 100644
+--- a/apps/api/src/shop/routes.ts
++++ b/apps/api/src/shop/routes.ts
+@@ -1,4 +1,4 @@
+-import { Hono } from 'hono';
++import { Hono, type Context } from 'hono';
+ import {
+   calculateConveniencePassEntitlements,
+   DEFAULT_SKUS,
+@@ -187,3 +187,3 @@
+   // Telegram Stars webhook handler (supports both /telegram/webhook and /shop/webhook)
+-  const webhookHandler = async (c: any) => {
++  const webhookHandler = async (c: Context<{ Bindings: Bindings }>) => {
+     const configuredSecret = c.env.TELEGRAM_WEBHOOK_SECRET;
+diff --git a/apps/web/src/game/live-game-model.ts b/apps/web/src/game/live-game-model.ts
+index 7777777..8888888 100644
+--- a/apps/web/src/game/live-game-model.ts
++++ b/apps/web/src/game/live-game-model.ts
+@@ -3,3 +3,3 @@
+-import type { PlayerState } from '@empire/shared';
++import type { PlayerState, ShopCatalogResponseDto } from '@empire/shared';
+ 
+@@ -211,4 +211,4 @@
+   if (sku === 'convenience_pass_30d') {
+-    queryClient.setQueryData(
++    queryClient.setQueryData<ShopCatalogResponseDto>(
+       ['game-design', actor, 'shop'],
+-      (prev: any) =>
++      (prev) =>
+         prev ? { ...prev, pass: { ...prev.pass, isActive: true } } : prev,

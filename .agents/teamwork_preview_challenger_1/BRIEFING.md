@@ -1,58 +1,46 @@
-# BRIEFING — 2026-09-14T12:26:50Z
+# BRIEFING — 2026-09-16T11:47:30Z
 
 ## Mission
-Empirically stress-test and challenge Leaderboards Engine (deterministic tie-breaking, pagination, rank pinning) and Monetization Engine (payment idempotency, anti-P2W guardrails) implemented by worker m1.
+Empirically stress-test, adversarially probe, and challenge Stream 1 implementation (Core Math Models, Invariants, Simulation & API Routes).
 
 ## 🔒 My Identity
-- Archetype: empirical-challenger
+- Archetype: challenger
 - Roles: critic, specialist
 - Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_challenger_1
-- Original parent: ecb478de-3be4-4a2e-9f8e-8e28198c18d1
-- Milestone: M1 & M2 challenge review
+- Original parent: 2e32ba88-38e2-412d-876d-ed44df3fb85e
+- Milestone: Stream 1 Adversarial Challenge
 - Instance: 1 of 1
 
 ## 🔒 Key Constraints
-- Review-only — do NOT modify implementation code
-- Write only to own directory (.agents/teamwork_preview_challenger_1) for agent metadata
-- Empirically test every claim: write and execute real test code / stress harnesses; do not trust worker assertions
-- Keep `.agents/` strictly free of code/tests; place test harnesses in test directories or run via test runner
+- Review-only — do NOT modify implementation code (report findings; do not fix them yourself)
+- Must run verification code ourselves (no relying on worker claims)
+- Report to handoff.md with unambiguous verdict
 
 ## Current Parent
-- Conversation ID: ecb478de-3be4-4a2e-9f8e-8e28198c18d1
-- Updated: 2026-09-14T12:26:50Z
+- Conversation ID: 2e32ba88-38e2-412d-876d-ed44df3fb85e
+- Updated: 2026-09-16T11:47:30Z
 
 ## Review Scope
-- **Files to review**:
-  - `packages/game-core/src/leaderboard.ts`
-  - `packages/game-core/src/monetization.ts`
-  - `apps/api/src/leaderboard/`
-  - `apps/api/src/shop/`
-  - `supabase/migrations/202609140005_step7_to_11_backend.sql`
-- **Interface contracts**: `PROJECT.md`, `ORIGINAL_REQUEST.md`, `packages/shared/src/index.ts`
-- **Review criteria**: Deterministic tie-breaking under high scale/ties, full pagination traversal integrity, rank pinning edge cases, double-spend/idempotency resistance, anti-P2W isolation.
+- **Files to review**: packages/game-core/**, apps/api/src/arcade/**, packages/shared/src/**
+- **Interface contracts**: PROJECT.md, ORIGINAL_REQUEST.md
+- **Review criteria**: Mathematical invariance, anti-cheat, energy conservation, super-linearity, RTP bounds, security & idempotency
 
 ## Attack Surface
 - **Hypotheses tested**:
-  - Leaderboard tie-breaking with 1,500 synthetic records and 250 identical score+timestamp collisions. Result: Monotonic total order preserved.
-  - Permutation invariance across 5 shuffled input orders. Result: Bit-for-bit identical ranked arrays (100% stable).
-  - Keyset cursor pagination completeness across page sizes 7, 23, 50, 100. Result: Exactly 1,500 entries, zero duplicates, zero missing.
-  - User rank pinning (ranks 1, 750, 1500, collision, unranked, empty). Result: Exact match, unranked returns null safely.
-  - Payment idempotency under 10 concurrent requests with identical charge ID. Result: Exactly 1 fulfill, 9 duplicate detected, +30d entitlement in DB.
-  - Anti-P2W guardrails with 6 forbidden SKUs. Result: 100% rejected with 400 FORBIDDEN_P2W_SKU and P2WViolationError.
-- **Vulnerabilities found**: None. System demonstrates robust fault tolerance and adherence to invariants.
-- **Untested angles**: Live production Telegram cloud network outages (covered by mock/WASM testing).
-
-## Loaded Skills
-- None specified.
+  1. Notcoin tap energy overflow, underflow, NaN leakage, offline tapbot over-generation.
+  2. Catizen merge super-linearity R_{k+1} > 2 * R_k, macro solver termination <= 11 steps, zero leftover pairs, parcel distribution.
+  3. Crypto crash HMAC-SHA256 determinism, 20,000-round Monte Carlo RTP proof (97.0% +/- 0.5%), house edge currency sink proof.
+  4. API 401 unauthenticated rejection on all 11 endpoints across both `/` and `/api` mountings.
+  5. API idempotency across all mutating endpoints preventing double deduction/crediting.
+- **Vulnerabilities found**: None. All mathematical invariants and security gates hold strictly under adversarial stress.
+- **Untested angles**: Network-level physical disconnection during WebSocket (if any; minigames use HTTP REST with requestId).
 
 ## Key Decisions Made
-- Authored dedicated adversarial stress test files: `packages/game-core/src/leaderboard-stress.test.ts` and `apps/api/src/shop/payment-stress.test.ts`.
-- Verified `pnpm check` passes with exit code 0 (17 test files, 137 tests passing).
-- Issued verdict: **APPROVE**.
+- Authored and executed dedicated test suites: `packages/game-core/src/challenger-stream1.test.ts` and `apps/api/src/arcade/challenger-stream1-security.test.ts`.
+- Executed `pnpm vitest run packages/game-core` (275/275 passing).
+- Executed `pnpm vitest run apps/api/src/arcade/` (22/22 passing).
+- Formatted with prettier, linted with eslint, verified typecheck with tsc.
+- Prepared APPROVE verdict.
 
 ## Artifact Index
-- `.agents/teamwork_preview_challenger_1/DISPATCH.md` — Inbound instructions
-- `.agents/teamwork_preview_challenger_1/BRIEFING.md` — Persistent working memory
-- `.agents/teamwork_preview_challenger_1/progress.md` — Liveness heartbeat
-- `.agents/teamwork_preview_challenger_1/challenge_report.md` — Detailed stress test findings
-- `.agents/teamwork_preview_challenger_1/handoff.md` — Handoff report with verdict
+- handoff.md — Final challenge report and verdict

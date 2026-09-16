@@ -1,52 +1,138 @@
-# Handoff Report — teamwork_preview_worker_m1
+# Handoff Report: Requirement R1 - Rule-Based Fraud & Abuse Detection Engine
 
 ## 1. Observation
-- **Deliverables Completed**:
-  - `.prettierignore`: Added `.agents` and `ORIGINAL_REQUEST.md` to prevent local Markdown scratchpads from breaking format checks.
-  - `supabase/migrations/202609140005_step7_to_11_backend.sql`: Created composite index `season_scores(season_id, points desc, updated_at asc, user_id asc)`, `season_archives`, `purchases` (with unique `telegram_payment_charge_id`), `player_entitlements`, `admin_audit_logs`, `analytics_events`, `daily_metrics`, seeded Section 18 economy config keys, and provided security-definer RPC functions for PostgREST/service_role operations.
-  - `packages/shared/src/index.ts`: Exported Zod contracts and DTO types for Leaderboard, Monetization, Remote Config, and Analytics (`LeaderboardEntryDto`, `LeaderboardResponseDto`, `FreezeSeasonRequest/Response`, `ShopSkuDto`, `ConveniencePassDto`, `CreateInvoiceRequest/Response`, `FulfillPaymentRequest/Response`, `EconomyConfigDto`, `PublicConfigResponse`, `AdminAuditLogDto`, `UpdateConfigRequest/Response`, `CanonicalAnalyticsEvent`, `TrackAnalyticsEventsRequest/Response`, `RetentionCohortDto`, `AnalyticsMetricsResponse`).
-  - `packages/game-core/src/`:
-    - `leaderboard.ts` & `leaderboard.test.ts`: Deterministic tie-breaking (`points DESC, updated_at ASC, user_id ASC`), base64 keyset cursor encoding/decoding, pagination, rank pinning, friend network filtering, season freeze validation. 9/9 tests pass.
-    - `monetization.ts` & `monetization.test.ts`: Convenience pass entitlement calculation (12h/43,200s offline cap vs 4h free, 3 upgrade queue slots, 3 rerolls, auto-claim), additive 30-day duration stacking, and strict anti-P2W guardrails enforcing zero season points multiplier. 6/6 tests pass.
-    - `remote-config.ts` & `remote-config.test.ts`: 2-tier fallback resolver (`DB overrides -> DEFAULT_ECONOMY_CONFIG`), safe type/boundary parser, feature flag evaluator strictly defaulting `feature.token` to false, and audit entry formatter. 6/6 tests pass.
-    - `analytics.ts` & `analytics.test.ts`: 21-event canonical taxonomy validator, UTC calendar-day normalization, D1/D2/D7 retention cohort models, referral milestone retention evaluator, activation rate, payer conversion rate, and ARPPU models. 6/6 tests pass.
-    - `index.ts`: Exported all new modules.
-  - `apps/api/`:
-    - Added `@empire/game-core: "workspace:*"` dependency in `apps/api/package.json`.
-    - `src/leaderboard/`: Routes (`GET /leaderboard`, `POST /admin/seasons/:id/freeze`) and store adapter. 5 integration tests pass with PGlite.
-    - `src/shop/`: Routes (`GET /shop`, `POST /shop/invoice`, `POST /telegram/webhook`) and store adapter. 6 integration tests pass with PGlite (including anti-P2W rejection and webhook payment idempotency).
-    - `src/config/`: Routes (`GET /config/public`, `POST /admin/config`) and store adapter. 3 integration tests pass with PGlite.
-    - `src/analytics/`: Routes (`POST /analytics/events`, `GET /analytics/metrics`) and store adapter. 3 integration tests pass with PGlite.
-    - `src/index.ts`: Mounted all new routes on both `'/'` and `'/api'`.
-    - `src/auth/test-db.ts`: Updated to load all 5 Supabase migrations and route RPCs into PGlite WASM engine.
-- **Verification Commands and Output**:
-  - `pnpm lint`: Exit code 0 (0 errors, 0 warnings).
-  - `pnpm format:check`: Exit code 0 ("All matched files use Prettier code style!").
-  - `pnpm typecheck`: Exit code 0 across all packages (`@empire/game-core`, `@empire/shared`, `@empire/api`, `@empire/web`).
-  - `pnpm test`: Exit code 0 (15 test files, 127 tests passed, 0 failed).
-  - `pnpm build`: Exit code 0 (Wrangler deploy dry-run and Vite production build).
-  - `pnpm check`: Exit code 0 across the entire CI pipeline.
+
+### 1.1 Implemented & Modified Files
+- **`packages/game-core/src/fraud.ts`** (Created):
+  - 506 lines of pure deterministic logic, zero runtime external dependencies.
+  - Implements canonical `FRAUD_REASON_CODES` constant with 17 reason codes.
+  - Implements TypeScript interfaces (`EconomyVelocityInput`, `EconomyVelocitySignal`, `BurstReplayInput`, `BurstReplaySignal`, `DeviceIpClusteringInput`, `DeviceIpClusteringSignal`, `ReferralBindingInput`, `ReferralGraphSignal`, `CompositeRiskScoreInput`, `CompositeRiskScoreResult`, `ExplainableReasonItem`).
+  - Implements all 4 core fraud detection signals:
+    - `evaluateEconomyVelocity`
+    - `evaluateBurstAndReplay`
+    - `evaluateDeviceAndIpClustering`
+    - `evaluateReferralGraphAndAbuse`
+    - `calculateCompositeRiskScore` with critical floor overrides, 4 risk tiers (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`), recommendations (`allow`, `monitor`, `freeze`, `reject`), and explainable details mapping.
+- **`packages/game-core/src/index.ts`** (Modified):
+  - Appended line 11: `export * from './fraud';`.
+- **`packages/game-core/src/fraud.test.ts`** (Created):
+  - 561 lines of comprehensive vitest unit tests across 45 test cases covering all signals, boundary conditions, sliding windows, referral graph cycles, device/IP collusion, critical floor overrides, and explainability.
+
+### 1.2 Boundary & Integrity Compliance
+- Verified strict adherence to boundaries:
+  - `supabase/migrations/202609140007_game_loop_apis.sql` (UNTOUCHED)
+  - `apps/api/src/auth/test-db.ts` (UNTOUCHED)
+  - `apps/api/src/economy/**` (UNTOUCHED)
+  - `apps/web/src/game/**` (UNTOUCHED)
+  - `apps/web/src/screens/**`, CSS (UNTOUCHED)
+  - `apps/api/src/shop/**` (UNTOUCHED)
+- Verified genuine implementations: no hardcoding, no mock facades, real state analysis, real graph traversal algorithms.
+
+### 1.3 Build and Test Tool Outputs
+- **Typecheck**:
+  `pnpm --filter @empire/game-core typecheck`
+  ```
+  > @empire/game-core@ typecheck C:\Users\Administrator\Desktop\telegram kripto oyunu\packages\game-core
+  > tsc -p tsconfig.json
+  (Exit code 0, 0 errors under strict: true, noUncheckedIndexedAccess: true, exactOptionalPropertyTypes: true, verbatimModuleSyntax: true)
+  ```
+- **Test Suite**:
+  `pnpm test packages/game-core`
+  ```
+  Test Files  12 passed (12)
+       Tests  181 passed (181)
+    Duration  2.94s
+  ```
+  All 136 pre-existing tests continue to pass. All 45 new fraud tests pass (100% green).
+
+---
 
 ## 2. Logic Chain
-1. *Requirement R1 & Blueprint R6 (Leaderboard)*: High volume ranking requires deterministic ordering so ties don't cause non-deterministic pagination jumps. We defined `compareLeaderboardEntries` using `points DESC -> updated_at ASC -> user_id ASC`. Database indexing mirrors this exact order: `(season_id, points DESC, updated_at ASC, user_id ASC)`. Season freeze freezes status, creates an immutable snapshot in `season_archives`, logs to `admin_audit_logs`, and blocks further score mutations.
-2. *Requirement R2 & Blueprint R7 (Monetization)*: Telegram Stars payments must be strictly idempotent. Webhook handling records `telegram_payment_charge_id` in `purchases` with a unique constraint. Duplicate charges return `{ success: true, duplicate: true }` without re-extending time. The Convenience Pass expands offline cap to 12h (43,200s) and grants convenience features while locking `seasonPointsMultiplier` strictly to 1.0, satisfying anti-P2W requirements.
-3. *Requirement R3 & Blueprint R8 (Remote Config)*: Runtime tuning without code deployments requires safe fallbacks. `resolveEconomyConfig` merges DB overrides over `DEFAULT_ECONOMY_CONFIG`. If a value is corrupt or missing, it safely falls back to default. `isFeatureEnabled` enforces that `feature.token` strictly defaults to `false`. Admin mutations record audit records in `admin_audit_logs`.
-4. *Requirement R4 & Blueprint R10 (Analytics)*: Player tracking adheres to the 21 canonical events from Blueprint Section 18. Non-canonical event names are rejected with 400 Bad Request. Retention cohorts normalize dates using UTC calendar days (`YYYY-MM-DD`) and evaluate D1, D2, and D7 active presence.
-5. *Requirement R5 (Boundary Isolation)*: No UI components, CSS styles, or files in `apps/web/src/components` or `apps/web/src/styles.css` were modified. Anti-cheat/anti-fraud algorithms remain untouched. All changes were confined to pure formulas in `packages/game-core`, DTO schemas in `packages/shared`, SQL migrations in `supabase/migrations/`, and backend API routes in `apps/api`.
+
+1. **Pure Deterministic Contract in `@empire/game-core`**:
+   - `packages/game-core` is the deterministic mathematical and rule core of Project Empire. All fraud evaluation logic is stateless, purely functional, and side-effect free. Database queries, telemetry capture, and persistence are decoupled to the API layer (`apps/api`).
+
+2. **Signal 1 (Economy Velocity)**:
+   - Evaluates claimed earnings against $\lfloor \text{productionRate} \times \min(\Delta t, \text{offlineCapSeconds}) \times \text{toleranceMultiplier} \rfloor$.
+   - A negative elapsed time ($\Delta t < 0$) indicates local clock manipulation and produces an immediate score of 95 and code `NEGATIVE_ELAPSED_TIME`.
+   - Production rate 0 with positive claimed cash produces score 100 with `VELOCITY_CAP_EXCEEDED` and `CASH_VELOCITY_CAP_EXCEEDED`.
+   - Season points velocity excess evaluates claimed SP against `maxExpectedSeasonPoints` (default 3000) and penalizes ratio > 1.0.
+
+3. **Signal 2 (Burst & Replay)**:
+   - Detects exact `requestId` replay from request history, triggering immediate score 100 and `REPLAY_REQUEST_DETECTED`.
+   - Detects sub-debounce intervals ($\Delta t < 200\text{ms}$) indicative of automated scripts.
+   - Detects rapid burst volume (> 15 requests in 5s) and sustained rate volume (> 60 requests in 60s) using sliding time windows.
+
+4. **Signal 3 (Device & IP Clustering)**:
+   - Evaluates multi-account density anomalies across IP addresses and hardware device fingerprints.
+   - Accounts on device $\ge 4$ triggers `DEVICE_CLUSTER_DETECTED` with score $\ge 70$; $\ge 6$ escalates to critical ($\ge 90$).
+   - Accounts on IP $\ge 10$ triggers `IP_CLUSTER_DETECTED`.
+   - Gracefully handles missing/null device fingerprints without runtime exceptions.
+
+5. **Signal 4 (Referral Graph & Sybil Cycle Detection)**:
+   - Detects direct 1-hop self-referral (with whitespace trimming) returning score 100, `SELF_REFERRAL_DETECTED`, and `CIRCULAR_REFERRAL_SUSPECT`.
+   - Traces parent ancestors of the referrer to detect whether the invitee is already an ancestor:
+     - Cycle length = 2 flags `RECIPROCAL_REFERRAL_SUSPECT` (A -> B -> A).
+     - Cycle length $\ge 3$ flags `CIRCULAR_REFERRAL_SUSPECT` (A -> B -> C -> A, etc.).
+   - Cycle traversal terminates safely with a `visited` set even if pre-existing disconnected cycles exist in the graph.
+   - Detects device collusion (identical hardware fingerprint between invitee and referrer) with score 90.
+   - Detects IP collusion within a 10-minute creation window with score 65.
+   - Detects burst farming when recent bindings exceed threshold (default 10).
+
+6. **Composite Risk Scoring & Critical Floor Overrides**:
+   - Baseline combines signals with weights: $0.35 \times S_{\text{vel}} + 0.20 \times S_{\text{burst}} + 0.20 \times S_{\text{clust}} + 0.25 \times S_{\text{ref}}$.
+   - Severe isolated violations apply critical floors:
+     - Request replay = 100
+     - Referral cycle = 100
+     - Self-referral = 100
+     - Economy velocity $\ge 95$ = 95
+     - Referral device collusion = 90
+     - Clustering critical severity = 85
+   - Final score $0..100$ determines:
+     - `LOW` (0-29): recommendation `allow`, blocked: false, frozen: false
+     - `MEDIUM` (30-69): recommendation `monitor`, blocked: false, frozen: false
+     - `HIGH` (70-89): recommendation `freeze`, blocked: false, frozen: true
+     - `CRITICAL` (90-100): recommendation `reject`, blocked: true, frozen: true
+   - Generates structured, explainable reason items with severity, score contribution, and human-readable descriptions.
+
+---
 
 ## 3. Caveats
-- No caveats. All requirements and edge cases from `ORIGINAL_REQUEST.md`, `PROJECT.md`, and the survey reports have been implemented and verified with automated tests.
+
+1. **No External I/O**: `packages/game-core/src/fraud.ts` relies exclusively on in-memory inputs. Callers in `apps/api` must query the database (e.g. ancestors, request logs, clustering counts) and pass them as pure input arguments.
+2. **Device Fingerprint Nullability**: If `deviceFingerprint` is absent or null (e.g. Web Telegram client without client-side telemetry), clustering and referral collusion safely evaluate IP and rate signals without error.
+3. **Strict Boundaries Preserved**: Only `packages/game-core/src/fraud.ts`, `packages/game-core/src/fraud.test.ts`, and `packages/game-core/src/index.ts` were touched.
+
+---
 
 ## 4. Conclusion
-Steps 7, 8, 9, and 11 are fully completed, genuinely implemented without shortcuts, and verified with 127 automated unit and integration tests. All quality gates in `pnpm check` pass with exit code 0.
+
+Requirement R1 is 100% implemented, strictly type-checked, and comprehensively verified.
+- All formulas, reason codes, types, and algorithms documented in the survey specification are faithfully realized.
+- 45 new unit tests provide exhaustive coverage across normal paths, edge cases, cycle permutations, and critical floor overrides.
+- All 181 unit tests across all 12 test suites in `@empire/game-core` pass cleanly.
+
+---
 
 ## 5. Verification Method
-To independently verify the implementation:
-```bash
-# 1. Run all tests
-pnpm test
 
-# 2. Run master CI verification pipeline
-pnpm check
-```
-Both commands must exit with code 0.
+To independently verify this implementation:
+
+1. **Run TypeScript typecheck on `@empire/game-core`**:
+   ```powershell
+   pnpm --filter @empire/game-core typecheck
+   ```
+   *Expected: Exit code 0, zero diagnostic messages.*
+
+2. **Run the full `@empire/game-core` test suite**:
+   ```powershell
+   pnpm test packages/game-core
+   ```
+   *Expected: 12 test files passed, 181 tests passed (100% green).*
+
+3. **Verify Git modifications**:
+   ```powershell
+   git status packages/game-core
+   git diff packages/game-core/src/index.ts
+   ```
+   *Expected: Exactly two new untracked files (`fraud.ts`, `fraud.test.ts`) and one single-line addition in `index.ts`.*

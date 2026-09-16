@@ -1,5 +1,6 @@
 export interface Bindings {
   TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_WEBHOOK_SECRET?: string;
   SESSION_SECRET?: string;
   APP_ORIGIN?: string;
   SUPABASE_URL?: string;

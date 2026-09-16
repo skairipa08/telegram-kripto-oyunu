@@ -12,7 +12,10 @@ export interface ConfigStore {
     value: unknown,
     adminUserId?: string,
     reason?: string,
+    requestId?: string,
+    adminUsername?: string,
   ): Promise<UpdateConfigResult>;
+  checkAdminRole(userId: string, requiredRole?: string): Promise<boolean>;
 }
 
 export class SupabaseConfigStore implements ConfigStore {
@@ -50,22 +53,52 @@ export class SupabaseConfigStore implements ConfigStore {
     return (data as Record<string, unknown>) ?? {};
   }
 
+  async checkAdminRole(
+    userId: string,
+    requiredRole: string = 'superadmin',
+  ): Promise<boolean> {
+    try {
+      const data = await this.rpc('empire_admin_check_role', {
+        p_user_id: userId,
+        p_required_role: requiredRole,
+      });
+      return Boolean(data);
+    } catch {
+      return false;
+    }
+  }
+
   async updateConfig(
     key: string,
     value: unknown,
     adminUserId?: string,
     reason?: string,
+    requestId?: string,
+    adminUsername?: string,
   ): Promise<UpdateConfigResult> {
-    const data = (await this.rpc('empire_config_update', {
-      p_key: key,
-      p_value: value,
-      p_admin_user_id: adminUserId ?? null,
-      p_reason: reason ?? null,
-    })) as UpdateConfigResult & { error?: string };
+    let data: (UpdateConfigResult & { error?: string }) | undefined;
+    try {
+      data = (await this.rpc('empire_admin_update_config', {
+        p_key: key,
+        p_value: value,
+        p_admin_user_id: adminUserId ?? null,
+        p_reason: reason ?? null,
+        p_request_id: requestId ?? null,
+        p_admin_username: adminUsername ?? null,
+      })) as UpdateConfigResult & { error?: string };
+    } catch {
+      // Graceful fallback to empire_config_update
+      data = (await this.rpc('empire_config_update', {
+        p_key: key,
+        p_value: value,
+        p_admin_user_id: adminUserId ?? null,
+        p_reason: reason ?? null,
+      })) as UpdateConfigResult & { error?: string };
+    }
 
-    if (data.error) {
+    if (data?.error) {
       throw new Error(data.error);
     }
-    return data;
+    return data!;
   }
 }

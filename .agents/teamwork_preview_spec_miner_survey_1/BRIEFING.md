@@ -1,44 +1,37 @@
-# BRIEFING — 2026-09-14T12:05:07Z
+# BRIEFING — 2026-09-14T18:07:00Z
 
 ## Mission
-Discover and document features for Blueprints R6, R7, R8, and R10 / Section 18 by mining repository specifications, blueprints, and docs.
+Conduct a read-only survey of all specifications, data contracts, and schemas for the missing game loop APIs.
 
 ## 🔒 My Identity
-- Archetype: Teamwork specialist (Specification Miner)
-- Roles: Specification Miner
+- Archetype: teamwork_preview_spec_miner_survey_1
+- Roles: SPECIFICATION MINER
 - Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_spec_miner_survey_1
-- Original parent: ecb478de-3be4-4a2e-9f8e-8e28198c18d1
-- Milestone: Preview Spec Mining Survey 1
+- Original parent: 4565b5a3-9339-431b-9805-74dc044c2c67
+- Milestone: game_loop_api_specification_mining
 
 ## 🔒 Key Constraints
-- Read-only on source code; write only to .agents/teamwork_preview_spec_miner_survey_1/
-- Focus on Blueprint R6, R7, R8, R10 / Section 18
-- Extract every required formula, schema, event name, database column, constraint, acceptance criterion
-- Produce spec_report.md and handoff.md
-- Send message back to parent when done
+- Read-only survey: do NOT modify any source files.
+- Document all DTO types, Zod schemas, EconomyStore method signatures, and Supabase RPC functions.
+- Output analysis.md and handoff.md in .agents/teamwork_preview_spec_miner_survey_1/.
+- Follow 5-component handoff report protocol.
+- Communicate completion to parent via send_message.
 
 ## Current Parent
-- Conversation ID: ecb478de-3be4-4a2e-9f8e-8e28198c18d1
-- Updated: not yet
+- Conversation ID: 4565b5a3-9339-431b-9805-74dc044c2c67
+- Updated: 2026-09-14T18:07:00Z
 
 ## Task Summary
-- **What to build**: Specification report for Blueprints R6 (Leaderboards Engine & Season Freeze), R7 (Stars Monetization & Pass Entitlement Backend), R8 (Admin Remote Config & Feature Flags), R10 / Section 18 (Analytics Event Pipeline & Cohort Models)
-- **Success criteria**: Comprehensive spec_report.md with feature tables, formulas, schemas, events, edge cases, and handoff.md
-- **Interface contracts**: spec_report.md matching required table format
-- **Code layout**: Only agent metadata in .agents/
+- **What to build**: Specification discovery report (analysis.md) covering shared DTOs & schemas, EconomyStore methods, and SQL RPC functions for the 8 game loop APIs.
+- **Success criteria**: Exhaustive, accurate extraction of types, schemas, RPC parameters, error codes, and edge cases.
+- **Interface contracts**: packages/shared/src/index.ts, apps/api/src/economy/store.ts, supabase/migrations/202609140007_game_loop_apis.sql.
+- **Code layout**: .agents/ holds agent metadata only.
 
 ## Key Decisions Made
-- Initialized workspace and dispatch tracking
-- Extracted raw text from authoritative `Project_Empire_Master_Blueprint_v1.0.docx` (736 lines)
-- Fully mined and cross-referenced Blueprints R6, R7, R8, R10 / Section 18
-- Formulated deterministic ranking, tie-breaking, pass entitlement, config fallback, and cohort retention models
-- Completed `spec_report.md` (26 features, 18 edge cases) and hard handoff in `handoff.md`
+- Perform systematic deep inspection of all specified files and cross-reference them against ORIGINAL_REQUEST.md.
 
 ## Artifact Index
-- DISPATCH.md — Initial dispatch assignment
-- BRIEFING.md — Situational awareness
-- progress.md — Liveness heartbeat
-- extract.ps1 — Word document XML text extraction script
-- blueprint_text.txt — Full extracted text of Project Empire Master Blueprint v1.0
-- spec_report.md — Comprehensive extracted specifications
-- handoff.md — Final 5-component handoff report
+- analysis.md — Detailed findings and specification tables
+- handoff.md — 5-component handoff report
+- DISPATCH.md — Stored dispatch instructions
+- progress.md — Liveness and step tracking

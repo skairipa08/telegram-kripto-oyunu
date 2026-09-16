@@ -57,6 +57,16 @@ export function createConfigRoutes(
       return c.json(error('UNAUTHORIZED'), 401);
     }
 
+    const store = makeStore(c.env);
+    const uname = session.user.username?.toLowerCase();
+    const isDesignated = uname === 'barandnz' || uname === 'mberked';
+    const isSuperadmin =
+      isDesignated ||
+      (await store.checkAdminRole(session.user.id, 'superadmin'));
+    if (!isSuperadmin) {
+      return c.json(error('FORBIDDEN'), 403);
+    }
+
     let body;
     try {
       body = updateConfigRequestSchema.parse(await c.req.json());
@@ -64,13 +74,14 @@ export function createConfigRoutes(
       return c.json(error('INVALID_REQUEST'), 400);
     }
 
-    const store = makeStore(c.env);
     try {
       const result = await store.updateConfig(
         body.key,
         body.value,
         session.user.id,
         body.reason,
+        body.requestId,
+        session.user.username ?? undefined,
       );
 
       const response: UpdateConfigResponse = {
