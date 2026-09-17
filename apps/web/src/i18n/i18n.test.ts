@@ -1,32 +1,52 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { en } from './translations/en';
 import { tr } from './translations/tr';
 import { ru } from './translations/ru';
-import { SUPPORTED_LANGUAGES } from './types';
+import { id } from './translations/id';
+import { vi } from './translations/vi';
+import { hi } from './translations/hi';
+import { fa } from './translations/fa';
+import { uz } from './translations/uz';
+import { SUPPORTED_LANGUAGES, type SupportedLanguage, type TranslationKeys } from './types';
 
 describe('i18n localization dictionaries', () => {
-  it('supports en, tr, ru with all metadata', () => {
-    expect(SUPPORTED_LANGUAGES.map((l) => l.code)).toEqual(['en', 'tr', 'ru']);
+  const dicts: Record<SupportedLanguage, TranslationKeys> = {
+    en,
+    tr,
+    ru,
+    id,
+    vi,
+    hi,
+    fa,
+    uz,
+  };
+
+  it('supports all 8 target languages with flags and native names', () => {
+    expect(SUPPORTED_LANGUAGES.map((l) => l.code)).toEqual([
+      'en',
+      'tr',
+      'ru',
+      'id',
+      'vi',
+      'hi',
+      'fa',
+      'uz',
+    ]);
   });
 
-  it('ensures all translation keys match across en, tr, and ru', () => {
+  it('ensures all translation keys match exactly across all 8 languages', () => {
     const enKeys = Object.keys(en).sort();
-    const trKeys = Object.keys(tr).sort();
-    const ruKeys = Object.keys(ru).sort();
-
-    expect(trKeys).toEqual(enKeys);
-    expect(ruKeys).toEqual(enKeys);
+    for (const [code, dict] of Object.entries(dicts)) {
+      const keys = Object.keys(dict).sort();
+      expect(keys, `Mismatch in language: ${code}`).toEqual(enKeys);
+    }
   });
 
-  it('has non-empty values for every key in all languages', () => {
-    for (const [key, value] of Object.entries(en)) {
-      expect(value, EN missing key ).toBeTruthy();
-    }
-    for (const [key, value] of Object.entries(tr)) {
-      expect(value, TR missing key ).toBeTruthy();
-    }
-    for (const [key, value] of Object.entries(ru)) {
-      expect(value, RU missing key ).toBeTruthy();
+  it('has non-empty values for every key in all 8 languages', () => {
+    for (const [code, dict] of Object.entries(dicts)) {
+      for (const [key, value] of Object.entries(dict)) {
+        expect(value, `${code} missing key ${key}`).toBeTruthy();
+      }
     }
   });
 });

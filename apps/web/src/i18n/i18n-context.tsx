@@ -15,20 +15,56 @@ import { SUPPORTED_LANGUAGES } from './types';
 import { en } from './translations/en';
 import { tr } from './translations/tr';
 import { ru } from './translations/ru';
+import { id } from './translations/id';
+import { vi } from './translations/vi';
+import { hi } from './translations/hi';
+import { fa } from './translations/fa';
+import { uz } from './translations/uz';
 
 const STORAGE_KEY = 'empire_language';
+
+const VALID_CODES: Set<SupportedLanguage> = new Set([
+  'en',
+  'tr',
+  'ru',
+  'id',
+  'vi',
+  'hi',
+  'fa',
+  'uz',
+]);
 
 const dictionaries: Record<SupportedLanguage, TranslationKeys> = {
   en,
   tr,
   ru,
+  id,
+  vi,
+  hi,
+  fa,
+  uz,
 };
+
+function mapLanguageCode(rawCode?: string | null): SupportedLanguage | null {
+  if (!rawCode) return null;
+  const lower = rawCode.toLowerCase().trim();
+  const short = lower.slice(0, 2);
+
+  if (VALID_CODES.has(short as SupportedLanguage)) {
+    return short as SupportedLanguage;
+  }
+  // Dialect / regional fallbacks
+  if (short === 'uk' || short === 'be' || short === 'kk') return 'ru';
+  if (short === 'az') return 'tr';
+  if (short === 'in') return 'id'; // legacy ISO 639-1 code for Indonesian
+  return null;
+}
 
 function detectInitialLanguage(): SupportedLanguage {
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY) as SupportedLanguage | null;
-      if (saved && (saved === 'en' || saved === 'tr' || saved === 'ru')) {
+      if (saved && VALID_CODES.has(saved)) {
         return saved;
       }
     } catch {
@@ -42,18 +78,12 @@ function detectInitialLanguage(): SupportedLanguage {
       initDataUnsafe?: { user?: { language_code?: string } };
     })?.initDataUnsafe?.user?.language_code;
 
-    if (tgUserLang) {
-      const code = tgUserLang.toLowerCase().slice(0, 2);
-      if (code === 'tr') return 'tr';
-      if (code === 'ru' || code === 'uk' || code === 'be' || code === 'kk')
-        return 'ru';
-      return 'en';
-    }
+    const mappedTg = mapLanguageCode(tgUserLang);
+    if (mappedTg) return mappedTg;
 
     // Detect from browser navigator
-    const navLang = navigator.language?.toLowerCase()?.slice(0, 2);
-    if (navLang === 'tr') return 'tr';
-    if (navLang === 'ru') return 'ru';
+    const mappedNav = mapLanguageCode(navigator.language);
+    if (mappedNav) return mappedNav;
   }
 
   // Default to English for global audience
