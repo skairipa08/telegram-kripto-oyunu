@@ -27,6 +27,7 @@ export interface CatizenMergeGameProps {
   autoMerge?: boolean;
   onReward?: (amount: number) => void;
   preview?: boolean;
+  referralLink?: string;
 }
 
 export function getTierCyberLuxeStyle(tier: number, baseAccent?: string) {
@@ -129,6 +130,7 @@ interface MergeParticle {
 export function CatizenMergeGame({
   autoMerge: initialAutoMerge = false,
   onReward,
+  referralLink,
 }: CatizenMergeGameProps) {
   const [board, setBoard] = useState<MergeSlot[]>(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -734,6 +736,43 @@ export function CatizenMergeGame({
           💰 Kasa Topla (+{accumulatedCash})
         </button>
       </div>
+
+      {lastMergedTier !== null && lastMergedTier >= 4 && (
+        <button
+          type="button"
+          className="button"
+          onClick={() => {
+            const link = referralLink || 'https://t.me/ProjectEmpireBot';
+            const tierDef = getTierDefinition(lastMergedTier);
+            const text = `🐱 Catizen Merge'te ${tierDef.name} (Kademe ${lastMergedTier}) kilidini açtım! 🚀 Sen de katıl, +5.000 Nakit hoş geldin bonusuyla başla: `;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+            if (window.Telegram?.WebApp?.openTelegramLink) {
+              window.Telegram.WebApp.openTelegramLink(shareUrl);
+            } else {
+              window.open(shareUrl, '_blank', 'noopener,noreferrer');
+            }
+          }}
+          style={{
+            width: '100%',
+            marginTop: '10px',
+            padding: '10px 16px',
+            fontWeight: 800,
+            fontSize: '13px',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+            color: '#ffffff',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+          }}
+        >
+          <span>📢</span>
+          <span>Kademe {lastMergedTier} Başarını Paylaş (+5.000 Ref)</span>
+        </button>
+      )}
     </div>
   );
 }

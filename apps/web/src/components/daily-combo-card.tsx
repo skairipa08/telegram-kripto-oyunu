@@ -990,6 +990,42 @@ function DailyComboCardLive({
         </div>
       )}
 
+      {feedback && feedback.type === 'success' && (
+        <button
+          type="button"
+          className="button"
+          onClick={() => {
+            const link = referralLink || 'https://t.me/ProjectEmpireBot';
+            const text = `🎯 Project Empire'da bugünün gizli kombo şifresini çözdüm ve ödülü kaptım! 🚀 Sen de katıl, +5.000 Nakit hoş geldin bonusuyla başla: `;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+            if (window.Telegram?.WebApp?.openTelegramLink) {
+              window.Telegram.WebApp.openTelegramLink(shareUrl);
+            } else {
+              window.open(shareUrl, '_blank', 'noopener,noreferrer');
+            }
+          }}
+          style={{
+            width: '100%',
+            marginTop: '8px',
+            padding: '10px 16px',
+            fontWeight: 800,
+            fontSize: '13px',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #10b981 100%)',
+            color: '#0a0e17',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+          }}
+        >
+          <span>📢</span>
+          <span>Kombo Başarını Paylaş (+5.000 Ref)</span>
+        </button>
+      )}
+
       <ShareReferralModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}

@@ -227,6 +227,7 @@ export function EmpireArcade({
             preview={preview}
             autoMerge={assists.merge}
             {...(onPreviewReward ? { onReward: onPreviewReward } : {})}
+            {...(referralLink ? { referralLink } : {})}
           />
         )}
         {game === 'crash' && (
