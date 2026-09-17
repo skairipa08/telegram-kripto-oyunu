@@ -1,69 +1,61 @@
-# BRIEFING - 2026-09-16T09:26:45+03:00
+# BRIEFING — 2026-09-17T12:55:00Z
 
 ## Mission
-Implement Stream 3: Admin Backend & Governance (Adim 9), enforcing strict RBAC on admin endpoints for @Barandnz, @Mberked, and superadmins, dynamic feature flag management with idempotent audit logging, audit log feed API, and fraud queue review & unfreezing API.
+Implement high-fidelity micro-interactions and visual Polish for Stream 3 (Arcade Mini-Games)
 
 ## 🔒 My Identity
-- Archetype: teamwork_preview_worker_stream3
+- Archetype: worker
 - Roles: implementer, qa, specialist
 - Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_worker_stream3
-- Original parent: e6b8236c-e7ab-4939-a18c-f69e4aa361bb
-- Milestone: S3 (Stream 3: Admin Backend & Governance)
+- Original parent: 9228ef1c-2f7d-4ca7-9b2f-ff2bc203b840
+- Milestone: Stream 3 Arcade Games Polish
 
 ## 🔒 Key Constraints
-- Strict exclusive write scope:
-  - apps/api/src/config/
-  - apps/api/src/fraud/
-  - apps/api/src/admin/
-  - apps/api/src/index.ts (only for mounting admin routes if separate router)
-  - supabase/migrations/
-- MUST NOT modify files outside this scope (no changes to packages/shared, apps/web, etc.).
-- Enforce strict RBAC: caller session username in ('barandnz', 'mberked') or role = 'superadmin'.
-- Return 401 UNAUTHORIZED if missing session, 403 FORBIDDEN if unauthorized.
-- Dynamic toggles for feature.stars_payments, feature.maintenance_mode, feature.referrals, economy.multiplier.
-- Idempotent updates with requestId and immutable audit logs storing admin_username.
-- Integrity: no dummy/facade implementations, genuine logic only.
+- Exclusive write boundaries:
+  - apps/web/src/components/arcade.css
+  - apps/web/src/components/catizen-merge-game.tsx
+  - apps/web/src/components/crypto-crash-game.tsx
+  - apps/web/src/components/notcoin-tap-game.tsx
+  - apps/web/src/components/dynasty-cipher-game.tsx
+  DO NOT edit files outside this scope.
+- Integrity Mandate: Genuine logic, no hardcoded cheating, no facades.
+- 60fps performance and zero layout shift on mobile (320px-390px).
 
 ## Current Parent
-- Conversation ID: e6b8236c-e7ab-4939-a18c-f69e4aa361bb
-- Updated: 2026-09-16T09:26:45+03:00
+- Conversation ID: 9228ef1c-2f7d-4ca7-9b2f-ff2bc203b840
+- Updated: 2026-09-17T12:55:00Z
 
 ## Task Summary
-- **What to build**: Strict RBAC admin middleware/checks, feature flag management API, admin audit log feed API, fraud accounts review & unfreeze API, migration 202609140011_admin_governance.sql, updated test harness and integration tests.
-- **Success criteria**: All new and existing tests pass (vitest & typecheck), zero regressions, verified against PGlite with genuine migrations.
-- **Interface contracts**: SCOPE.md § Interface Contracts (Stream 3).
+- **What to build**: Visual polish, 3D tilt, spring rebound, canvas spark particles, neon wave energy, merge explosions, rocket plasma trail & chart climbing, Matrix code streams, terminal glitch, neon decode sweep.
+- **Success criteria**: All 4 arcade games upgraded with requested micro-interactions, responsive 320-390px, vitest & typechecks pass.
+- **Interface contracts**: PROJECT.md
+- **Code layout**: apps/web/src/components/
 
 ## Key Decisions Made
-- Created apps/api/src/admin/ with unified store, routes, test harness re-export, and integration tests, cleanly mounting in apps/api/src/index.ts under /admin/* and /api/admin/*.
-- Enforced strict superadmin RBAC across all admin endpoints (/admin/feature-flags, /admin/audit-logs, /admin/fraud/accounts, /admin/fraud/accounts/:id/unfreeze, /admin/config).
-- Implemented idempotent updates using requestId logged into public.admin_audit_logs.
-- Authored migration 202609140011_admin_governance.sql with stored procedures: empire_admin_update_config, empire_admin_get_audit_logs, empire_admin_get_flagged_accounts, and empire_admin_unfreeze_account.
-- Fully satisfied exactOptionalPropertyTypes: true across AdminStore and route handlers.
+- All 4 games and arcade.css upgraded with genuine micro-interactions and physics.
+- Invariant guards preserved: `countTimerRef` and `hasCashedOutRef` in CryptoCrash, `tapStateRef` synchronous state update in NotcoinTap, `boardRef` and external `onReward` in CatizenMerge.
+- Probe 1 constraint: Verified 0 occurrences of fixed `width > 290px`.
+- Reduced-motion accessibility supported for all animations.
+
+## Artifact Index
+- DISPATCH.md — Initial dispatch instructions
+- progress.md — Liveness heartbeat
+- handoff.md — Final completion handoff report
 
 ## Change Tracker
 - **Files modified**:
-  - supabase/migrations/202609140011_admin_governance.sql: Admin governance schema, constraints, baseline config, stored procedures.
-  - apps/api/src/admin/store.ts: AdminStore interface and SupabaseAdminStore implementation.
-  - apps/api/src/admin/routes.ts: Admin route handlers for flags, audit feed, fraud review, unfreeze, and strict RBAC.
-  - apps/api/src/admin/routes.test.ts: 17 comprehensive integration tests covering all requirements.
-  - apps/api/src/admin/test-db.ts: Test database harness factory re-export.
-  - apps/api/src/config/store.ts: Added superadmin role check and idempotent update support.
-  - apps/api/src/config/routes.ts: Enforced strict superadmin RBAC on POST /admin/config.
-  - apps/api/src/fraud/test-db.ts: Registered migration 0011, admin stored procedure RPC dispatch, exposed adminStore.
-  - apps/api/src/index.ts: Mounted admin routes with dual-mounting parity and exported admin types.
-- **Build status**: PASS (175/175 tests passing across entire apps/api, 52/52 passing in stream suites, typecheck clean).
-- **Pending issues**: None.
+  - apps/web/src/components/notcoin-tap-game.tsx: 3D anisotropic squish tilt, multi-touch batching, canvas crit burst particles, travelling photon bead.
+  - apps/web/src/components/catizen-merge-game.tsx: 100-level cyber-luxe tier styles across 10 eras, canvas star/confetti merge explosion, box drop rumble shake.
+  - apps/web/src/components/crypto-crash-game.tsx: Rocket tangent vector orientation, plasma exhaust particles, tension heartbeat, screen shake, red mist embers, victory confetti & floating profit toast.
+  - apps/web/src/components/dynasty-cipher-game.tsx: Matrix digital rain canvas, terminal chromatic aberration glitch, neon decode sweep beam, text scrambler effect.
+  - apps/web/src/components/arcade.css: Keyframes and classes for 3D tilt, waves, photon beads, merge shockwaves, parcel drops, rumble shakes, glitch animations, decode beams, crash shakes, cashout punch bounces, and victory toast.
+- **Build status**: PASS (770/770 tests pass across 66 test suites, tsc typecheck 0 errors)
+- **Pending issues**: None
 
 ## Quality Status
-- **Build/test result**: Pass (175/175 passing tests).
-- **Lint status**: Clean (tsc -p tsconfig.json exit code 0).
-- **Tests added/modified**: 17 tests added in apps/api/src/admin/routes.test.ts.
+- **Build/test result**: 770 passed (66 test files passed, including all challenger and stress tests)
+- **Lint status**: Clean (tsc passed with zero errors)
+- **Tests added/modified**: Existing test suites run and validated (including 33 challenger tests in arcade-stream2-challenger.test.ts)
 
 ## Loaded Skills
-- None.
-
-## Artifact Index
-- .agents/teamwork_preview_worker_stream3/DISPATCH.md - Assignment instructions
-- .agents/teamwork_preview_worker_stream3/BRIEFING.md - Active state memory
-- .agents/teamwork_preview_worker_stream3/progress.md - Progress tracker and heartbeat
-- .agents/teamwork_preview_worker_stream3/handoff.md - Self-contained completion report
+- None

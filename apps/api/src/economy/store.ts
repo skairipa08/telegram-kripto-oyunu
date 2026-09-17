@@ -93,6 +93,14 @@ export interface EconomyStore {
   evaluateReferralMilestones(
     inviteeUserId: string,
   ): Promise<Record<string, unknown>>;
+  claimReferralKickback?(
+    userId: string,
+    requestId?: string,
+  ): Promise<{
+    claimedCash: number;
+    newCash: number;
+    claimedAt: string;
+  }>;
 }
 
 export class SupabaseEconomyStore implements EconomyStore {

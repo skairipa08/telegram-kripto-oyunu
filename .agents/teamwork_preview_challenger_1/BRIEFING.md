@@ -1,46 +1,44 @@
-# BRIEFING — 2026-09-16T11:47:30Z
+# BRIEFING — 2026-09-17T09:55:48Z
 
 ## Mission
-Empirically stress-test, adversarially probe, and challenge Stream 1 implementation (Core Math Models, Invariants, Simulation & API Routes).
+Adversarially challenge the monorepo-wide code health, builds, quality gates, mobile viewport responsiveness (320px, 360px, 390px), and component cleanup (listeners, timers, rAF loops).
 
 ## 🔒 My Identity
 - Archetype: challenger
 - Roles: critic, specialist
 - Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_challenger_1
 - Original parent: 2e32ba88-38e2-412d-876d-ed44df3fb85e
-- Milestone: Stream 1 Adversarial Challenge
+- Milestone: Monorepo Integration & Quality Gate Challenge
 - Instance: 1 of 1
 
 ## 🔒 Key Constraints
 - Review-only — do NOT modify implementation code (report findings; do not fix them yourself)
 - Must run verification code ourselves (no relying on worker claims)
-- Report to handoff.md with unambiguous verdict
+- Report to handoff.md with unambiguous verdict (APPROVE or REJECT)
 
 ## Current Parent
-- Conversation ID: 2e32ba88-38e2-412d-876d-ed44df3fb85e
-- Updated: 2026-09-16T11:47:30Z
+- Conversation ID: 9228ef1c-2f7d-4ca7-9b2f-ff2bc203b840
+- Updated: 2026-09-17T09:55:48Z
 
 ## Review Scope
-- **Files to review**: packages/game-core/**, apps/api/src/arcade/**, packages/shared/src/**
+- **Files to review**: Monorepo packages and apps (apps/web, apps/api, packages/*)
 - **Interface contracts**: PROJECT.md, ORIGINAL_REQUEST.md
-- **Review criteria**: Mathematical invariance, anti-cheat, energy conservation, super-linearity, RTP bounds, security & idempotency
+- **Review criteria**: Monorepo check (`pnpm check` - lint, format:check, typecheck, tests, build across all packages), mobile viewport responsiveness (320px, 360px, 390px), component cleanup (timers, rAF, event listeners).
 
 ## Attack Surface
 - **Hypotheses tested**:
-  1. Notcoin tap energy overflow, underflow, NaN leakage, offline tapbot over-generation.
-  2. Catizen merge super-linearity R_{k+1} > 2 * R_k, macro solver termination <= 11 steps, zero leftover pairs, parcel distribution.
-  3. Crypto crash HMAC-SHA256 determinism, 20,000-round Monte Carlo RTP proof (97.0% +/- 0.5%), house edge currency sink proof.
-  4. API 401 unauthenticated rejection on all 11 endpoints across both `/` and `/api` mountings.
-  5. API idempotency across all mutating endpoints preventing double deduction/crediting.
-- **Vulnerabilities found**: None. All mathematical invariants and security gates hold strictly under adversarial stress.
-- **Untested angles**: Network-level physical disconnection during WebSocket (if any; minigames use HTTP REST with requestId).
+  1. `pnpm check` passes with 0 errors, 0 warnings, and 0 regressions across all packages.
+  2. Mobile viewport layouts at 320px, 360px, and 390px: zero horizontal scroll (`overflow-x`), zero layout shifts, proper touch targets.
+  3. Memory leaks and lifecycle cleanup: all useEffect, requestAnimationFrame, setInterval, setTimeout, and window/document event listeners clean up on component unmount.
+- **Vulnerabilities found**: [TBD]
+- **Untested angles**: [TBD]
+
+## Loaded Skills
+- None specified.
 
 ## Key Decisions Made
-- Authored and executed dedicated test suites: `packages/game-core/src/challenger-stream1.test.ts` and `apps/api/src/arcade/challenger-stream1-security.test.ts`.
-- Executed `pnpm vitest run packages/game-core` (275/275 passing).
-- Executed `pnpm vitest run apps/api/src/arcade/` (22/22 passing).
-- Formatted with prettier, linted with eslint, verified typecheck with tsc.
-- Prepared APPROVE verdict.
+- Initializing empirical challenge plan for full monorepo check and mobile viewport / memory lifecycle testing.
 
 ## Artifact Index
 - handoff.md — Final challenge report and verdict
+- progress.md — Liveness heartbeat

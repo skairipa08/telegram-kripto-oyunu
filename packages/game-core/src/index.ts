@@ -14,3 +14,5 @@ export * from './notcoin-tap';
 export * from './catizen-merge';
 export * from './crypto-crash';
 export * from './dynasty-cipher';
+export * from './clans';
+export * from './daily-combo';

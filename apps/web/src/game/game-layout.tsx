@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { GameTab } from './types';
 import { Icon } from '../components/icons';
-import { formatNumber } from './ui';
+import { AnimatedCounter } from '../components/animated-counter';
 
 const tabs: { key: GameTab; label: string; short: string }[] = [
   { key: 'empire', label: 'İmparatorluk', short: 'İmparatorluk' },
+  { key: 'arcade', label: 'Mini Oyunlar', short: 'Oyunlar' },
   { key: 'missions', label: 'Görevler', short: 'Görevler' },
   { key: 'friends', label: 'Arkadaşlar', short: 'Arkadaşlar' },
   { key: 'leaderboard', label: 'Sıralama', short: 'Sıralama' },
@@ -18,6 +19,7 @@ export function GameLayout({
   name,
   cash,
   points,
+  level,
   children,
   preview = false,
   onLogout,
@@ -31,6 +33,7 @@ export function GameLayout({
   name: string;
   cash: number | null;
   points: number | null;
+  level?: number | null;
   children: ReactNode;
   preview?: boolean;
   onLogout?: () => void;
@@ -54,6 +57,13 @@ export function GameLayout({
     if (accountOpen) dialogRef.current?.showModal();
     else dialogRef.current?.close();
   }, [accountOpen]);
+  const totalLevel =
+    level !== undefined && level !== null
+      ? level
+      : cash !== null || points !== null
+        ? Math.max(1, Math.floor((points ?? 0) / 100) + 1)
+        : 0;
+
   return (
     <div className="empire-app">
       <a className="skip-link" href="#game-content">
@@ -129,16 +139,32 @@ export function GameLayout({
             OYUN ALANIN <span>/</span> {tabs.find((t) => t.key === tab)?.label}
           </div>
           <div className="wallet-strip" aria-label="Bakiyeler">
-            <span>
+            <span className="wallet-pill wallet-cash">
               <i aria-hidden="true" className="cash-dot" />{' '}
-              <strong>{formatNumber(cash, true)}</strong>
+              <AnimatedCounter value={cash} compact showSparksOnIncrease />
               <small>Nakit</small>
             </span>
-            <span>
+            <span className="wallet-pill wallet-points">
               <i aria-hidden="true" className="point-dot" />{' '}
-              <strong>{formatNumber(points, true)}</strong>
+              <AnimatedCounter
+                value={points}
+                compact
+                showSparksOnIncrease={false}
+              />
               <small>SP</small>
             </span>
+            {totalLevel > 0 && (
+              <span
+                className="wallet-pill wallet-level-badge"
+                title="Toplam İmparatorluk Seviyesi"
+              >
+                <i aria-hidden="true" className="level-dot">
+                  👑
+                </i>{' '}
+                <strong className="level-text">Lv.{totalLevel}</strong>
+                <small>Seviye</small>
+              </span>
+            )}
           </div>
           {isAdmin && onOpenAdmin && (
             <button
@@ -175,7 +201,9 @@ export function GameLayout({
             tabIndex={-1}
             className="game-content"
           >
-            {children}
+            <div key={tab} className="screen-transition-pane">
+              {children}
+            </div>
           </main>
           <aside className="context-sidebar" aria-label="Oyun rehberi">
             <p className="eyebrow">İMPARATORLUK NOTLARI</p>
@@ -236,6 +264,12 @@ export function GameLayout({
           >
             <Icon name={item.key} />
             <span>{item.short}</span>
+            {tab === item.key && (
+              <>
+                <span className="nav-halo" aria-hidden="true" />
+                <span className="nav-underbar" aria-hidden="true" />
+              </>
+            )}
           </button>
         ))}
       </nav>

@@ -40,9 +40,70 @@ export function DynastyCipherGame({
   const [score, setScore] = useState<number>(0);
   const [combo, setCombo] = useState<number>(1.0);
   const [timeLeftMs, setTimeLeftMs] = useState<number>(7000);
+  const [isGlitching, setIsGlitching] = useState<boolean>(false);
+  const [isDecoding, setIsDecoding] = useState<boolean>(false);
+  const [scrambledText, setScrambledText] = useState<string | null>(null);
 
   const timers = useRef<number[]>([]);
   const countdownIntervalRef = useRef<number | null>(null);
+  const matrixCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const matrixAnimFrameRef = useRef<number | null>(null);
+  const glitchTimerRef = useRef<number | null>(null);
+  const decodeTimerRef = useRef<number | null>(null);
+  const scrambleTimerRef = useRef<number | null>(null);
+
+  // Background Matrix Digital Rain Stream
+  useEffect(() => {
+    const canvas = matrixCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = canvas.clientWidth || 320;
+    const height = canvas.clientHeight || 300;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const cols = Math.max(12, Math.floor(width / 14));
+    const ypos = Array(cols)
+      .fill(0)
+      .map(() => Math.floor(Math.random() * 20));
+    const glyphs = '0123456789ABCDEF◆●▲✦XYZ';
+
+    function matrixStep() {
+      if (!canvas || !ctx) return;
+      ctx.fillStyle = 'rgba(8, 12, 20, 0.12)';
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.font = '10px "SF Mono", monospace';
+      for (let i = 0; i < cols; i++) {
+        const char = glyphs[Math.floor(Math.random() * glyphs.length)]!;
+        const x = i * 14;
+        const y = ypos[i]! * 14;
+
+        ctx.fillStyle = Math.random() > 0.85 ? '#ffffff' : '#00ff88';
+        ctx.fillText(char, x, y);
+
+        if (y > height && Math.random() > 0.975) {
+          ypos[i] = 0;
+        } else {
+          ypos[i] = ypos[i]! + 1;
+        }
+      }
+
+      matrixAnimFrameRef.current = requestAnimationFrame(matrixStep);
+    }
+
+    matrixAnimFrameRef.current = requestAnimationFrame(matrixStep);
+
+    return () => {
+      if (matrixAnimFrameRef.current)
+        cancelAnimationFrame(matrixAnimFrameRef.current);
+    };
+  }, []);
 
   // Clear timers on unmount
   useEffect(() => {
@@ -50,8 +111,50 @@ export function DynastyCipherGame({
       timers.current.forEach(window.clearTimeout);
       if (countdownIntervalRef.current)
         clearInterval(countdownIntervalRef.current);
+      if (matrixAnimFrameRef.current)
+        cancelAnimationFrame(matrixAnimFrameRef.current);
+      if (glitchTimerRef.current) clearTimeout(glitchTimerRef.current);
+      if (decodeTimerRef.current) clearTimeout(decodeTimerRef.current);
+      if (scrambleTimerRef.current) clearInterval(scrambleTimerRef.current);
     };
   }, []);
+
+  function triggerGlitch() {
+    setIsGlitching(true);
+    if (glitchTimerRef.current) clearTimeout(glitchTimerRef.current);
+    glitchTimerRef.current = window.setTimeout(
+      () => setIsGlitching(false),
+      380,
+    );
+  }
+
+  function triggerDecodeSweep(clearedRound: number) {
+    setIsDecoding(true);
+    if (decodeTimerRef.current) clearTimeout(decodeTimerRef.current);
+    decodeTimerRef.current = window.setTimeout(() => setIsDecoding(false), 800);
+
+    const cyberSymbols = '!#$0x1F%*&?><_~/\\';
+    let iterations = 0;
+    const target = `>> DÜZEY ${clearedRound} ÇÖZÜLDÜ // ERİŞİM ONAYLANDI`;
+    if (scrambleTimerRef.current) clearInterval(scrambleTimerRef.current);
+    scrambleTimerRef.current = window.setInterval(() => {
+      iterations++;
+      if (iterations > 7) {
+        if (scrambleTimerRef.current) clearInterval(scrambleTimerRef.current);
+        setScrambledText(null);
+        return;
+      }
+      const scrambled = target
+        .split('')
+        .map((c, i) =>
+          i < iterations * 4
+            ? c
+            : cyberSymbols[Math.floor(Math.random() * cyberSymbols.length)],
+        )
+        .join('');
+      setScrambledText(scrambled);
+    }, 45);
+  }
 
   function stopCountdown() {
     if (countdownIntervalRef.current) {
@@ -77,6 +180,7 @@ export function DynastyCipherGame({
   }
 
   function handleTimeout() {
+    triggerGlitch();
     playErrorSound();
     hapticError();
     setCombo(1.0);
@@ -151,6 +255,7 @@ export function DynastyCipherGame({
 
     if (nodeIndex !== sequence[inputIndex]) {
       // Mistake!
+      triggerGlitch();
       stopCountdown();
       playErrorSound();
       hapticError();
@@ -174,6 +279,7 @@ export function DynastyCipherGame({
     }
 
     // Completed full sequence for round!
+    triggerDecodeSweep(round);
     stopCountdown();
     playDecryptPulseSound();
     hapticSuccess();
@@ -206,8 +312,13 @@ export function DynastyCipherGame({
   const firewallPercentage = Math.min(100, Math.round(((round - 1) / 5) * 100));
 
   return (
-    <div className="cipher-terminal" aria-label="Hanedan Şifresi Terminali">
+    <div
+      className={`cipher-terminal ${isGlitching ? 'is-glitching' : ''} ${isDecoding ? 'is-decoding' : ''}`}
+      aria-label="Hanedan Şifresi Terminali"
+    >
+      <canvas ref={matrixCanvasRef} className="cipher-matrix-canvas" />
       <div className="scanline-overlay" />
+      {isDecoding && <div className="cipher-decode-sweep-beam" />}
 
       {/* Cyber Header */}
       <div className="cipher-header">
@@ -250,7 +361,7 @@ export function DynastyCipherGame({
         </div>
         <div className="firewall-track">
           <div
-            className="firewall-bar"
+            className={`firewall-bar ${isDecoding ? 'is-overcharge' : ''}`}
             style={{ width: `${firewallPercentage}%` }}
           />
         </div>
@@ -296,15 +407,16 @@ export function DynastyCipherGame({
 
       {/* Status Output */}
       <p className="cipher-status-line" aria-live="polite">
-        {phase === 'showing'
-          ? '>> DÜĞÜM VERİ AKIŞI İZLENİYOR...'
-          : phase === 'input'
-            ? `>> DÜZEY ${round}: ${inputIndex + 1}. MÜHÜRÜ ONAYLA`
-            : phase === 'result'
-              ? lives > 0
-                ? `>> TAM ERİŞİM SAĞLANDI! +${score} NAKİT`
-                : `>> ERİŞİM REDDEDİLDİ · ${score} NAKİT TOPLANDI`
-              : '>> HACK DİZİLİMİNİ BAŞLATMAK İÇİN BUTONA BASIN.'}
+        {scrambledText ??
+          (phase === 'showing'
+            ? '>> DÜĞÜM VERİ AKIŞI İZLENİYOR...'
+            : phase === 'input'
+              ? `>> DÜZEY ${round}: ${inputIndex + 1}. MÜHÜRÜ ONAYLA`
+              : phase === 'result'
+                ? lives > 0
+                  ? `>> TAM ERİŞİM SAĞLANDI! +${score} NAKİT`
+                  : `>> ERİŞİM REDDEDİLDİ · ${score} NAKİT TOPLANDI`
+                : '>> HACK DİZİLİMİNİ BAŞLATMAK İÇİN BUTONA BASIN.')}
       </p>
 
       {/* Action Button */}

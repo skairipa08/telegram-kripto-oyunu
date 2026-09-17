@@ -206,6 +206,7 @@ export function ShopScreen({
         (pass ? (
           <article className="sa-pass-card" aria-labelledby="empire-pass-title">
             <div className="sa-pass-glow" aria-hidden="true" />
+            <div className="sa-cyber-gold-sweep" aria-hidden="true" />
             <div className="sa-pass-copy">
               <div className="sa-pass-header-row">
                 <p className="eyebrow">AYRICALIK ÜYELİĞİ</p>
@@ -323,7 +324,8 @@ export function ShopScreen({
             <p className="muted">İmparatorluğunu hızlandıracak paketler</p>
           </div>
           <div className="sa-cosmetic-grid">
-            <article className="panel sa-cosmetic-card">
+            <article className="panel sa-cosmetic-card sa-holo-card">
+              <div className="sa-holo-shimmer" aria-hidden="true" />
               <div className="sa-cosmetic-copy">
                 <div>
                   <div className="sa-cosmetic-title-row">
@@ -352,7 +354,8 @@ export function ShopScreen({
                     : 'Satın Al'}
               </button>
             </article>
-            <article className="panel sa-cosmetic-card">
+            <article className="panel sa-cosmetic-card sa-holo-card">
+              <div className="sa-holo-shimmer" aria-hidden="true" />
               <div className="sa-cosmetic-copy">
                 <div>
                   <div className="sa-cosmetic-title-row">
@@ -404,7 +407,8 @@ export function ShopScreen({
             <p className="muted">Oyun ritmini ve birikim kapasitesini artır</p>
           </div>
           <div className="sa-cosmetic-grid">
-            <article className="panel sa-cosmetic-card">
+            <article className="panel sa-cosmetic-card sa-holo-card">
+              <div className="sa-holo-shimmer" aria-hidden="true" />
               <div className="sa-cosmetic-copy">
                 <div>
                   <div className="sa-cosmetic-title-row">
@@ -433,7 +437,8 @@ export function ShopScreen({
                     : 'Satın Al'}
               </button>
             </article>
-            <article className="panel sa-cosmetic-card">
+            <article className="panel sa-cosmetic-card sa-holo-card">
+              <div className="sa-holo-shimmer" aria-hidden="true" />
               <div className="sa-cosmetic-copy">
                 <div>
                   <div className="sa-cosmetic-title-row">
@@ -480,7 +485,11 @@ export function ShopScreen({
               {cosmetics.map((product, index) => {
                 const isThisPurchasing = purchasingSku === product.sku;
                 return (
-                  <article className="panel sa-cosmetic-card" key={product.sku}>
+                  <article
+                    className="panel sa-cosmetic-card sa-holo-card"
+                    key={product.sku}
+                  >
+                    <div className="sa-holo-shimmer" aria-hidden="true" />
                     <div className="sa-cosmetic-art">
                       <CosmeticArt variant={index === 0 ? 'frame' : 'emblem'} />
                     </div>

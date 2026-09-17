@@ -58,7 +58,11 @@ function applyTelegramAppearance(webApp: TelegramWebApp) {
 
 export function useTelegramWebApp() {
   const [webApp] = useState(() => window.Telegram?.WebApp ?? null);
-  const initData = webApp?.initData.trim() || null;
+  // DEV-ONLY: inject a stub initData when running outside Telegram so the
+  // auth bypass in the API can be triggered without a real Telegram client.
+  // import.meta.env.DEV is replaced with `false` by Vite in production builds.
+  const initData =
+    webApp?.initData.trim() || (import.meta.env.DEV ? 'dev_bypass=1' : null);
 
   useEffect(() => {
     if (!webApp) return;

@@ -18,7 +18,7 @@ describe('ArcadeScreen and Mini-Games Suite', () => {
       expect(markup).toContain('Arcade Eğlence Merkezi');
       expect(markup).toContain('Dokun');
       expect(markup).toContain('Birleştir');
-      expect(markup).toContain('Şifre');
+      expect(markup).toContain('Deşifre');
       expect(markup).toContain('Çöküş');
 
       // Default active game is Notcoin Tap

@@ -50,6 +50,12 @@ export function CryptoCrashGame({
     1.45, 3.2, 1.15, 8.4, 2.1, 14.8,
   ]);
 
+  const [screenShakeClass, setScreenShakeClass] = useState<string>('');
+  const [cashoutProfitToast, setCashoutProfitToast] = useState<number | null>(
+    null,
+  );
+  const [heartbeatPulse, setHeartbeatPulse] = useState<number>(1.0);
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const candlesRef = useRef<Candlestick[]>([]);
   const animFrameRef = useRef<number | null>(null);
@@ -57,6 +63,47 @@ export function CryptoCrashGame({
   const lastCandleTimeRef = useRef<number>(0);
   const countTimerRef = useRef<number | null>(null);
   const hasCashedOutRef = useRef(false);
+  const shakeTimerRef = useRef<number | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
+
+  const thrusterParticlesRef = useRef<
+    Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      color: string;
+      alpha: number;
+      decay: number;
+    }>
+  >([]);
+  const redMistParticlesRef = useRef<
+    Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      alpha: number;
+      decay: number;
+    }>
+  >([]);
+  const confettiParticlesRef = useRef<
+    Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      color: string;
+      shape: 'ribbon' | 'spark';
+      alpha: number;
+      decay: number;
+      rotation: number;
+      rotSpeed: number;
+    }>
+  >([]);
 
   // Draw Candlesticks & Trailing Curve on Canvas
   function drawChart(currentMult: number, isCrashed: boolean) {
@@ -138,15 +185,29 @@ export function CryptoCrashGame({
       ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
     });
 
-    // Trailing Curve Line
+    // Trailing Curve Line, Rocket & Thruster Particles
     if (candles.length > 1) {
+      const lastIdx = candles.length - 1;
+      const lastX = startX + lastIdx * spacing;
+      const lastY = getY(candles[lastIdx]!.close);
+      const prevX = startX + Math.max(0, lastIdx - 1) * spacing;
+      const prevY = getY(candles[Math.max(0, lastIdx - 1)]!.close);
+      const angle = Math.atan2(lastY - prevY, lastX - prevX);
+
+      // Pass 1: Glowing halo curve pass
       ctx.beginPath();
       ctx.strokeStyle = isCrashed
-        ? '#ff9e9e'
+        ? 'rgba(255, 100, 100, 0.35)'
+        : currentMult >= 10.0
+          ? 'rgba(255, 215, 0, 0.35)'
+          : 'rgba(126, 210, 173, 0.3)';
+      ctx.lineWidth = 7;
+      ctx.shadowColor = isCrashed
+        ? '#ff4444'
         : currentMult >= 10.0
           ? '#ffd700'
           : '#7ed2ad';
-      ctx.lineWidth = 2.5;
+      ctx.shadowBlur = 14;
       candles.forEach((c, idx) => {
         const x = startX + idx * spacing;
         const y = getY(c.close);
@@ -155,16 +216,217 @@ export function CryptoCrashGame({
       });
       ctx.stroke();
 
-      // Glowing head
-      const lastX = startX + (candles.length - 1) * spacing;
-      const lastY = getY(candles[candles.length - 1]!.close);
-
+      // Pass 2: Sharp core neon curve
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
-      ctx.fillStyle = isCrashed ? '#ff9e9e' : '#ffffff';
-      ctx.fill();
-      ctx.shadowColor = isCrashed ? '#ff9e9e' : '#7ed2ad';
-      ctx.shadowBlur = 10;
+      ctx.strokeStyle = isCrashed
+        ? '#ff9e9e'
+        : currentMult >= 10.0
+          ? '#ffd700'
+          : '#7ed2ad';
+      ctx.lineWidth = 2.5;
+      ctx.shadowBlur = 0;
+      candles.forEach((c, idx) => {
+        const x = startX + idx * spacing;
+        const y = getY(c.close);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // Plasma Thruster particles trailing rocket nozzle
+      if (!isCrashed) {
+        const nozzleX = lastX - Math.cos(angle) * 12;
+        const nozzleY = lastY - Math.sin(angle) * 12;
+        const thrusterColors = ['#ffffff', '#00e5ff', '#ffd700', '#ff4400'];
+        for (let p = 0; p < 2; p++) {
+          const spread = (Math.random() - 0.5) * 0.6;
+          const pAngle = angle + Math.PI + spread;
+          const pSpeed = 2.5 + Math.random() * 4.5;
+          thrusterParticlesRef.current.push({
+            x: nozzleX,
+            y: nozzleY,
+            vx: Math.cos(pAngle) * pSpeed,
+            vy: Math.sin(pAngle) * pSpeed,
+            size: 2.0 + Math.random() * 2.5,
+            color:
+              thrusterColors[
+                Math.floor(Math.random() * thrusterColors.length)
+              ]!,
+            alpha: 1.0,
+            decay: 0.045 + Math.random() * 0.03,
+          });
+        }
+      }
+
+      // Render & update thruster particles
+      const tp = thrusterParticlesRef.current;
+      for (let i = tp.length - 1; i >= 0; i--) {
+        const p = tp[i]!;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.decay;
+        if (p.alpha <= 0) {
+          tp.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Render Cyber-Rocket at curve head
+      if (!isCrashed) {
+        ctx.save();
+        ctx.translate(lastX, lastY);
+        ctx.rotate(angle);
+
+        // Rocket hull (fuselage)
+        ctx.fillStyle = '#f4f0e8';
+        ctx.beginPath();
+        ctx.moveTo(11, 0);
+        ctx.lineTo(-7, -5);
+        ctx.lineTo(-4, 0);
+        ctx.lineTo(-7, 5);
+        ctx.closePath();
+        ctx.fill();
+
+        // Rocket wings & gold plating
+        ctx.fillStyle = '#e1b47e';
+        ctx.beginPath();
+        ctx.moveTo(-2, -3.5);
+        ctx.lineTo(-8, -8);
+        ctx.lineTo(-5, -1.5);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(-2, 3.5);
+        ctx.lineTo(-8, 8);
+        ctx.lineTo(-5, 1.5);
+        ctx.closePath();
+        ctx.fill();
+
+        // Cockpit visor (cyan glow)
+        ctx.fillStyle = '#00e5ff';
+        ctx.shadowColor = '#00e5ff';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(1.5, 0, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Engine nozzle glow
+        ctx.fillStyle = '#ffaa00';
+        ctx.shadowColor = '#ff5500';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(-6, 0, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      } else {
+        // Exploded crash coordinate
+        ctx.beginPath();
+        ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff4444';
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 18;
+        ctx.fill();
+
+        // Dramatic Red Mist
+        const mist = ctx.createRadialGradient(
+          lastX,
+          lastY,
+          0,
+          lastX,
+          lastY,
+          140,
+        );
+        mist.addColorStop(0, 'rgba(255, 30, 30, 0.45)');
+        mist.addColorStop(0.5, 'rgba(255, 0, 0, 0.15)');
+        mist.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        ctx.fillStyle = mist;
+        ctx.fillRect(0, 0, width, height);
+
+        // Drifting red embers
+        const embers = redMistParticlesRef.current;
+        for (let i = embers.length - 1; i >= 0; i--) {
+          const em = embers[i]!;
+          em.x += em.vx;
+          em.y += em.vy;
+          em.alpha -= em.decay;
+          if (em.alpha <= 0) {
+            embers.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, em.alpha);
+          ctx.fillStyle = '#ff5555';
+          ctx.shadowColor = '#ff2222';
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(em.x, em.y, em.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Celebratory victory confetti shower
+      const confetti = confettiParticlesRef.current;
+      for (let i = confetti.length - 1; i >= 0; i--) {
+        const c = confetti[i]!;
+        c.x += c.vx;
+        c.y += c.vy;
+        c.rotation += c.rotSpeed;
+        c.alpha -= c.decay;
+        if (c.alpha <= 0 || c.y > height + 20) {
+          confetti.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, c.alpha);
+        ctx.translate(c.x, c.y);
+        ctx.rotate(c.rotation);
+        ctx.fillStyle = c.color;
+        if (c.shape === 'ribbon') {
+          ctx.fillRect(-c.size, -c.size * 0.4, c.size * 2, c.size * 0.8);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, c.size * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Tension Heartbeat Vignette Pulse
+      if (!isCrashed && currentMult > 2.0) {
+        const bpm = Math.min(
+          230,
+          Math.max(
+            60,
+            Math.round(60 + 25 * Math.pow(Math.max(0, currentMult - 1), 0.75)),
+          ),
+        );
+        const beatPeriod = 60000 / bpm;
+        const beatFrac = (Date.now() % beatPeriod) / beatPeriod;
+        const pulse =
+          beatFrac < 0.22 ? Math.sin((beatFrac / 0.22) * Math.PI) : 0;
+        if (pulse > 0) {
+          ctx.save();
+          ctx.strokeStyle =
+            currentMult >= 10.0
+              ? 'rgba(255, 60, 60, 0.45)'
+              : 'rgba(225, 180, 126, 0.35)';
+          ctx.lineWidth = 4 * pulse;
+          ctx.strokeRect(0, 0, width, height);
+          ctx.restore();
+        }
+      }
     }
 
     ctx.restore();
@@ -190,6 +452,20 @@ export function CryptoCrashGame({
       const elapsedMs = Date.now() - startTimeRef.current;
       const currentMult = calculateMultiplierAtTime(elapsedMs);
 
+      // Heartbeat pulse calculation for HUD
+      const bpm = Math.min(
+        230,
+        Math.max(
+          60,
+          Math.round(60 + 25 * Math.pow(Math.max(0, currentMult - 1), 0.75)),
+        ),
+      );
+      const beatPeriod = 60000 / bpm;
+      const beatFrac = (Date.now() % beatPeriod) / beatPeriod;
+      const pulse =
+        beatFrac < 0.22 ? Math.sin((beatFrac / 0.22) * Math.PI) * 0.12 : 0;
+      setHeartbeatPulse(1 + pulse);
+
       // Check if we need to generate a new candlestick every 450ms
       if (elapsedMs - lastCandleTimeRef.current >= 450) {
         lastCandleTimeRef.current = elapsedMs;
@@ -207,6 +483,31 @@ export function CryptoCrashGame({
         // Crash!
         hasCashedOutRef.current = true;
         setMultiplier(targetCrash);
+        setScreenShakeClass('is-crash-shake');
+        if (shakeTimerRef.current) clearTimeout(shakeTimerRef.current);
+        shakeTimerRef.current = window.setTimeout(
+          () => setScreenShakeClass(''),
+          550,
+        );
+
+        // Spawn red embers
+        const canvas = canvasRef.current;
+        const w = canvas?.clientWidth || 320;
+        const h = canvas?.clientHeight || 200;
+        const embers = [];
+        for (let i = 0; i < 35; i++) {
+          embers.push({
+            x: w * 0.7 + (Math.random() - 0.5) * 80,
+            y: h * 0.4 + (Math.random() - 0.5) * 60,
+            vx: (Math.random() - 0.5) * 2.5,
+            vy: 1.0 + Math.random() * 2.5,
+            size: 2.0 + Math.random() * 3.0,
+            alpha: 1.0,
+            decay: 0.015 + Math.random() * 0.015,
+          });
+        }
+        redMistParticlesRef.current = embers;
+
         drawChart(targetCrash, true);
         playCrashSound();
         hapticCrash();
@@ -228,6 +529,8 @@ export function CryptoCrashGame({
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       if (countTimerRef.current) clearInterval(countTimerRef.current);
+      if (shakeTimerRef.current) clearTimeout(shakeTimerRef.current);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     };
   }, []);
 
@@ -340,7 +643,56 @@ export function CryptoCrashGame({
     setCashOutMultiplier(securedMult);
     setPhase('cashed_out');
 
+    setScreenShakeClass('is-cashout-flash is-cashout-bounce');
+    if (shakeTimerRef.current) clearTimeout(shakeTimerRef.current);
+    shakeTimerRef.current = window.setTimeout(
+      () => setScreenShakeClass(''),
+      550,
+    );
+
     const payout = calculateCrashPayout(stake, securedMult);
+    const profit = calculateCrashProfit(stake, securedMult);
+    setCashoutProfitToast(profit);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = window.setTimeout(
+      () => setCashoutProfitToast(null),
+      2500,
+    );
+
+    // Spawn celebratory victory confetti
+    const canvas = canvasRef.current;
+    const w = canvas?.clientWidth || 320;
+    const confetti: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      color: string;
+      shape: 'ribbon' | 'spark';
+      alpha: number;
+      decay: number;
+      rotation: number;
+      rotSpeed: number;
+    }> = [];
+    const colors = ['#ffd700', '#7ed2ad', '#00e5ff', '#ffffff', '#ff9900'];
+    for (let i = 0; i < 65; i++) {
+      confetti.push({
+        x: Math.random() * w,
+        y: -10 - Math.random() * 40,
+        vx: (Math.random() - 0.5) * 3,
+        vy: 2.5 + Math.random() * 4.5,
+        size: 3.5 + Math.random() * 4,
+        color: colors[Math.floor(Math.random() * colors.length)]!,
+        shape: Math.random() > 0.4 ? 'ribbon' : 'spark',
+        alpha: 1.0,
+        decay: 0.012 + Math.random() * 0.012,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.25,
+      });
+    }
+    confettiParticlesRef.current = confetti;
+
     playWinSound();
     hapticSuccess();
     if (onReward) onReward(payout);
@@ -351,7 +703,10 @@ export function CryptoCrashGame({
   const potentialProfit = calculateCrashProfit(stake, multiplier);
 
   return (
-    <div className="crypto-crash-game" aria-label="Kripto Mum Çöküş Oyunu">
+    <div
+      className={`crypto-crash-game ${screenShakeClass}`}
+      aria-label="Kripto Mum Çöküş Oyunu"
+    >
       {/* Round History Pill Strip */}
       <div className="crash-history-strip" aria-label="Geçmiş Turlar">
         {history.map((item, idx) => {
@@ -378,7 +733,13 @@ export function CryptoCrashGame({
               {countdown}
             </span>
           ) : (
-            <span className={`multiplier-value ${tier}`}>
+            <span
+              className={`multiplier-value ${tier}`}
+              style={{
+                transform:
+                  phase === 'running' ? `scale(${heartbeatPulse})` : undefined,
+              }}
+            >
               {formatMultiplier(multiplier)}
             </span>
           )}
@@ -395,6 +756,13 @@ export function CryptoCrashGame({
                     : `PİYASA ÇÖKTÜ @ ${formatMultiplier(crashPoint)}`}
           </span>
         </div>
+
+        {/* Floating Profit Toast */}
+        {cashoutProfitToast !== null && (
+          <div className="crash-victory-toast">
+            🎉 +₺{cashoutProfitToast} KÂR ALINDI!
+          </div>
+        )}
       </div>
 
       {/* Stake Selector */}

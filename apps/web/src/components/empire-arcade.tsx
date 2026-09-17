@@ -4,10 +4,21 @@ import { CatizenMergeGame } from './catizen-merge-game';
 import { DynastyCipherGame } from './dynasty-cipher-game';
 import { NotcoinTapGame } from './notcoin-tap-game';
 import { CryptoCrashGame } from './crypto-crash-game';
+import { CryptoMinesGame } from './crypto-mines-game';
+import { CryptoPredictionsGame } from './crypto-predictions-game';
+import { DailyComboCard } from './daily-combo-card';
 import { isMuted, toggleMute, initAudio } from '../game/arcade-audio';
 import './arcade.css';
 
-export type ArcadeGame = 'tap' | 'merge' | 'cipher' | 'crash' | 'mint';
+export type ArcadeGame =
+  | 'tap'
+  | 'merge'
+  | 'crash'
+  | 'mines'
+  | 'predictions'
+  | 'combo'
+  | 'cipher'
+  | 'mint';
 
 const modules: Record<
   ArcadeGame,
@@ -23,15 +34,30 @@ const modules: Record<
     detail: 'Otomatik paket açar ve en uygun çiftleri birleştirir.',
     price: 129,
   },
-  cipher: {
-    name: 'Şifre Botu',
-    detail: 'Sıradaki doğru siber mührü ekranda gösterir.',
-    price: 99,
-  },
   crash: {
     name: 'Boğa Algoritması',
     detail: 'Piyasa çöküş riskini analiz eder ve sinyal verir.',
     price: 199,
+  },
+  mines: {
+    name: 'Mayın Dedektörü',
+    detail: 'İlk hamlede mayın basma riskini %50 düşürür.',
+    price: 149,
+  },
+  predictions: {
+    name: 'Kahin Oran Takviyesi',
+    detail: 'Tüm tahmin kuponlarına +0.15x ekstra oran çarpanı ekler.',
+    price: 179,
+  },
+  combo: {
+    name: 'Siber Kart Tarayıcı',
+    detail: 'Günün doğru kombo kartlarından birini anında gösterir.',
+    price: 99,
+  },
+  cipher: {
+    name: 'Şifre Botu',
+    detail: 'Sıradaki doğru siber mührü ekranda gösterir.',
+    price: 99,
   },
   mint: {
     name: 'Hassasiyet Modülü',
@@ -44,18 +70,31 @@ export function EmpireArcade({
   preview = false,
   onPreviewReward,
   initialGame = 'tap',
+  playerCash = 10000,
+  onCashUpdated,
+  referralLink,
+  clanTag,
+  clanName,
 }: {
   preview?: boolean;
   onPreviewReward?: (amount: number) => void;
   initialGame?: ArcadeGame;
+  playerCash?: number;
+  onCashUpdated?: (newCash: number) => void;
+  referralLink?: string;
+  clanTag?: string;
+  clanName?: string;
 }) {
   const [game, setGame] = useState<ArcadeGame>(initialGame);
   const [muted, setMutedState] = useState<boolean>(() => isMuted());
   const [assists, setAssists] = useState<Record<ArcadeGame, boolean>>({
     tap: false,
     merge: false,
-    cipher: false,
     crash: false,
+    mines: false,
+    predictions: false,
+    combo: false,
+    cipher: false,
     mint: false,
   });
 
@@ -97,11 +136,17 @@ export function EmpireArcade({
         </div>
       </div>
 
-      {/* 5-Game Tabs Navigation */}
+      {/* Arcade Games Tabs Navigation */}
       <div
         className="arcade-nav-tabs"
         role="tablist"
         aria-label="Arcade Oyunları"
+        style={{
+          display: 'flex',
+          overflowX: 'auto',
+          gap: '6px',
+          paddingBottom: '4px',
+        }}
       >
         <button
           role="tab"
@@ -123,21 +168,48 @@ export function EmpireArcade({
         </button>
         <button
           role="tab"
-          className={`arcade-nav-tab ${game === 'cipher' ? 'active' : ''}`}
-          aria-selected={game === 'cipher'}
-          onClick={() => handleTabChange('cipher')}
-        >
-          <span className="tab-icon">💻</span>
-          <span>Şifre</span>
-        </button>
-        <button
-          role="tab"
           className={`arcade-nav-tab ${game === 'crash' ? 'active' : ''}`}
           aria-selected={game === 'crash'}
           onClick={() => handleTabChange('crash')}
         >
           <span className="tab-icon">🚀</span>
           <span>Çöküş</span>
+        </button>
+        <button
+          role="tab"
+          className={`arcade-nav-tab ${game === 'mines' ? 'active' : ''}`}
+          aria-selected={game === 'mines'}
+          onClick={() => handleTabChange('mines')}
+        >
+          <span className="tab-icon">💣</span>
+          <span>Mayın</span>
+        </button>
+        <button
+          role="tab"
+          className={`arcade-nav-tab ${game === 'predictions' ? 'active' : ''}`}
+          aria-selected={game === 'predictions'}
+          onClick={() => handleTabChange('predictions')}
+        >
+          <span className="tab-icon">🎯</span>
+          <span>Tahmin</span>
+        </button>
+        <button
+          role="tab"
+          className={`arcade-nav-tab ${game === 'combo' ? 'active' : ''}`}
+          aria-selected={game === 'combo'}
+          onClick={() => handleTabChange('combo')}
+        >
+          <span className="tab-icon">🔑</span>
+          <span>Kombo</span>
+        </button>
+        <button
+          role="tab"
+          className={`arcade-nav-tab ${game === 'cipher' ? 'active' : ''}`}
+          aria-selected={game === 'cipher'}
+          onClick={() => handleTabChange('cipher')}
+        >
+          <span className="tab-icon">💻</span>
+          <span>Deşifre</span>
         </button>
       </div>
 
@@ -156,6 +228,33 @@ export function EmpireArcade({
             {...(onPreviewReward ? { onReward: onPreviewReward } : {})}
           />
         )}
+        {game === 'crash' && (
+          <CryptoCrashGame
+            preview={preview}
+            {...(onPreviewReward ? { onReward: onPreviewReward } : {})}
+          />
+        )}
+        {game === 'mines' && (
+          <CryptoMinesGame
+            playerCash={playerCash}
+            onCashUpdated={onCashUpdated}
+            preview={preview}
+          />
+        )}
+        {game === 'predictions' && (
+          <CryptoPredictionsGame
+            playerCash={playerCash}
+            onCashUpdated={onCashUpdated}
+          />
+        )}
+        {game === 'combo' && (
+          <DailyComboCard
+            userCash={playerCash}
+            referralLink={referralLink ?? ''}
+            clanTag={clanTag}
+            clanName={clanName}
+          />
+        )}
         {game === 'cipher' && (
           <DynastyCipherGame
             preview={preview}
@@ -163,17 +262,11 @@ export function EmpireArcade({
             {...(onPreviewReward ? { onReward: onPreviewReward } : {})}
           />
         )}
-        {game === 'crash' && (
-          <CryptoCrashGame
-            preview={preview}
-            {...(onPreviewReward ? { onReward: onPreviewReward } : {})}
-          />
-        )}
         {game === 'mint' && (
           <MintGame
             preview={preview}
             precisionAssist={assists.mint}
-            {...(onPreviewReward ? { onPreviewReward } : {})}
+            {...(onPreviewReward ? { onReward: onPreviewReward } : {})}
           />
         )}
       </div>

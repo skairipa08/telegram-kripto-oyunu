@@ -86,6 +86,48 @@ export function calculatePassiveCommission(
   return Math.floor(inviteeEarnedCash * rate);
 }
 
+/**
+ * Direct cash kickback rate from invitee's total earnings:
+ * 1 in 1000 = 0.1% (0.001)
+ */
+export const REFERRAL_CASH_KICKBACK_RATE = 0.001;
+
+/**
+ * Calculates the direct 0.1% (1/1000) kickback reward for referrer when invitee earns cash.
+ * E.g., when invitee earns 1,000,000 cash, referrer receives exactly 1,000 cash.
+ */
+export function calculateReferralKickback(earnedCash: number): number {
+  if (earnedCash <= 0) return 0;
+  return Math.floor(earnedCash * REFERRAL_CASH_KICKBACK_RATE);
+}
+
+export interface InviteeCashMilestone {
+  readonly targetCash: number;
+  readonly rewardCash: number;
+  readonly label: string;
+}
+
+export const INVITEE_CASH_MILESTONES: readonly InviteeCashMilestone[] = [
+  { targetCash: 100_000, rewardCash: 100, label: '100K Ciro' },
+  { targetCash: 1_000_000, rewardCash: 1_000, label: '1M Ciro' },
+  { targetCash: 10_000_000, rewardCash: 10_000, label: '10M Ciro' },
+  { targetCash: 100_000_000, rewardCash: 100_000, label: '100M Ciro' },
+  { targetCash: 1_000_000_000, rewardCash: 1_000_000, label: '1B Ciro' },
+] as const;
+
+/**
+ * Evaluates newly reached cumulative cash milestones that have not yet been claimed.
+ */
+export function evaluateInviteeCashMilestones(
+  cumulativeCash: number,
+  claimedTargets: readonly number[] = [],
+): InviteeCashMilestone[] {
+  return INVITEE_CASH_MILESTONES.filter(
+    (m) =>
+      cumulativeCash >= m.targetCash && !claimedTargets.includes(m.targetCash),
+  );
+}
+
 export interface InviteeStats {
   readonly hasCompletedTutorial: boolean;
   readonly highestBusinessLevel: number;

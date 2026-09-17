@@ -7,8 +7,10 @@ import {
   ResourceNotice,
   SectionTitle,
 } from '../game/ui';
+import { CelebrationModal } from '../components/celebration-modal';
 import './empire-missions.css';
 import '../components/arcade.css';
+import './social.css';
 
 export interface StreakMilestone {
   readonly days: number;
@@ -72,7 +74,7 @@ export const STREAK_MILESTONES: readonly StreakMilestone[] = [
 
 export const FALLBACK_LIFETIME_MISSIONS: readonly MissionView[] = [
   {
-    id: 'lifetime_earn_1m',
+    id: '00000000-0000-4000-a000-000000000001',
     title: 'İlk Milyon',
     description: 'Kariyerinde toplam 1.000.000 nakite ulaş',
     progress: 100,
@@ -82,7 +84,7 @@ export const FALLBACK_LIFETIME_MISSIONS: readonly MissionView[] = [
     status: 'in_progress',
   },
   {
-    id: 'lifetime_earn_10m',
+    id: '00000000-0000-4000-a000-000000000002',
     title: 'Finansal Dev',
     description: 'Kariyerinde toplam 10.000.000 nakite ulaş',
     progress: 100,
@@ -92,7 +94,7 @@ export const FALLBACK_LIFETIME_MISSIONS: readonly MissionView[] = [
     status: 'in_progress',
   },
   {
-    id: 'lifetime_reach_level_50',
+    id: '00000000-0000-4000-a000-000000000003',
     title: 'İmparatorluk Ölçeği',
     description: 'Tüm işletmelerinde toplam 50 seviyeye ulaş',
     progress: 1,
@@ -102,7 +104,7 @@ export const FALLBACK_LIFETIME_MISSIONS: readonly MissionView[] = [
     status: 'in_progress',
   },
   {
-    id: 'lifetime_invite_5',
+    id: '00000000-0000-4000-a000-000000000004',
     title: 'Ağ Lideri',
     description: 'İmparatorluğuna 5 arkadaşını davet et',
     progress: 0,
@@ -112,7 +114,7 @@ export const FALLBACK_LIFETIME_MISSIONS: readonly MissionView[] = [
     status: 'in_progress',
   },
   {
-    id: 'lifetime_tap_level_10',
+    id: '00000000-0000-4000-a000-000000000005',
     title: 'Tıklama Ustası',
     description: 'Tıklama oyununda Çoklu Tık geliştirmesini seviye 10 yap',
     progress: 1,
@@ -122,7 +124,7 @@ export const FALLBACK_LIFETIME_MISSIONS: readonly MissionView[] = [
     status: 'in_progress',
   },
   {
-    id: 'lifetime_merge_tier_20',
+    id: '00000000-0000-4000-a000-000000000006',
     title: 'Kuantum Birleştirici',
     description: 'Birleştirme oyununda Seviye 20 kutuya ulaş',
     progress: 1,
@@ -136,6 +138,7 @@ export const FALLBACK_LIFETIME_MISSIONS: readonly MissionView[] = [
 type MissionsScreenProps = {
   resource: ScreenResource<MissionsView>;
   onClaim?: (id: string) => void;
+  onClaimStreak?: () => void;
   pendingMissionId?: string | null;
   retryMissionId?: string | null;
   claimFeedback?: ActionFeedback | null;
@@ -241,11 +244,51 @@ function MissionCard({
 export function MissionsScreen({
   resource,
   onClaim,
+  onClaimStreak,
   pendingMissionId = null,
   retryMissionId = null,
   claimFeedback = null,
 }: MissionsScreenProps) {
   const [filter, setFilter] = useState<MissionFilter>('daily');
+  const [isStreakClaiming, setIsStreakClaiming] = useState(false);
+  const [isStreakClaimed, setIsStreakClaimed] = useState(false);
+  const [celebration, setCelebration] = useState<{
+    isOpen: boolean;
+    title: string;
+    subtitle?: string;
+    rewardValue: string;
+    badgeName?: string;
+    icon?: string;
+  } | null>(null);
+
+  const handleClaimDailyStreak = async () => {
+    if (isStreakClaiming || isStreakClaimed) return;
+    setIsStreakClaiming(true);
+    try {
+      if (onClaimStreak) {
+        onClaimStreak();
+      } else {
+        await fetch('/api/streak/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ requestId: crypto.randomUUID() }),
+        });
+      }
+    } catch {
+      // Graceful fallback for mock/offline preview
+    } finally {
+      setIsStreakClaiming(false);
+      setIsStreakClaimed(true);
+      const currentStreak = resource.data?.streak ?? 1;
+      setCelebration({
+        isOpen: true,
+        title: `${formatNumber(currentStreak > 0 ? currentStreak : 1)}. Gün Serisi Tamamlandı!`,
+        subtitle: 'Günlük giriş serini başarıyla korudun ve ritmi sürdürdün.',
+        rewardValue: '+250 Sezon Puanı',
+        icon: '🎁',
+      });
+    }
+  };
 
   if (resource.status !== 'ready' || !resource.data) {
     return (
@@ -304,6 +347,43 @@ export function MissionsScreen({
             );
           })}
         </ol>
+
+        {/* Daily Streak Claim Chest Action */}
+        <div className="streak-claim-box">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span
+              className={`streak-chest-icon ${isStreakClaimed ? 'unlocked' : ''}`}
+              role="img"
+              aria-label="Sandık"
+            >
+              {isStreakClaimed ? '🔓' : '🎁'}
+            </span>
+            <div>
+              <strong style={{ display: 'block', fontSize: '14px' }}>
+                {isStreakClaimed
+                  ? 'Bugünün Sandığı Açıldı!'
+                  : 'Günlük Seri Sandığı'}
+              </strong>
+              <small className="muted" style={{ fontSize: '12px' }}>
+                {isStreakClaimed
+                  ? 'Yarın yeni ödül için geri dön.'
+                  : 'Her gün giriş yaparak hediyeni aç.'}
+              </small>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="streak-claim-btn"
+            disabled={isStreakClaiming || isStreakClaimed}
+            onClick={() => void handleClaimDailyStreak()}
+          >
+            {isStreakClaiming
+              ? 'Açılıyor…'
+              : isStreakClaimed
+                ? '✓ Alındı'
+                : 'Sandığı Aç'}
+          </button>
+        </div>
       </article>
 
       {/* Extended Streak Milestones Visual Track */}
@@ -504,6 +584,17 @@ export function MissionsScreen({
                 ? 'Yeni haftalık hedefler yayınlandığında görev defterine eklenecek.'
                 : 'Tüm kalıcı kilometre taşları tamamlandı!'
           }
+        />
+      )}
+      {celebration && (
+        <CelebrationModal
+          isOpen={celebration.isOpen}
+          onClose={() => setCelebration(null)}
+          title={celebration.title}
+          subtitle={celebration.subtitle}
+          rewardValue={celebration.rewardValue}
+          badgeName={celebration.badgeName}
+          icon={celebration.icon}
         />
       )}
     </section>

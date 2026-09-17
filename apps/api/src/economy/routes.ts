@@ -35,6 +35,7 @@ import {
   type PlayerStreakDto,
   type PlayerReferralOverview,
   type PlayerState,
+  type InviteeMilestoneStatus,
 } from '@empire/shared';
 import type { Bindings } from '../auth/env';
 import { getCurrentUserSession } from '../auth/routes';
@@ -476,8 +477,10 @@ export function createEconomyRoutes(
     return c.json(response, 200);
   });
 
-  // GET /missions/active
-  routes.get('/missions/active', async (c) => {
+  // GET /missions/active and GET /missions
+  const handleGetActiveMissions = async (
+    c: Context<{ Bindings: Bindings }>,
+  ) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
       c.req.header('Cookie'),
@@ -503,7 +506,10 @@ export function createEconomyRoutes(
     }));
 
     return c.json(missions, 200);
-  });
+  };
+
+  routes.get('/missions/active', handleGetActiveMissions);
+  routes.get('/missions', handleGetActiveMissions);
 
   const handleClaimMission = async (c: Context<{ Bindings: Bindings }>) => {
     const authStore = makeAuthStore(c.env);
@@ -550,7 +556,9 @@ export function createEconomyRoutes(
       missionInstanceId: String(
         result.missionInstanceId ?? body.missionInstanceId,
       ),
-      rewardPoints: Number(result.rewardPoints ?? 0),
+      rewardPoints: Number(
+        result.rewardPoints ?? result.rewardSeasonPoints ?? 50,
+      ),
       newSeasonPoints: Number(result.newSeasonPoints ?? 0),
       claimedAt: new Date(String(result.claimedAt ?? Date.now())).toISOString(),
     };
@@ -716,9 +724,46 @@ export function createEconomyRoutes(
       unlockedBadges: Array.isArray(status.unlockedBadges)
         ? (status.unlockedBadges as string[])
         : [],
+      totalKickbackCashEarned: Number(status.totalKickbackCashEarned ?? 0),
+      unclaimedKickbackCash: Number(status.unclaimedKickbackCash ?? 0),
+      commissionRatePercent: Number(status.commissionRatePercent ?? 3),
+      inviteeMilestones: Array.isArray(status.inviteeMilestones)
+        ? (status.inviteeMilestones as InviteeMilestoneStatus[])
+        : [],
     };
 
     return c.json(response, 200);
+  });
+
+  // POST /referral/claim-kickback
+  routes.post('/referral/claim-kickback', async (c) => {
+    const authStore = makeAuthStore(c.env);
+    const session = await getCurrentUserSession(
+      c.req.header('Cookie'),
+      c.env,
+      authStore,
+      now,
+    );
+
+    if (!session) {
+      return c.json(error('UNAUTHORIZED'), 401);
+    }
+
+    const economyStore = makeStore(c.env);
+    if (economyStore.claimReferralKickback) {
+      const res = await economyStore.claimReferralKickback(session.user.id);
+      return c.json(
+        {
+          apiVersion: 'v1',
+          claimedCash: res.claimedCash,
+          newCash: res.newCash,
+          claimedAt: res.claimedAt,
+        },
+        200,
+      );
+    }
+
+    return c.json(error('NOT_IMPLEMENTED'), 501);
   });
 
   // POST /referral/claim

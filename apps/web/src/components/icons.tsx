@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react';
 
 export type IconName =
-  'empire' | 'missions' | 'friends' | 'leaderboard' | 'shop';
+  'empire' | 'arcade' | 'missions' | 'friends' | 'leaderboard' | 'shop';
 
 const paths: Record<IconName, ReactNode> = {
   empire: <path d="M4 20V9l8-5 8 5v11M8 20v-8h8v8M10 20v-4h4v4" />,
+  arcade: (
+    <path d="M6 11h4m-2-2v4m7-2h.01M19 11h.01M17 15H7a4 4 0 0 1-4-4V9a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4Z" />
+  ),
   missions: <path d="M9 5h10v15H5V5h2m2-2v4m6-4v4M8 11h8m-8 4h5" />,
   friends: (
     <>

@@ -1,33 +1,10 @@
-# Progress Tracker — Stream 1 Worker
+﻿# Progress Log — Stream 1
 
-**Agent**: teamwork_preview_worker_stream1
-**Last visited**: 2026-09-16T11:37:30Z
-**Current Status**: Implementation & Verification Complete - Preparing handoff.md
-
-## Tasks
-- [x] Read DISPATCH.md, ORIGINAL_REQUEST.md, PROJECT.md, survey handoff.md
-- [x] Initialize BRIEFING.md and progress.md
-- [x] Implement `packages/game-core/src/minigames-config.ts`
-- [x] Implement `packages/game-core/src/notcoin-tap.ts`
-- [x] Implement `packages/game-core/src/catizen-merge.ts`
-- [x] Implement `packages/game-core/src/crypto-crash.ts`
-- [x] Implement `packages/game-core/src/dynasty-cipher.ts`
-- [x] Update `packages/game-core/src/index.ts`
-- [x] Author test suites in `packages/game-core/src/`:
-  - [x] `notcoin-tap.test.ts`
-  - [x] `catizen-merge.test.ts`
-  - [x] `crypto-crash.test.ts`
-  - [x] `dynasty-cipher.test.ts`
-  - [x] `minigames-simulation-stress.test.ts`
-- [x] Verify `pnpm vitest run packages/game-core` (18 files, 264 tests passed, 100% green)
-- [x] Append schemas & DTOs in `packages/shared/src/index.ts`
-- [x] Verify `pnpm --filter @empire/shared typecheck` (passed 100%)
-- [x] Implement `apps/api/src/arcade/store.ts` and `apps/api/src/arcade/routes.ts`
-- [x] Wire arcade routes into `apps/api/src/index.ts`
-- [x] Author `apps/api/src/arcade/routes.test.ts` (14 integration tests passed 100%)
-- [x] Verify `pnpm --filter @empire/api test` (20 files, 213 tests passed, 100% green)
-- [x] Verify `pnpm typecheck` (all 4 packages pass 0 errors)
-- [x] Verify `pnpm test` (53 files, 622 tests passed, 100% green)
-- [x] Verify `pnpm lint` (0 errors)
-- [x] Verify `pnpm -r build` (Wrangler deploy dry-run and Vite build passed 100%)
-- [ ] Generate final `handoff.md` and report to orchestrator
+- Last visited: 2026-09-17T09:49:55Z
+- Status: In Progress
+- Completed:
+  1. Created apps/web/src/components/animated-counter.tsx with rAF cubic ease-out interpolation, balance-bump animation, and gold spark particle trajectory generation.
+  2. Updated apps/web/src/game/game-layout.tsx with AnimatedCounter for cash and points, total empire level badge (Lv.X), zero-CLS screen-transition-pane container on tab switch, and active tab halo/under-bar indicators.
+  3. Upgraded apps/web/src/styles.css with global keyframes (screenSlideFadeIn, neonBorderPulse, shimmerSweep, balanceBump, goldSpark, haloBreathe, floatUpFade), spring tactile haptic press (:active scale 0.96), active tab halo and bottom-curved neon under-bar, animated counter & gold sparks styling, wallet-strip pills, 420px .empire-claim-row specificity override (removing -63px margin and enabling column stacking), and 359px topbar density optimizations.
+  4. Authored comprehensive unit tests in apps/web/src/components/animated-counter.test.tsx covering AnimatedCounter SSR rendering, compact numbers, null handling, level badge derivation, screen-transition-pane, and active tab indicators.
+- Current Step: Verifying test execution

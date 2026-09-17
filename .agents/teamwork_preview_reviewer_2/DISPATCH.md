@@ -84,3 +84,25 @@ c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_re
 The report must include a clear, unambiguous verdict: `VERDICT: APPROVE` or `VERDICT: REQUEST_CHANGES` with detailed evidence.
 When done, send a brief message with your verdict and handoff path to the orchestrator.
 
+## 2026-09-17T09:55:48Z
+You are Reviewer 2 for Project Empire Telegram Mini App.
+Your working directory is: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_reviewer_2
+
+First, read the authoritative user request at:
+c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md (specifically ## 2026-09-17T09:38:35Z)
+
+Also read:
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_reviewer_2\task.md
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_orchestrator_11\PROJECT.md
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_worker_stream3\handoff.md
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_worker_stream4\handoff.md
+
+Your mission:
+Objectively and adversarially review Stream 3 and Stream 4 deliverables.
+1. Inspect apps/web/src/components/arcade.css, catizen-merge-game.tsx, crypto-crash-game.tsx, notcoin-tap-game.tsx, dynasty-cipher-game.tsx.
+2. Inspect apps/web/src/screens/friends-screen.tsx, missions-screen.tsx, shop-screen.tsx, clans-screen.tsx, social.css, shop-analytics.css, celebration-modal.tsx.
+3. Run verification commands using run_command (e.g. pnpm vitest run apps/web/src/screens/arcade-screen.test.tsx apps/web/src/screens/missions-milestones.test.tsx apps/web/src/screens/shop-screen.test.tsx apps/web/src/screens/friends-screen.test.ts).
+4. Verify Notcoin 3D squish tilt & sparks, Catizen merge confetti & 100-level gradients, Crypto Crash rocket thrusters & screen shake, Dynasty Cipher matrix rain, Streak energy ribbon & chest unlock, Referral ‰1 gold glow, Clan Olympic podiums, Stars shop hologram cards, and Canvas confetti modal.
+5. Check 60fps, canvas loop cleanup on unmount, and mobile responsiveness (320px–390px).
+6. Write your handoff report to c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_reviewer_2\handoff.md with an explicit verdict: APPROVE or REQUEST_CHANGES.
+Send a completion message to the parent orchestrator.

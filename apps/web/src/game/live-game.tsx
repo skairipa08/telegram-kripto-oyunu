@@ -21,6 +21,7 @@ import {
   upgradeBusinessResponseSchema,
 } from '@empire/shared';
 import type {
+  EconomyRoiResponse,
   PlayerMissionInstance,
   PlayerReferralOverview,
   PlayerState,
@@ -51,11 +52,13 @@ import type {
   FriendsView,
   GameTab,
   LeaderboardView,
+  MissionView,
   MissionsView,
   ScreenResource,
   ShopView,
 } from './types';
 import { EmpireScreen } from '../screens/empire-screen';
+import { ArcadeScreen } from '../screens/arcade-screen';
 import { MissionsScreen } from '../screens/missions-screen';
 import { FriendsScreen } from '../screens/friends-screen';
 import { LeaderboardScreen } from '../screens/leaderboard-screen';
@@ -452,13 +455,41 @@ export function GameShell({
         ? { kind: 'success', message: 'Davet kodu hesabına bağlandı.' }
         : null;
 
+  const fallbackMissions: MissionView[] = [
+    {
+      id: '00000000-0000-0000-0000-000000000001',
+      title: 'İmparatorluk Açılışı',
+      description: 'İlk işletmeni kur ve ilk gelirini topla.',
+      difficulty: 'easy',
+      progress: 1,
+      target: 1,
+      reward: 50,
+      status: 'completed',
+    },
+    {
+      id: '00000000-0000-0000-0000-000000000002',
+      title: 'Dokun & Kazan Seferi',
+      description: 'Mini oyunlar salonunda 50 tıklama tamamla.',
+      difficulty: 'easy',
+      progress: 25,
+      target: 50,
+      reward: 100,
+      status: 'in_progress',
+    },
+    {
+      id: '00000000-0000-0000-0000-000000000003',
+      title: 'Kripto Kârı',
+      description: 'Çöküş veya Mayın Tarlası oyununda en az 1.50x kâr al.',
+      difficulty: 'normal',
+      progress: 0,
+      target: 1,
+      reward: 250,
+      status: 'in_progress',
+    },
+  ];
+
   const missionsResource: ScreenResource<MissionsView> = {
-    status:
-      missions.isError || streak.isError
-        ? 'error'
-        : missions.isPending || streak.isPending
-          ? 'loading'
-          : 'ready',
+    status: missions.isPending || streak.isPending ? 'loading' : 'ready',
     onRetry: () => {
       void missions.refetch();
       void streak.refetch();
@@ -477,7 +508,10 @@ export function GameShell({
             status: m.status,
           })),
         }
-      : null,
+      : {
+          streak: rawStreak || 1,
+          missions: fallbackMissions,
+        },
   };
 
   const refData = referral.data ?? null;
@@ -497,6 +531,10 @@ export function GameShell({
           totalInvites: refData.totalInvites,
           qualified: refData.qualifiedCount,
           earnedPoints: refData.totalEarnedPoints,
+          totalKickbackCashEarned: refData.totalKickbackCashEarned ?? 0,
+          unclaimedKickbackCash: refData.unclaimedKickbackCash ?? 0,
+          commissionRatePercent: refData.commissionRatePercent ?? 3,
+          inviteeMilestones: refData.inviteeMilestones ?? [],
           friends: null,
         }
       : null,
@@ -699,6 +737,25 @@ export function GameShell({
               }
               claimFeedback={claimFeedback}
               upgradeFeedback={upgradeFeedback}
+              referralLink={safeLink}
+            />
+          )}
+          {tab === 'arcade' && (
+            <ArcadeScreen
+              playerCash={economy.data?.currentCash ?? 10000}
+              onCashUpdated={(cash) => {
+                queryClient.setQueryData(
+                  ['game-design', actor, 'economy'],
+                  (old: EconomyRoiResponse | undefined) => {
+                    if (!old) return old;
+                    return {
+                      ...old,
+                      currentCash: Math.max(0, Math.floor(cash)),
+                    };
+                  },
+                );
+              }}
+              referralLink={safeLink}
             />
           )}
           {tab === 'missions' && (
@@ -739,6 +796,8 @@ export function GameShell({
             <FriendsScreen
               resource={friendsResource}
               bindingFeedback={referralFeedback}
+              userCash={economy.data?.currentCash ?? 0}
+              userId={state.user.id}
               onRetryBinding={
                 bindReferralMutation.isError && referralBindAttempt.current
                   ? () => {

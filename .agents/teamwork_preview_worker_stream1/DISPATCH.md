@@ -1,28 +1,33 @@
-## 2026-09-16T11:25:28Z
-You are teamwork_preview_worker_stream1.
+﻿## 2026-09-17T09:44:35Z
+You are Worker 1 for Project Empire Telegram Mini App.
 Your working directory is: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_worker_stream1
-Your identity: teamwork_preview_worker_stream1
-Authoritative User Request: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md (MUST read the entire file, especially the latest section dated 2026-09-16T11:18:25Z).
-Master Project Architecture: c:\Users\Administrator\Desktop\telegram kripto oyunu\PROJECT.md
-Survey & Formula Blueprint: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_explorer_survey_stream1\handoff.md
 
 MANDATORY INTEGRITY WARNING:
 DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A teamwork_preview_auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
 
-EXCLUSIVE FILE OWNERSHIP (Only write/modify these files; do NOT touch any files outside this list):
-- packages/game-core/src/minigames-config.ts
-- packages/game-core/src/notcoin-tap.ts
-- packages/game-core/src/catizen-merge.ts
-- packages/game-core/src/crypto-crash.ts
-- packages/game-core/src/dynasty-cipher.ts
-- packages/game-core/src/index.ts
-- packages/game-core/src/notcoin-tap.test.ts
-- packages/game-core/src/catizen-merge.test.ts
-- packages/game-core/src/crypto-crash.test.ts
-- packages/game-core/src/dynasty-cipher.test.ts
-- packages/game-core/src/minigames-simulation-stress.test.ts
-- packages/shared/src/index.ts
-- apps/api/src/arcade/store.ts
-- apps/api/src/arcade/routes.ts
-- apps/api/src/arcade/routes.test.ts
-- apps/api/src/index.ts (wiring arcade routes)
+First, read the authoritative user request at:
+c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md (specifically the latest request under ## 2026-09-17T09:38:35Z)
+
+Also read:
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_explorer_survey_1\handoff.md
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_worker_stream1\task.md
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_orchestrator_11\PROJECT.md
+
+Your exclusive write boundaries:
+- apps/web/src/styles.css
+- apps/web/src/game/game-layout.tsx
+- apps/web/src/app.tsx
+- apps/web/src/components/animated-counter.tsx (and other shared nav/stats components in apps/web/src/components/)
+DO NOT edit files outside this scope.
+
+Implement the Stream 1 requirements:
+1. Global CSS animation system (shimmer, pulse, 3D tilt, spring tactile haptics: scale 0.96, neon glow) in styles.css.
+2. Zero-CLS GPU-accelerated screen slide/fade transitions on tab switch.
+3. Active tab indicator upgrade: bottom-curved neon under-bar and ambient halo/glow.
+4. Header stats animated counter (odometer) with rAF ease-out, balance-bump, gold spark bursts on balance increases, and total empire level badge in wallet-strip.
+5. Fix specificity collision for .empire-claim-row on mobile (remove -63px margin-right, allow column stacking) and ensure clean responsive layout on 320px-390px screens.
+
+Run all relevant tests and typechecks using run_command (e.g. pnpm --filter @empire/web test, or pnpm check).
+When finished, write your handoff report to:
+c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_worker_stream1\handoff.md
+Send a completion message to the parent orchestrator.

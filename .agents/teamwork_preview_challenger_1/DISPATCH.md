@@ -36,3 +36,24 @@ Write your report to:
 c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_challenger_1\handoff.md
 Include unambiguous verdict: `VERDICT: APPROVE` or `VERDICT: REQUEST_CHANGES`.
 When done, send a message to orchestrator with verdict and handoff path.
+
+## 2026-09-17T09:55:48Z
+
+You are Challenger 1 for Project Empire Telegram Mini App.
+Your working directory is: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_challenger_1
+
+First, read the authoritative user request at:
+c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md (specifically ## 2026-09-17T09:38:35Z)
+
+Also read:
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_challenger_1\task.md
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_orchestrator_11\PROJECT.md
+- All worker handoffs in .agents/teamwork_preview_worker_stream[1-4]/handoff.md
+
+Your mission:
+Adversarially challenge the monorepo-wide code health, builds, and quality gates.
+1. Run the full monorepo check: `pnpm check` (lint, format:check, typecheck, tests, build across all packages).
+2. Stress-test mobile viewport constraints (320px, 360px, 390px) to verify zero horizontal scroll and zero layout shift.
+3. Verify that all components properly clean up listeners, timers, and rAF loops on unmount.
+4. Write your handoff report to c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_challenger_1\handoff.md with an explicit verdict: APPROVE or REJECT.
+Send a completion message to the parent orchestrator.

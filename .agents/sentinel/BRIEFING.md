@@ -1,7 +1,7 @@
-# BRIEFING — 2026-09-16T15:43:00+03:00
+# BRIEFING — 2026-09-17T12:39:35+03:00
 
 ## Mission
-Sentinel monitoring and lifecycle management for Custom Stakes in Risk (Crypto Crash), Adaptive Crash / Baiting Math Engine, and Extended Daily Streak Milestones (7d, 30d, 90d, 180d, 365d).
+Sentinel monitoring and lifecycle management for UI/Animation Cyber-Luxe Overhaul across 4 streams (Global Design System, Empire & City Silhouette, Arcade Game Juice, Social & Rewards).
 
 ## 🔒 My Identity
 - Archetype: sentinel
@@ -28,6 +28,10 @@ Sentinel monitoring and lifecycle management for Custom Stakes in Risk (Crypto C
 - Victory Auditor 9: 71b9c170-7f67-49c8-8ac9-504a96ad3728 (Completed)
 - Orchestrator 10: 8f48bf32-e611-43f8-a20c-dc51691359a0 (Completed)
 - Victory Auditor 10: 14a354cd-fde7-4cd8-ab7f-0f64bd59e43e (Completed — VICTORY CONFIRMED)
+- Orchestrator 11: 9228ef1c-2f7d-4ca7-9b2f-ff2bc203b840 (Completed)
+- Victory Auditor 11: [None]
+- Orchestrator 12: 4fb5c810-ec2d-4451-a45c-639a7bf5c7c7 (Active)
+- Victory Auditor 12: [to be spawned on victory claim]
 
 ## 🔒 Key Constraints
 - No technical decisions — relay only
@@ -70,22 +74,28 @@ Sentinel monitoring and lifecycle management for Custom Stakes in Risk (Crypto C
 - [2026-09-16 Custom Stakes & Adaptive Crash & Daily Streaks]: Streak milestones (7d: 1.0x SRU + 500 Cash, 30d: 2.5x SRU + 5,000 Cash, 90d: 5.0x SRU + 25,000 Cash, 180d: 10.0x SRU + 100,000 Cash, 365d: 25.0x SRU + 500,000 Cash + "İmparatorluk Kıdemlisi" Badge)
 - [2026-09-16 Custom Stakes & Adaptive Crash & Daily Streaks]: pnpm check passes with 0 errors (lint, format:check, typecheck, tests, build)
 - [2026-09-16 Custom Stakes & Adaptive Crash & Daily Streaks]: HANDOFF.md updated with new features and tests
+- [2026-09-17 UI / Animation Cyber-Luxe Overhaul]: Maximum 4 concurrent agents with strict sub-domain context isolation
+- [2026-09-17 Testing & Quality Verification]: Maximum 2 concurrent agents with strict domain isolation:
+  - Stream 1: Core Math Models & Mini Game Unit Tests (packages/game-core/, apps/web/src/game/crypto-mines-model.ts, apps/web/src/game/crypto-predictions-model.ts)
+  - Stream 2: API Endpoints, Zod Schema Validation & Monorepo Health Gate (apps/api/, apps/web/, packages/shared/)
+- [2026-09-17 Testing & Quality Verification]: Monorepo verification must pass with 0 errors: pnpm lint, pnpm format:check, pnpm typecheck, pnpm test, pnpm build.
+- [2026-09-17 Testing & Quality Verification]: Update HANDOFF.md with test evidence and validation results.
 
 ## User Context
-- **Last user request**: Implement free-text custom stake inputs in Risk (Crypto Crash), integrate dynamic adaptive house-edge/baiting curve, and extend daily login streaks with exponential milestone bonuses (7d, 30d, 90d, 180d, 365d).
+- **Last user request**: Project Empire Telegram Mini App comprehensive testing and quality verification (Mines, Predictions, Crash, Catizen, Notcoin, Turnover bonus 0.1%, Referral kickback, Missions/Streak Zod validation, Monorepo quality gate) via 2 concurrent agents.
 - **Pending clarifications**: none
-- **Delivered results**: Fully implemented, verified, challenged, forensically audited, and independently victory-confirmed (VICTORY CONFIRMED by Victory Auditor 6). All quality gates passed (60 test suites, 735 tests passed, 0 errors on pnpm check).
+- **Delivered results**: Dispatched to Project Orchestrator 12 (4fb5c810-ec2d-4451-a45c-639a7bf5c7c7). Monitoring crons active.
 
 ## Project Status
-- **Phase**: complete
+- **Phase**: in progress
 - **Route**: General -> teamwork_preview_orchestrator
-- **Active Orchestrator**: None (Orchestrator 10 completed)
-- **Active Victory Auditor**: None (Auditor 6 delivered VICTORY CONFIRMED)
-- **Active Tasks**: None (All crons terminated)
+- **Active Orchestrator**: 4fb5c810-ec2d-4451-a45c-639a7bf5c7c7 (teamwork_preview_orchestrator_12)
+- **Active Victory Auditor**: None (to be spawned on victory claim)
+- **Active Tasks**: task-38 (Cron 1: Progress Reporting), task-40 (Cron 2: Liveness Check)
 
 ## Victory Audit Status
-- **Triggered**: yes
-- **Verdict**: VICTORY CONFIRMED
+- **Triggered**: no
+- **Verdict**: pending
 - **Retry count**: 0
 
 ## Artifact Index
@@ -93,5 +103,7 @@ Sentinel monitoring and lifecycle management for Custom Stakes in Risk (Crypto C
 - c:\Users\Administrator\Desktop\telegram kripto oyunu\ORIGINAL_REQUEST.md — Verbatim user request record at root
 - c:\Users\Administrator\Desktop\telegram kripto oyunu\HANDOFF.md — Project progress and verification handoff
 - c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\sentinel\BRIEFING.md — Sentinel persistent memory
-- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_orchestrator_10\progress.md — Orchestrator 10 progress tracker
+- c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_orchestrator_12\progress.md — Orchestrator 12 progress tracker
+
+
 

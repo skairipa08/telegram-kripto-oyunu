@@ -160,7 +160,19 @@
       var(--surface) 68%
     ),
     var(--surface);
-  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.22);
+  box-shadow:
+    0 0 35px rgba(241, 201, 154, 0.25),
+    0 28px 72px rgba(0, 0, 0, 0.28);
+  border-color: rgba(241, 201, 154, 0.55);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.sa-pass-card:hover {
+  box-shadow:
+    0 0 45px rgba(241, 201, 154, 0.4),
+    0 28px 72px rgba(0, 0, 0, 0.4);
 }
 
 .sa-pass-card::before,
@@ -423,13 +435,29 @@
 }
 
 .sa-cosmetic-card {
+  position: relative;
+  overflow: hidden;
   display: flex;
   min-width: 0;
   flex-direction: column;
   padding: 14px;
+  border: 1px solid rgba(241, 201, 154, 0.25);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.sa-cosmetic-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(241, 201, 154, 0.25);
+  border-color: rgba(241, 201, 154, 0.5);
 }
 
 .sa-cosmetic-art {
+  position: relative;
   display: grid;
   min-height: 190px;
   place-items: center;
@@ -442,6 +470,28 @@
       transparent 50%
     ),
     var(--surface-raised);
+}
+
+.sa-cosmetic-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 0, 128, 0.08) 0%,
+    rgba(56, 189, 248, 0.12) 25%,
+    rgba(255, 215, 0, 0.12) 50%,
+    rgba(168, 85, 247, 0.1) 75%,
+    rgba(34, 197, 94, 0.08) 100%
+  );
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.sa-cosmetic-card:hover .sa-cosmetic-art::after {
+  opacity: 0.95;
 }
 
 .sa-cosmetic-art svg {
@@ -764,5 +814,108 @@
 @media (prefers-reduced-motion: reduce) {
   .sa-screen .skeleton-line {
     animation: none;
+  }
+  .sa-cyber-gold-sweep,
+  .sa-holo-shimmer {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   STREAM 4: STARS SHOP CYBER-GOLD SWEEP & HOLOGRAPHIC REFLECTIONS
+   ========================================================================== */
+
+.sa-cyber-gold-sweep {
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: linear-gradient(
+    65deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.05) 44%,
+    rgba(255, 215, 0, 0.22) 50%,
+    rgba(255, 255, 255, 0.08) 55%,
+    transparent 65%
+  );
+  transform: rotate(25deg);
+  animation: cyberGoldSweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes cyberGoldSweep {
+  0%,
+  15% {
+    transform: translateX(-120%) rotate(25deg);
+  }
+  55%,
+  100% {
+    transform: translateX(120%) rotate(25deg);
+  }
+}
+
+.sa-holo-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.sa-holo-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.16) 48%,
+    rgba(241, 201, 154, 0.24) 52%,
+    transparent 62%
+  );
+  transform: translateX(-100%);
+  animation: holoShimmer 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes holoShimmer {
+  0%,
+  25% {
+    transform: translateX(-100%);
+  }
+  55%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Mobile responsive constraints (320px - 390px) */
+@media (max-width: 390px) {
+  .sa-pass-card {
+    padding: 20px 16px;
+    gap: 20px;
+  }
+  .sa-pass-copy h2 {
+    font-size: 2.2rem;
+  }
+  .sa-comparison-row {
+    grid-template-columns: minmax(84px, 1.3fr) minmax(44px, 0.5fr) minmax(
+        44px,
+        0.5fr
+      );
+    font-size: 0.82rem;
+    padding-inline: 10px;
+  }
+}
+
+@media (max-width: 359px) {
+  .sa-pass-card {
+    padding: 16px 12px;
+  }
+  .sa-pass-copy h2 {
+    font-size: 1.9rem;
+  }
+  .sa-comparison-row {
+    font-size: 0.76rem;
+    padding-inline: 6px;
   }
 }

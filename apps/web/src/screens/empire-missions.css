@@ -176,6 +176,8 @@
       transparent 12%,
       color-mix(in srgb, var(--accent) 5%, transparent)
     );
+  animation: atmosphericDrift 7s ease-in-out infinite;
+  will-change: transform;
 }
 .empire-production-art::before {
   position: absolute;
@@ -210,6 +212,208 @@
 .empire-skyline-line {
   opacity: 0.58;
 }
+.empire-skyline-line-1 {
+  animation: skylineWindowTwinkle 2.6s ease-in-out infinite;
+}
+.empire-skyline-line-2 {
+  animation: skylineWindowTwinkle 3.4s ease-in-out 1.2s infinite;
+}
+.empire-skyline-beacon {
+  animation: skylineBeaconBlink 1.6s ease-in-out infinite;
+}
+.empire-skyline-beacon-pulse {
+  animation: beaconPulse 1.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  transform-origin: 279px 8px;
+}
+
+@keyframes atmosphericDrift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes skylineWindowTwinkle {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.28;
+  }
+}
+@keyframes skylineBeaconBlink {
+  0%,
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 7px var(--accent));
+  }
+  50% {
+    opacity: 0.2;
+    filter: none;
+  }
+}
+
+/* Live Dynamic City Silhouette & 3D Orbits */
+.city-art {
+  position: relative;
+  overflow: hidden;
+  perspective: 800px;
+}
+.city-orbit {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1.5px dashed rgba(82, 231, 174, 0.35);
+  box-shadow: 0 0 16px rgba(82, 231, 174, 0.22);
+  transform-origin: center center;
+  will-change: transform;
+}
+.city-orbit-node {
+  position: absolute;
+  top: 50%;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: #69f4be;
+  box-shadow:
+    0 0 12px #69f4be,
+    0 0 4px #fff;
+}
+@keyframes orbitRotate3D {
+  0% {
+    transform: rotateX(72deg) rotateY(-8deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(72deg) rotateY(-8deg) rotateZ(360deg);
+  }
+}
+@keyframes orbitRotate3DRev {
+  0% {
+    transform: rotateX(66deg) rotateY(12deg) rotateZ(360deg);
+  }
+  100% {
+    transform: rotateX(66deg) rotateY(12deg) rotateZ(0deg);
+  }
+}
+.city-orbit-one {
+  top: 20%;
+  left: 16%;
+  width: 420px;
+  height: 420px;
+  animation: orbitRotate3D 22s linear infinite;
+}
+.city-orbit-two {
+  top: 26%;
+  left: 22%;
+  width: 320px;
+  height: 320px;
+  border-color: rgba(225, 180, 126, 0.35);
+  box-shadow: 0 0 18px rgba(225, 180, 126, 0.2);
+  animation: orbitRotate3DRev 16s linear infinite;
+}
+.city-orbit-two .city-orbit-node {
+  background: #fcd34d;
+  box-shadow:
+    0 0 12px #fcd34d,
+    0 0 4px #fff;
+}
+
+@keyframes windowFlicker {
+  0%,
+  100% {
+    opacity: 0.95;
+    filter: drop-shadow(0 0 5px rgba(82, 231, 174, 0.85));
+  }
+  25% {
+    opacity: 0.35;
+    filter: drop-shadow(0 0 1px rgba(82, 231, 174, 0.25));
+  }
+  50% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 4px rgba(82, 231, 174, 0.7));
+  }
+  75% {
+    opacity: 0.2;
+    filter: none;
+  }
+}
+.city-windows-twinkle-1 {
+  animation: windowFlicker 3.2s ease-in-out infinite;
+}
+.city-windows-twinkle-2 {
+  animation: windowFlicker 4.3s ease-in-out 1.3s infinite;
+}
+.city-windows-twinkle-3 {
+  animation: windowFlicker 2.8s ease-in-out 2.2s infinite;
+}
+
+@keyframes beaconPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+@keyframes beaconBlink {
+  0%,
+  48% {
+    opacity: 1;
+    filter: drop-shadow(0 0 9px #69f4be);
+  }
+  50%,
+  98% {
+    opacity: 0.15;
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 9px #69f4be);
+  }
+}
+@keyframes beaconBlinkSec {
+  0%,
+  48% {
+    opacity: 0.2;
+    filter: none;
+  }
+  50%,
+  98% {
+    opacity: 1;
+    filter: drop-shadow(0 0 7px #ff708f);
+  }
+  100% {
+    opacity: 0.2;
+    filter: none;
+  }
+}
+.city-tower-pulse {
+  animation: beaconPulse 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  transform-origin: 386px 155px;
+  will-change: transform, opacity;
+}
+.city-tower-beacon {
+  animation: beaconBlink 1.8s steps(1) infinite;
+  will-change: opacity, filter;
+}
+.city-tower-beacon-sec {
+  animation: beaconBlinkSec 2.4s steps(1) infinite;
+  will-change: opacity, filter;
+}
+.city-tower-core {
+  opacity: 0.9;
+}
 
 .empire-list-heading,
 .missions-toolbar {
@@ -229,20 +433,324 @@
   gap: 10px;
   max-width: 560px;
 }
+@keyframes neonBorderPulse {
+  0%,
+  100% {
+    border-color: rgba(225, 180, 126, 0.45);
+    box-shadow:
+      0 0 14px rgba(225, 180, 126, 0.25),
+      inset 3px 0 0 var(--accent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    border-color: rgba(255, 215, 0, 0.9);
+    box-shadow:
+      0 0 24px rgba(255, 215, 0, 0.5),
+      0 0 8px rgba(255, 215, 0, 0.65),
+      inset 3px 0 0 #ffd700,
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  }
+}
+
+@keyframes cardUpgradeBurst {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+  25% {
+    transform: scale(1.035);
+    box-shadow:
+      0 0 35px rgba(255, 215, 0, 0.65),
+      0 0 12px rgba(255, 215, 0, 0.85),
+      inset 0 0 20px rgba(255, 215, 0, 0.3);
+    border-color: #ffd700;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes levelBadgePop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.35) rotate(-2deg);
+    color: #ffd700;
+    text-shadow: 0 0 14px rgba(255, 215, 0, 0.85);
+  }
+  60% {
+    transform: scale(1.15) rotate(1deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes upgradeShineSweep {
+  0% {
+    left: -120%;
+    opacity: 0.9;
+  }
+  100% {
+    left: 220%;
+    opacity: 0;
+  }
+}
+
+@keyframes buttonPulseGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 215, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+  }
+}
+
 .empire-business-card {
   position: relative;
   min-width: 0;
   padding: 18px;
   border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--surface);
+  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--surface) 92%, var(--accent) 4%),
+    var(--surface-raised)
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+  overflow: hidden;
+}
+.empire-business-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.empire-business-card:active {
+  transform: scale(0.98);
 }
 .empire-business-card.is-recommended {
-  border-color: color-mix(in srgb, var(--accent) 52%, transparent);
-  box-shadow: inset 3px 0 0 var(--accent);
+  animation: neonBorderPulse 3s ease-in-out infinite;
 }
 .empire-business-card.is-locked {
   opacity: 0.7;
+}
+.empire-business-card.card-upgrade-burst {
+  animation: cardUpgradeBurst 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.empire-business-card.card-upgrade-burst .eyebrow {
+  animation: levelBadgePop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.card-upgrade-shine {
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 215, 0, 0.5),
+    transparent
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  animation: upgradeShineSweep 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.button-upgraded-pulse {
+  animation: buttonPulseGlow 1.2s ease-in-out;
+}
+
+/* 4 Distinct Tiers for All 16 Businesses */
+.empire-business-level-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.empire-tier-tag {
+  display: inline-block;
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* Tier 1: Local / Bronze-Amber */
+.empire-business-card.tier-local {
+  border-left: 3px solid #e1b47e;
+}
+.empire-business-card.tier-local .empire-business-icon {
+  color: #e1b47e;
+  background: color-mix(in srgb, #e1b47e 12%, transparent);
+  border: 1px solid rgba(225, 180, 126, 0.3);
+  box-shadow: 0 0 12px rgba(225, 180, 126, 0.12);
+}
+.empire-business-card.tier-local .empire-tier-tag {
+  color: #e1b47e;
+  background: rgba(225, 180, 126, 0.14);
+}
+
+/* Tier 2: Tech / Cyan-Emerald */
+.empire-business-card.tier-tech {
+  border-left: 3px solid #52e7ae;
+}
+.empire-business-card.tier-tech .empire-business-icon {
+  color: #52e7ae;
+  background: color-mix(in srgb, #52e7ae 12%, transparent);
+  border: 1px solid rgba(82, 231, 174, 0.3);
+  box-shadow: 0 0 14px rgba(82, 231, 174, 0.16);
+}
+.empire-business-card.tier-tech .empire-tier-tag {
+  color: #52e7ae;
+  background: rgba(82, 231, 174, 0.14);
+}
+
+/* Tier 3: Quantum / Electric Violet */
+.empire-business-card.tier-quantum {
+  border-left: 3px solid #c084fc;
+}
+.empire-business-card.tier-quantum .empire-business-icon {
+  color: #c084fc;
+  background: color-mix(in srgb, #c084fc 14%, transparent);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  box-shadow: 0 0 16px rgba(192, 132, 252, 0.2);
+}
+.empire-business-card.tier-quantum .empire-tier-tag {
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.14);
+}
+
+/* Tier 4: Space / Hologram Gold */
+.empire-business-card.tier-space {
+  border-left: 3px solid #fcd34d;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--surface) 88%, #fcd34d 6%),
+    var(--surface-raised)
+  );
+}
+.empire-business-card.tier-space .empire-business-icon {
+  color: #fcd34d;
+  background: color-mix(in srgb, #fcd34d 14%, transparent);
+  border: 1px solid rgba(252, 211, 77, 0.35);
+  box-shadow: 0 0 18px rgba(252, 211, 77, 0.25);
+}
+.empire-business-card.tier-space .empire-tier-tag {
+  color: #fcd34d;
+  background: rgba(252, 211, 77, 0.16);
+}
+
+/* Floating Gold Coins Flight & Floating Claim Badge */
+.empire-claim-action-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+@keyframes floatingBadgeAscend {
+  0% {
+    transform: translateY(0) scale(0.65);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(-24px) scale(1.15);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(-68px) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-120px) scale(0.85);
+    opacity: 0;
+  }
+}
+.floating-claim-badge {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  pointer-events: none;
+  z-index: 30;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd700, #f59e0b);
+  color: #352416;
+  font-size: 1.12rem;
+  font-weight: 900;
+  box-shadow:
+    0 0 22px rgba(255, 215, 0, 0.75),
+    0 4px 14px rgba(0, 0, 0, 0.35);
+  animation: floatingBadgeAscend 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.floating-coins-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+  z-index: 25;
+}
+
+@keyframes coinFlyUpBezier {
+  0% {
+    transform: translate(0, 0) scale(0.5) rotate(0deg);
+    opacity: 1;
+  }
+  30% {
+    transform: translate(
+        calc(var(--coin-tx) * 0.4 + var(--coin-curve-x, 25px)),
+        calc(var(--coin-ty) * 0.35)
+      )
+      scale(1.2) rotate(calc(var(--coin-rot) * 0.5));
+    opacity: 1;
+  }
+  70% {
+    transform: translate(
+        calc(var(--coin-tx) * 0.8 + var(--coin-curve-x, 25px) * 0.4),
+        calc(var(--coin-ty) * 0.75)
+      )
+      scale(0.95) rotate(calc(var(--coin-rot) * 0.8));
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--coin-tx), var(--coin-ty)) scale(0.35)
+      rotate(var(--coin-rot));
+    opacity: 0;
+  }
+}
+.floating-gold-coin {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  margin-left: -14px;
+  animation: coinFlyUpBezier 1.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.75));
+}
+.gold-coin-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .empire-business-topline {
   display: grid;
@@ -518,12 +1026,32 @@
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
   .empire-ledger > div {
     padding: 14px 12px;
   }
+  .game-content .empire-claim-row,
+  .empire-claim-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    margin-right: 0 !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+  .game-content .empire-production-copy,
+  .empire-production-copy {
+    padding-right: clamp(16px, 4vw, 24px) !important;
+  }
+  .empire-claim-action-wrap {
+    width: 100%;
+  }
+  .empire-claim-row .button,
+  .empire-claim-btn {
+    width: 100% !important;
+  }
   .empire-business-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    max-width: 100% !important;
   }
   .empire-list-heading,
   .missions-toolbar {
@@ -531,13 +1059,6 @@
     flex-direction: column;
   }
   .missions-segments {
-    width: 100%;
-  }
-  .empire-claim-row {
-    align-items: stretch;
-    flex-direction: column;
-  }
-  .empire-claim-row .button {
     width: 100%;
   }
   .missions-card-heading {
@@ -548,6 +1069,34 @@
   }
   .missions-week-strip small {
     display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .empire-ledger > div {
+    padding: 12px 8px;
+  }
+  .empire-ledger strong {
+    font-size: 1.15rem;
+  }
+  .empire-business-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+  .empire-business-topline {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 8px;
+  }
+  .empire-business-icon {
+    width: 38px;
+    height: 38px;
+  }
+  .empire-business-stats {
+    gap: 6px;
+    margin: 12px 0 10px;
+  }
+  .empire-business-stats dd {
+    font-size: 0.78rem;
   }
 }
 

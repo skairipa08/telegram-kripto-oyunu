@@ -116,3 +116,29 @@ export function hapticError(): void {
 export function hapticCrash(): void {
   triggerNotification('error');
 }
+
+export function triggerHaptic(
+  type:
+    | 'light'
+    | 'medium'
+    | 'heavy'
+    | 'success'
+    | 'error'
+    | 'impact_light'
+    | 'impact_medium'
+    | 'impact_heavy'
+    | 'notification_success'
+    | 'notification_error' = 'light',
+): void {
+  if (type === 'success' || type === 'notification_success') {
+    triggerNotification('success');
+  } else if (type === 'error' || type === 'notification_error') {
+    triggerNotification('error');
+  } else if (type === 'impact_medium' || type === 'medium') {
+    triggerImpact('medium');
+  } else if (type === 'impact_heavy' || type === 'heavy') {
+    triggerImpact('heavy');
+  } else {
+    triggerImpact('light');
+  }
+}

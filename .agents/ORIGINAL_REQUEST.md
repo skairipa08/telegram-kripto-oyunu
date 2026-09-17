@@ -659,3 +659,168 @@ To conserve tokens and prevent context pollution:
 ### Quality Gates
 - [ ] `pnpm check` passes with 0 errors (lint, format:check, typecheck, tests, build).
 - [ ] `HANDOFF.md` updated with new features and tests.
+
+## 2026-09-17T09:38:35Z
+
+# Teamwork Project Prompt — Draft
+
+> Status: Launched
+> Goal: Execute prompt via teamwork_preview multi-agent system
+> Requested team: Maximum 4 concurrent agents with strict sub-domain context isolation (each agent dedicated to a specific UI/animation domain)
+
+Project Empire Telegram Mini App kapsamındaki tüm kullanıcı arayüzlerini (UI), mikro-etkileşimleri, ekran geçişlerini ve mini oyun deneyimlerini yüksek kaliteli, akıcı (60fps), modern mobil oyun standartlarında animasyonlu, ışıltılı (cyber-luxe neon/gold) ve göz alıcı bir görsel şölene dönüştürme.
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: demo
+
+## Architecture & Agent Boundary Constraints (Max 4 Concurrent Agents)
+Context kirliliğini ve token israfını önlemek için çalışma 4 kesin ayrık görsel uzmanlık alanına bölünmüştür:
+
+1. **Stream 1 - Global Tasarım Sistemi, Micro-Interactions & Navigasyon Animasyonları**:
+   - Scope: `apps/web/src/styles.css`, `apps/web/src/game/game-layout.tsx`, `apps/web/src/components/`, `apps/web/src/app.tsx`
+   - Sorumluluk:
+     - Global CSS animasyon kütüphanesi (parıltı/shimmer, nabız/pulse, 3D tilt, buton basış sönümleme/spring haptics).
+     - Sekmeler arası yumuşak slide/fade geçişleri, aktif sekme altı ışık çubuğu/halo efekti.
+     - Üst bar (Cash, Season Points, Level) dinamik sayı sayacı (odometer/slot roll efekti) ve para arttıkça altın kıvılcım patlamaları.
+
+2. **Stream 2 - İmparatorluk (Empire) & Şehir/Holding Görsel Deneyimi**:
+   - Scope: `apps/web/src/screens/empire-screen.tsx`, `apps/web/src/screens/empire-missions.css`, `apps/web/src/components/city-silhouette.tsx`
+   - Sorumluluk:
+     - 16 işletme kartının görsel zenginleştirilmesi: Seviye yükseltmede (Upgrade) neon kart çerçevesi patlaması, seviye rozetleri animasyonu.
+     - "Tümünü Topla" ve periyodik nakit üretiminde yüzen altın coin yağmuru (`+₺1.4M` floating trajectory).
+     - Arka plan canlı şehir silüeti: gece/gündüz veya dinamik hareket eden ışıklar, gökdelen pencereleri nabzı.
+
+3. **Stream 3 - Arcade & Mini Oyunlar "Game Juice" & Parçacık Fırtınası**:
+   - Scope: `apps/web/src/components/arcade.css`, `apps/web/src/components/catizen-merge-game.tsx`, `apps/web/src/components/crypto-crash-game.tsx`, `apps/web/src/components/notcoin-tap-game.tsx`, `apps/web/src/components/dynasty-cipher-game.tsx`
+   - Sorumluluk:
+     - **Notcoin Tap**: 3D dinamik squish deformation, çoklu dokunuşta kritik vuruş (`CRIT! +50`) kıvılcımları, dolan enerji barında neon akış dalgası.
+     - **Catizen Merge**: İki kutu birleştiğinde patlayan konfeti/yıldız parçacıkları, kutu açılma sarsıntısı, 100 seviye için ayırt edici renk gradyanları ve parlama efektleri.
+     - **Crypto Crash**: Canlı mum grafiğinde yükselen roket/neon çizgi izi, gerilim kalp atışı nabzı, kazanç/patlama anında ekran sarsıntısı (screen shake) ve zafer flaşı.
+     - **Dynasty Cipher**: Matrix tarzı veri akışı, hack başarılı olduğunda terminal parazit (glitch) ve deşifre neon ışığı.
+
+4. **Stream 4 - Sosyal, Görevler, Mağaza & Ödül Kutlama Modalları**:
+   - Scope: `apps/web/src/screens/friends-screen.tsx`, `apps/web/src/screens/missions-screen.tsx`, `apps/web/src/screens/shop-screen.tsx`, `apps/web/src/screens/clans-screen.tsx`, `apps/web/src/screens/social.css`, `apps/web/src/screens/shop-analytics.css`
+   - Sorumluluk:
+     - **Streak & Milestones**: 7g, 30g, 90g, 180g, 365g ödül yolunda neon enerji bağı, ödül talep edildiğinde sandık açılma (chest unlock) kutlama animasyonu.
+     - **Ortaklık Primi & Davet**: "Kasaya Aktar" butonunda altın ışıma, arkadaş davet kartında parıldayan binde 1 rozetleri.
+     - **Karteller / Klanlar**: Klan sıralamasında ilk 3 için altın, gümüş, bronz auralar, klan seviye atlama görseli.
+     - **Stars Mağazası**: Empire Pass ve kozmetikler için lüks kart parıltısı ve hologram etkisi.
+
+---
+
+## Requirements
+
+### R1. Global Micro-Interactions & Fluid Tab Transitions
+- Her etkileşimli bileşene (buton, kart, çip) dokunsal (tactile) spring animasyonu ve aktif basış hissi (`scale(0.96)`, neon glow) entegre edilmeli.
+- Sekmeler arası geçişlerde ekran ani sıçramamalı; yumuşak geçiş efektleriyle yüklenmeli.
+- Bakiye artışlarında sayılar anlık zıplamak yerine akıcı bir sayaç interpolasyonu ve yüzen semboller ile kullanıcıya kazancı hissettirmeli.
+
+### R2. Empire Screen Visual Overhaul & Juicy Upgrades
+- 16 işletme kartı kartel/siber-holding temasına uygun yüksek kontrastlı cam (glassmorphism), neon kenarlıklar ve seviye ilerleme çubukları ile donatılmalı.
+- Seviye atlama (Upgrade) butonuna tıklandığında tatmin edici bir ışık dalgası ve seviye atlama bildirim animasyonu tetiklenmeli.
+- Şehir arka planı statik bir resim olmaktan çıkarılıp hafif animasyonlu derinlik/parallax hissi kazandırılmalı.
+
+### R3. Arcade Suite "Juice": Physics Particles, 3D Squish & Dynamic Canvas FX
+- Notcoin Tap'te dokunma açısına göre 3D eğilme (tilt), parçacık yayılımı ve haptik titreşim desteği.
+- Catizen Merge'de kutuların yerine oturması, birleşme patlaması ve hediye paketi iniş animasyonları kusursuzlaştırılmalı.
+- Crypto Crash'te çarpan arttıkça hızlanan arka plan dalgalanması, patlama anında dramatize edilmiş kırmızı sis ve zafer anında konfeti patlaması.
+
+### R4. Reward Celebrations, Level-Up Modals & Social Visuals
+- Günlük giriş ödülü, görev tamamlama veya prim kasaya aktarıldığında ekrana gelen "Tebrikler" modalında parçacık fışkırması (confetti canvas).
+- Klanlar ve Liderlik tablosunda dereceler parıltılı rozetlerle öne çıkarılmalı.
+- Tüm görsel efektler 320px–390px mobil ekranlarda sıfır taşma (zero layout shift / no horizontal scroll) kuralına uymalı ve düşük donanımlı cihazlarda dahi 60fps çalışmalı (GPU hızlandırmalı transform/opacity).
+
+---
+
+## Acceptance Criteria
+
+### Global & Navigasyon
+- [ ] Butonlar ve kartlar dokunulduğunda akıcı basış animasyonu ve ışık yansıması sunar.
+- [ ] Bakiye ve puan artışlarında dinamik animasyonlu artış göstergeleri çalışır.
+
+### İmparatorluk & İşletmeler
+- [ ] 16 işletme kartı cam efekti ve neon parlama ile görsel olarak zenginleştirilmiştir.
+- [ ] Seviye yükseltme anında kart seviye atlama animasyonu ve yüzen para efekti oynar.
+
+### Mini Oyunlar (Arcade)
+- [ ] Notcoin coin'i 3D squish/tilt ve çoklu dokunuş parçacık efektleriyle tepki verir.
+- [ ] Catizen Merge birleşmelerinde parçacık patlaması ve pürüzsüz animasyon vardır.
+- [ ] Crypto Crash gerilim nabzı ve patlama/kazanç görsel efektleri eksiksizdir.
+
+### Sosyal & Mağaza
+- [ ] Streak yolculuğu ve ödül talep animasyonları kutlama hissi verir.
+- [ ] Ortaklık primi (binde 1) ve klan arayüzü modern siber-finans tarzında ışıltılıdır.
+
+### Kalite ve Performans Standartları
+- [ ] `pnpm check` (lint, format:check, typecheck, tüm vitest testleri ve build) sıfır hata ile geçer.
+- [ ] Tüm animasyonlar CSS `transform` ve `opacity` veya optimize edilmiş Canvas ile çalışır, FPS düşüşüne sebep olmaz.
+- [ ] Mobil ekranlarda (320px, 360px, 390px) sıfır taşma garantisi.
+
+## 2026-09-17T10:50:36Z
+
+# Teamwork Project Prompt — Draft
+
+> Status: Launched
+> Goal: Execute comprehensive testing and quality verification via teamwork_preview multi-agent system
+> Requested team: Maximum 2 concurrent agents with strict domain isolation (Core Math & Game Engine Tests vs. Full Integration, API & Monorepo Verification)
+
+Project Empire Telegram Mini App projesindeki yeni mini oyunların (Kripto Mayın Tarlası, Tahmin Piyasası, Çöküş, Catizen Birleştirme, Notcoin Tıklama), binde 1 ciro primi ve referral mantığının, API dev-store şemalarının ve tüm monorepo testlerinin 2 paralel uzman ajanla uçtan uca test edilmesi ve doğrulanması.
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: development
+
+## Architecture & Agent Boundary Constraints (Max 2 Concurrent Agents)
+Token israfını önlemek ve sorumlulukları net ayrıştırmak amacıyla çalışma 2 kesin çalışma alanına bölünmüştür:
+
+1. **Stream 1 - Çekirdek Matematik Modelleri ve Mini Oyun Birim Testleri**:
+   - Scope: `packages/game-core/`, `apps/web/src/game/crypto-mines-model.ts`, `apps/web/src/game/crypto-predictions-model.ts`
+   - Sorumluluk:
+     - **Mayın Tarlası (Mines) Olasılık & Çarpan Testi**: \((1 - \text{edge}) \times \prod \frac{25 - i}{25 - m - i}\) formülünün matematiksel doğruluğu, 1-20 mayın limitleri, kasa avantajı kuralı, geçerli kâr alma ve patlama senaryoları.
+     - **Tahmin Piyasası (Predictions) Model Testi**: EVET/HAYIR oran hesaplamaları, kupon kazanç çarpanları, bakiye düşümü ve kâr tahsilatı limit testleri.
+     - **Çöküş (Crash) & Adaptif Kasa Algoritması Testi**: Düşük ve yüksek bahislerdeki dinamik risk çarpanı, ani bahis artışı cezalandırma ve patlama noktası doğrulama testleri.
+     - **Binde 1 (%0.1) Ciro ve Kademeli Komisyon Hesaplama**: 1M ciroda 1.000 nakit ve %3, %5, %7 komisyon basamaklarının kesin sayısal testleri.
+
+2. **Stream 2 - API Uç Noktaları, Zod Şema Doğrulaması & Monorepo Sağlık Kapısı**:
+   - Scope: `apps/api/`, `apps/web/`, `packages/shared/`
+   - Sorumluluk:
+     - **Görevler (Missions) & Streak API Doğrulaması**: `getActiveMissions` ve `getStreak` uç noktalarının Zod şemalarına (`PlayerMissionInstance`, `PlayerStreakDto`) %100 uyumluluğu, görev ödülü talep (`claim`) akışları.
+     - **Referral & Ortaklık Primi Entegrasyonu**: Davet linki üretimi, bakiye güncelleme ve kickback claim akışlarının API seviyesinde doğrulanması.
+     - **Monorepo Kalite Kapısı**: `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, `pnpm build` komutlarının hatasız ve 0 uyarı ile tamamlanması.
+
+---
+
+## Requirements
+
+### R1. Mini Oyunlar & Matematik Motoru Kapsamlı Testleri
+- Yeni eklenen Kripto Mayın Tarlası (`crypto-mines-model.ts`) için birim test paketi yazılmalı veya koşturulmalı:
+  - Mayın üretimi (Fisher-Yates) tekrarsız ve ızgara (25) sınırları içinde olmalı.
+  - İlk hamlede güvenli bölge koruması veya adil olasılık çarpanları doğrulanmalı.
+- Tahmin Piyasası (`crypto-predictions-model.ts`) bahis kuponu mantığı, çarpanlar ve sonuçlandırma test edilmeli.
+- Günlük giriş serisi (7g, 30g, 90g, 180g, 365g) bonuslarının ve binde 1 ciro primi matematiksel sınırlarının testleri yapılmalı.
+
+### R2. API Şemaları ve Dev-Store Dayanıklılık Testleri
+- Görevler sekmesinin çökmesine neden olan Zod şema uyumsuzluklarının giderildiği doğrulanmalı (`id` UUID kontrolü, `difficulty`, `key`, `assignedDate` varlığı).
+- API `/api/missions`, `/api/streak`, `/api/referral/status` ve `/api/economy/roi` rotalarının geçerli ve beklenen tipte veri döndürdüğü doğrulanmalı.
+
+### R3. Monorepo Derleme ve Entegrasyon Doğrulaması
+- Tüm workspace paketleri (`packages/shared`, `packages/game-core`, `apps/api`, `apps/web`) tip denetiminden (`typecheck`) 0 hata ile geçmeli.
+- Mevcut vitest test suitleri koşturulup başarısız olan testler anında onarılmalı.
+
+---
+
+## Acceptance Criteria
+
+### Mini Oyunlar & Matematik
+- [ ] Kripto Mayın Tarlası matematik modeli birim testleri (olasılık hesaplama, mayın dağılımı, kâr alma) %100 başarıyla tamamlanır.
+- [ ] Tahmin Piyasası bahis hesaplama ve bakiye doğrulama testleri hatasız geçer.
+- [ ] Binde 1 ciro primi ve kademeli komisyon hesaplamaları test senaryolarında beklenen değerleri verir.
+
+### API & Entegrasyon
+- [ ] Görevler (`/api/missions`) ve Seri (`/api/streak`) endpoint'leri Zod şemalarından 0 validasyon hatasıyla geçer.
+- [ ] Mini oyunlar ile web arayüzü arasındaki bakiye güncelleme akışı doğrulanır.
+
+### Kalite ve Süreç
+- [ ] `pnpm typecheck` tüm paketlerde 0 hata verir.
+- [ ] `pnpm test` (vitest) tüm test paketlerini başarıyla geçer.
+- [ ] `HANDOFF.md` güncellenerek test sonuçları ve kanıtları raporlanır.
+

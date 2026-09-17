@@ -21,7 +21,7 @@ export const playerBusinessSchema = z.object({
   level: z.number().int().nonnegative(),
   baseCost: z.number().positive(),
   baseIncome: z.number().positive(),
-  upgradeCost: z.number().int().positive(),
+  upgradeCost: z.number().positive(),
   productionPerSecond: z.number().nonnegative(),
   lastClaimAt: z.iso.datetime(),
   paybackPeriodSeconds: z
@@ -38,7 +38,7 @@ export const optimalUpgradeRecommendationSchema = z.object({
   slug: z.string(),
   name: z.string(),
   currentLevel: z.number().int().nonnegative(),
-  upgradeCost: z.number().int().nonnegative(),
+  upgradeCost: z.number().nonnegative(),
   paybackPeriodSeconds: z.number().nonnegative().or(z.literal(Infinity)),
   marginalRoi: z.number().nonnegative(),
   isAffordable: z.boolean(),
@@ -89,7 +89,7 @@ export type EconomySimulationResponse = z.infer<
 >;
 
 export const playerEconomyStateSchema = z.object({
-  cash: z.number().int().nonnegative(),
+  cash: z.number().nonnegative(),
   seasonPoints: z.number().int().nonnegative(),
   totalProductionPerSecond: z.number().nonnegative(),
   offlineCapSeconds: z.number().int().positive(),
@@ -127,8 +127,8 @@ export type ClaimCashRequest = z.infer<typeof claimCashRequestSchema>;
 
 export const claimCashResponseSchema = z.object({
   apiVersion: z.literal('v1'),
-  claimedAmount: z.number().int().nonnegative(),
-  newBalance: z.number().int().nonnegative(),
+  claimedAmount: z.number().nonnegative(),
+  newBalance: z.number().nonnegative(),
   claimedAt: z.iso.datetime(),
   isCapped: z.boolean(),
 });
@@ -147,7 +147,7 @@ export type UpgradeBusinessRequest = z.infer<
 export const upgradeBusinessResponseSchema = z.object({
   apiVersion: z.literal('v1'),
   business: playerBusinessSchema,
-  remainingCash: z.number().int().nonnegative(),
+  remainingCash: z.number().nonnegative(),
   totalProductionPerSecond: z.number().nonnegative(),
 });
 export type UpgradeBusinessResponse = z.infer<
@@ -247,6 +247,17 @@ export const referralMilestoneSchema = z.enum([
 ]);
 export type ReferralMilestoneDto = z.infer<typeof referralMilestoneSchema>;
 
+export const inviteeMilestoneStatusSchema = z.object({
+  targetCash: z.number().nonnegative(),
+  rewardCash: z.number().nonnegative(),
+  label: z.string(),
+  completed: z.boolean(),
+  claimed: z.boolean(),
+});
+export type InviteeMilestoneStatus = z.infer<
+  typeof inviteeMilestoneStatusSchema
+>;
+
 export const playerReferralOverviewSchema = z.object({
   referralCode: z.string(),
   deepLink: z.string(),
@@ -254,6 +265,10 @@ export const playerReferralOverviewSchema = z.object({
   qualifiedCount: z.number().int().nonnegative(),
   totalEarnedPoints: z.number().int().nonnegative(),
   unlockedBadges: z.array(z.string()),
+  totalKickbackCashEarned: z.number().nonnegative().optional(),
+  unclaimedKickbackCash: z.number().nonnegative().optional(),
+  commissionRatePercent: z.number().nonnegative().optional(),
+  inviteeMilestones: z.array(inviteeMilestoneStatusSchema).optional(),
 });
 export type PlayerReferralOverview = z.infer<
   typeof playerReferralOverviewSchema
@@ -270,7 +285,7 @@ export type BindReferralRequest = z.infer<typeof bindReferralRequestSchema>;
 export const bindReferralResponseSchema = z.object({
   apiVersion: z.literal('v1'),
   success: z.boolean(),
-  starterCashBoost: z.number().int().nonnegative(),
+  starterCashBoost: z.number().nonnegative(),
 });
 export type BindReferralResponse = z.infer<typeof bindReferralResponseSchema>;
 
@@ -303,6 +318,25 @@ export const claimReferralRewardResponseSchema = z.object({
 });
 export type ClaimReferralRewardResponse = z.infer<
   typeof claimReferralRewardResponseSchema
+>;
+
+export const claimReferralKickbackRequestSchema = z
+  .object({
+    requestId: z.uuid(),
+  })
+  .strict();
+export type ClaimReferralKickbackRequest = z.infer<
+  typeof claimReferralKickbackRequestSchema
+>;
+
+export const claimReferralKickbackResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  claimedCash: z.number().nonnegative(),
+  newCash: z.number().nonnegative(),
+  claimedAt: z.iso.datetime(),
+});
+export type ClaimReferralKickbackResponse = z.infer<
+  typeof claimReferralKickbackResponseSchema
 >;
 
 // --- Step 7: Leaderboard DTO Schemas (Blueprint R6) ---
@@ -690,7 +724,7 @@ export const adminFrozenRewardDtoSchema = z.object({
     'streak_bonus',
     'airdrop',
   ]),
-  amountCash: z.number().int().nonnegative(),
+  amountCash: z.number().nonnegative(),
   amountSeasonPoints: z.number().int().nonnegative(),
   status: z.enum(['frozen', 'approved', 'rejected']),
   freezeReason: z.string(),
@@ -705,7 +739,7 @@ export const adminFrozenRewardDtoSchema = z.object({
       telegramId: z.string(),
       username: z.string().nullable(),
       firstName: z.string(),
-      currentCash: z.number().int().nullable().optional(),
+      currentCash: z.number().nullable().optional(),
       currentSeasonPoints: z.number().int().nullable().optional(),
     })
     .optional(),
@@ -739,11 +773,11 @@ export const adminFraudReviewResponseSchema = z.object({
   success: z.boolean(),
   decision: z.enum(['approved', 'rejected']),
   frozenRewardId: z.string().uuid(),
-  creditedCash: z.number().int().nonnegative().optional(),
+  creditedCash: z.number().nonnegative().optional(),
   creditedSeasonPoints: z.number().int().nonnegative().optional(),
-  canceledCash: z.number().int().nonnegative().optional(),
+  canceledCash: z.number().nonnegative().optional(),
   canceledSeasonPoints: z.number().int().nonnegative().optional(),
-  newCash: z.number().int().nonnegative().optional(),
+  newCash: z.number().nonnegative().optional(),
   newSeasonPoints: z.number().int().nonnegative().optional(),
   reviewedAt: z.string(),
 });
@@ -768,7 +802,7 @@ export const tapGameStateDtoSchema = z.object({
   tapBotOfflineCapSeconds: z.number().int().positive(),
   lastEnergyUpdateAt: z.string(),
   lastTapBotClaimAt: z.string(),
-  unclaimedTapBotCash: z.number().int().nonnegative(),
+  unclaimedTapBotCash: z.number().nonnegative(),
 });
 export type TapGameStateDto = z.infer<typeof tapGameStateDtoSchema>;
 
@@ -783,8 +817,8 @@ export type TapClickRequest = z.infer<typeof tapClickRequestSchema>;
 export const tapClickResponseSchema = z.object({
   apiVersion: z.literal('v1'),
   tapsExecuted: z.number().int().nonnegative(),
-  coinsEarned: z.number().int().nonnegative(),
-  newCash: z.number().int().nonnegative(),
+  coinsEarned: z.number().nonnegative(),
+  newCash: z.number().nonnegative(),
   remainingEnergy: z.number().int().nonnegative(),
   criticalHitsCount: z.number().int().nonnegative(),
   energyRechargeRate: z.number().int().positive(),
@@ -809,8 +843,8 @@ export const tapUpgradeResponseSchema = z.object({
   apiVersion: z.literal('v1'),
   upgradeType: z.string(),
   newLevel: z.number().int().positive(),
-  cashCost: z.number().int().nonnegative(),
-  newCash: z.number().int().nonnegative(),
+  cashCost: z.number().nonnegative(),
+  newCash: z.number().nonnegative(),
 });
 export type TapUpgradeResponse = z.infer<typeof tapUpgradeResponseSchema>;
 
@@ -823,8 +857,8 @@ export type TapClaimBotRequest = z.infer<typeof tapClaimBotRequestSchema>;
 
 export const tapClaimBotResponseSchema = z.object({
   apiVersion: z.literal('v1'),
-  claimedCash: z.number().int().nonnegative(),
-  newCash: z.number().int().nonnegative(),
+  claimedCash: z.number().nonnegative(),
+  newCash: z.number().nonnegative(),
   offlineSecondsElapsed: z.number().int().nonnegative(),
   botTapsCount: z.number().int().nonnegative(),
 });
@@ -833,8 +867,8 @@ export type TapClaimBotResponse = z.infer<typeof tapClaimBotResponseSchema>;
 // --- Catizen Merge ---
 export const mergeBoardStateDtoSchema = z.object({
   grid: z.array(z.number().int()),
-  passiveRatePerSecond: z.number().int().nonnegative(),
-  unclaimedPassiveCash: z.number().int().nonnegative(),
+  passiveRatePerSecond: z.number().nonnegative(),
+  unclaimedPassiveCash: z.number().nonnegative(),
   lastPassiveClaimAt: z.string(),
   nextParcelDropSeconds: z.number().int().nonnegative(),
 });
@@ -853,8 +887,8 @@ export type MergeActionRequest = z.infer<typeof mergeActionRequestSchema>;
 export const mergeActionResponseSchema = z.object({
   apiVersion: z.literal('v1'),
   grid: z.array(z.number().int()),
-  rewardCash: z.number().int().nonnegative(),
-  newCash: z.number().int().nonnegative(),
+  rewardCash: z.number().nonnegative(),
+  newCash: z.number().nonnegative(),
   unlockedTier: z.number().int().optional(),
 });
 export type MergeActionResponse = z.infer<typeof mergeActionResponseSchema>;
@@ -872,9 +906,9 @@ export const mergeAutoResponseSchema = z.object({
   grid: z.array(z.number().int()),
   totalMergesExecuted: z.number().int().nonnegative(),
   parcelsOpened: z.number().int().nonnegative(),
-  totalRewardCash: z.number().int().nonnegative(),
-  newCash: z.number().int().nonnegative(),
-  newPassiveRatePerSecond: z.number().int().nonnegative(),
+  totalRewardCash: z.number().nonnegative(),
+  newCash: z.number().nonnegative(),
+  newPassiveRatePerSecond: z.number().nonnegative(),
 });
 export type MergeAutoResponse = z.infer<typeof mergeAutoResponseSchema>;
 
@@ -889,8 +923,8 @@ export type MergeClaimPassiveRequest = z.infer<
 
 export const mergeClaimPassiveResponseSchema = z.object({
   apiVersion: z.literal('v1'),
-  claimedCash: z.number().int().nonnegative(),
-  newCash: z.number().int().nonnegative(),
+  claimedCash: z.number().nonnegative(),
+  newCash: z.number().nonnegative(),
   elapsedSeconds: z.number().int().nonnegative(),
 });
 export type MergeClaimPassiveResponse = z.infer<
@@ -900,7 +934,7 @@ export type MergeClaimPassiveResponse = z.infer<
 // --- Crypto Crash ---
 export const crashStartRequestSchema = z
   .object({
-    stake: z.number().int().min(10).max(10_000_000),
+    stake: z.number().min(10),
     clientSeed: z.string().min(1).max(128).optional(),
     requestId: z.string().uuid(),
   })
@@ -910,7 +944,7 @@ export type CrashStartRequest = z.infer<typeof crashStartRequestSchema>;
 export const crashStartResponseSchema = z.object({
   apiVersion: z.literal('v1'),
   roundId: z.string().uuid(),
-  stake: z.number().int().positive(),
+  stake: z.number().positive(),
   serverSeedHash: z.string(),
   startTime: z.string(),
 });
@@ -931,9 +965,9 @@ export const crashCashoutResponseSchema = z.object({
   status: z.enum(['won', 'crashed']),
   crashMultiplier: z.number(),
   cashoutMultiplier: z.number(),
-  payoutCash: z.number().int().nonnegative(),
-  netProfit: z.number().int(),
-  newCash: z.number().int().nonnegative(),
+  payoutCash: z.number().nonnegative(),
+  netProfit: z.number(),
+  newCash: z.number().nonnegative(),
   serverSeed: z.string(),
 });
 export type CrashCashoutResponse = z.infer<typeof crashCashoutResponseSchema>;
@@ -953,7 +987,139 @@ export const cipherSubmitResponseSchema = z.object({
   apiVersion: z.literal('v1'),
   round: z.number().int().positive(),
   combo: z.number().int().positive(),
-  rewardCash: z.number().int().nonnegative(),
-  newCash: z.number().int().nonnegative(),
+  rewardCash: z.number().nonnegative(),
+  newCash: z.number().nonnegative(),
 });
 export type CipherSubmitResponse = z.infer<typeof cipherSubmitResponseSchema>;
+
+// --- Clans & Cartels ---
+export const clanDtoSchema = z.object({
+  id: z.string(),
+  name: z.string().min(2).max(32),
+  tag: z.string().min(2).max(6),
+  emblem: z.string().min(1).max(8),
+  leaderId: z.string(),
+  leaderUsername: z.string(),
+  memberCount: z.number().int().nonnegative(),
+  totalEmpireLevels: z.number().int().nonnegative(),
+  totalProductionPerSecond: z.number().nonnegative(),
+  clanLevel: z.number().int().min(1).max(50),
+  telegramChannelUrl: z.string().optional(),
+  createdAtMs: z.number().int(),
+});
+export type ClanDto = z.infer<typeof clanDtoSchema>;
+
+export const createClanRequestSchema = z
+  .object({
+    name: z.string().trim().min(3).max(24),
+    tag: z.string().trim().min(2).max(5).toUpperCase(),
+    emblem: z.string().trim().min(1).max(4),
+    telegramChannelUrl: z.string().trim().url().optional(),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type CreateClanRequest = z.infer<typeof createClanRequestSchema>;
+
+export const createClanResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  clan: clanDtoSchema,
+  newCash: z.number().nonnegative(),
+});
+export type CreateClanResponse = z.infer<typeof createClanResponseSchema>;
+
+export const joinClanRequestSchema = z
+  .object({
+    clanId: z.string().min(1),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type JoinClanRequest = z.infer<typeof joinClanRequestSchema>;
+
+export const joinClanResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  clanId: z.string(),
+  joinedAt: z.iso.datetime(),
+  newMemberCount: z.number().int().positive(),
+});
+export type JoinClanResponse = z.infer<typeof joinClanResponseSchema>;
+
+export const clanLeaderboardEntrySchema = z.object({
+  rank: z.number().int().positive(),
+  clanId: z.string(),
+  name: z.string(),
+  tag: z.string(),
+  emblem: z.string(),
+  memberCount: z.number().int(),
+  clanLevel: z.number().int(),
+  totalProductionPerSecond: z.number(),
+  telegramChannelUrl: z.string().optional(),
+});
+export type ClanLeaderboardEntry = z.infer<typeof clanLeaderboardEntrySchema>;
+
+export const clanLeaderboardResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  clans: z.array(clanLeaderboardEntrySchema),
+  userClanId: z.string().nullable(),
+});
+export type ClanLeaderboardResponse = z.infer<
+  typeof clanLeaderboardResponseSchema
+>;
+
+// --- Daily Mystery Combo & Daily Cipher ---
+export const dailyComboStatusResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  date: z.string(),
+  isCompleted: z.boolean(),
+  claimedAt: z.string().nullable(),
+  rewardCash: z.number().positive(),
+  rewardSeasonPoints: z.number().int().positive(),
+});
+export type DailyComboStatusResponse = z.infer<
+  typeof dailyComboStatusResponseSchema
+>;
+
+export const submitDailyComboRequestSchema = z
+  .object({
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    selectedSlugs: z.array(z.string().min(1)).length(3),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type SubmitDailyComboRequest = z.infer<
+  typeof submitDailyComboRequestSchema
+>;
+
+export const submitDailyComboResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  success: z.boolean(),
+  message: z.string(),
+  rewardCash: z.number().nonnegative(),
+  rewardSeasonPoints: z.number().int().nonnegative(),
+  newCash: z.number().nonnegative(),
+});
+export type SubmitDailyComboResponse = z.infer<
+  typeof submitDailyComboResponseSchema
+>;
+
+export const submitDailyCipherRequestSchema = z
+  .object({
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    solvedWord: z.string().trim().min(2).max(32),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type SubmitDailyCipherRequest = z.infer<
+  typeof submitDailyCipherRequestSchema
+>;
+
+export const submitDailyCipherResponseSchema = z.object({
+  apiVersion: z.literal('v1'),
+  success: z.boolean(),
+  message: z.string(),
+  rewardCash: z.number().nonnegative(),
+  rewardSeasonPoints: z.number().int().nonnegative(),
+  newCash: z.number().nonnegative(),
+});
+export type SubmitDailyCipherResponse = z.infer<
+  typeof submitDailyCipherResponseSchema
+>;

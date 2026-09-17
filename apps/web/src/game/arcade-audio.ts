@@ -344,3 +344,6 @@ export function playErrorSound(): void {
     // Fallback
   }
 }
+
+export const playClickSound = playTapSound;
+export const playFailSound = playErrorSound;

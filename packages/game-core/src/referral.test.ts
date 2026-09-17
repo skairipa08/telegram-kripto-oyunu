@@ -1,13 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
+  calculatePassiveCommission,
   calculateReferralReward,
+  calculateReferralKickback,
+  evaluateInviteeCashMilestones,
   evaluateInviteeMilestones,
   generateReferralDeepLink,
+  getReferralCommissionRate,
   getUnlockedReferralBadges,
   isSelfReferral,
   isWithinReferralBindWindow,
   parseReferralCodeFromStartParam,
   REFERRAL_BIND_WINDOW_MS,
+  REFERRAL_CASH_KICKBACK_RATE,
+  REFERRAL_COMMISSION_TIERS,
 } from './referral';
 
 describe('referral engine pure logic', () => {
@@ -185,6 +191,150 @@ describe('referral engine pure logic', () => {
       expect(badges100[badges100.length - 1]?.badgeKey).toBe(
         'ambassador_eligibility',
       );
+    });
+  });
+
+  describe('calculateReferralKickback and invitee cash milestones', () => {
+    it('calculates 1-in-1000 (0.1%) kickback accurately', () => {
+      // Exactly 1,000,000 earned -> 1,000 cash kickback to referrer
+      expect(calculateReferralKickback(1_000_000)).toBe(1_000);
+      expect(calculateReferralKickback(100_000)).toBe(100);
+      expect(calculateReferralKickback(10_000_000)).toBe(10_000);
+      expect(calculateReferralKickback(500)).toBe(0); // Floor of 0.5
+      expect(calculateReferralKickback(0)).toBe(0);
+      expect(calculateReferralKickback(-1000)).toBe(0);
+    });
+
+    it('evaluates invitee cumulative cash milestones accurately', () => {
+      // At 500K cumulative earnings, only 100K milestone is reached
+      const m1 = evaluateInviteeCashMilestones(500_000, []);
+      expect(m1.map((m) => m.targetCash)).toEqual([100_000]);
+
+      // At 1.5M cumulative earnings, both 100K and 1M milestones are reached
+      const m2 = evaluateInviteeCashMilestones(1_500_000, [100_000]);
+      expect(m2.map((m) => m.targetCash)).toEqual([1_000_000]);
+      expect(m2[0]?.rewardCash).toBe(1_000);
+
+      // At 15M cumulative earnings with 100K and 1M already claimed
+      const m3 = evaluateInviteeCashMilestones(
+        15_000_000,
+        [100_000, 1_000_000],
+      );
+      expect(m3.map((m) => m.targetCash)).toEqual([10_000_000]);
+      expect(m3[0]?.rewardCash).toBe(10_000);
+    });
+  });
+
+  describe('tiered referral commission & turnover rate', () => {
+    describe('getReferralCommissionRate', () => {
+      it('returns 3% (0.03) for 0 to 10 invites', () => {
+        expect(getReferralCommissionRate(0)).toBe(0.03);
+        expect(getReferralCommissionRate(1)).toBe(0.03);
+        expect(getReferralCommissionRate(5)).toBe(0.03);
+        expect(getReferralCommissionRate(10)).toBe(0.03);
+      });
+
+      it('returns 5% (0.05) for 11 to 30 invites', () => {
+        expect(getReferralCommissionRate(11)).toBe(0.05);
+        expect(getReferralCommissionRate(20)).toBe(0.05);
+        expect(getReferralCommissionRate(29)).toBe(0.05);
+        expect(getReferralCommissionRate(30)).toBe(0.05);
+      });
+
+      it('returns 7% (0.07) for 31+ invites', () => {
+        expect(getReferralCommissionRate(31)).toBe(0.07);
+        expect(getReferralCommissionRate(50)).toBe(0.07);
+        expect(getReferralCommissionRate(100)).toBe(0.07);
+        expect(getReferralCommissionRate(500)).toBe(0.07);
+      });
+
+      it('strictly tests boundaries at 0, 1, 10, 11, 29, 30, 31, 100', () => {
+        const expectedMap: Record<number, number> = {
+          0: 0.03,
+          1: 0.03,
+          10: 0.03,
+          11: 0.05,
+          29: 0.05,
+          30: 0.05,
+          31: 0.07,
+          100: 0.07,
+        };
+        for (const [invites, rate] of Object.entries(expectedMap)) {
+          expect(getReferralCommissionRate(Number(invites))).toBe(rate);
+        }
+      });
+    });
+
+    describe('calculatePassiveCommission', () => {
+      it('calculates tiered commission accurately: 30K for 3%, 50K for 5%, 70K for 7% per 1M cash', () => {
+        // Tier 1 (<= 10 invites, 3%): 1,000,000 * 0.03 = 30,000
+        expect(calculatePassiveCommission(1_000_000, 5)).toBe(30_000);
+        expect(calculatePassiveCommission(1_000_000, 10)).toBe(30_000);
+
+        // Tier 2 (11-30 invites, 5%): 1,000,000 * 0.05 = 50,000
+        expect(calculatePassiveCommission(1_000_000, 11)).toBe(50_000);
+        expect(calculatePassiveCommission(1_000_000, 30)).toBe(50_000);
+
+        // Tier 3 (31+ invites, 7%): 1,000,000 * 0.07 = 70,000
+        expect(calculatePassiveCommission(1_000_000, 31)).toBe(70_000);
+        expect(calculatePassiveCommission(1_000_000, 100)).toBe(70_000);
+      });
+
+      it('contrasts passive commission with direct 0.1% kickback (1 in 1000)', () => {
+        const earned = 1_000_000;
+        // Direct kickback is exactly 1,000 cash (0.1%)
+        expect(calculateReferralKickback(earned)).toBe(1_000);
+        expect(REFERRAL_CASH_KICKBACK_RATE).toBe(0.001);
+
+        // Passive commission is 30x to 70x higher than direct kickback
+        const passiveTier1 = calculatePassiveCommission(earned, 5);
+        expect(passiveTier1).toBe(30_000);
+        expect(passiveTier1 / calculateReferralKickback(earned)).toBe(30);
+
+        const passiveTier3 = calculatePassiveCommission(earned, 50);
+        expect(passiveTier3).toBe(70_000);
+        expect(passiveTier3 / calculateReferralKickback(earned)).toBe(70);
+      });
+
+      it('returns 0 for zero or negative invitee earnings', () => {
+        expect(calculatePassiveCommission(0, 10)).toBe(0);
+        expect(calculatePassiveCommission(-5000, 10)).toBe(0);
+        expect(calculatePassiveCommission(0, 50)).toBe(0);
+      });
+
+      it('truncates fractional earnings via Math.floor', () => {
+        // 33 cash * 0.03 = 0.99 -> Math.floor = 0
+        expect(calculatePassiveCommission(33, 5)).toBe(0);
+        // 34 cash * 0.03 = 1.02 -> Math.floor = 1
+        expect(calculatePassiveCommission(34, 5)).toBe(1);
+      });
+    });
+
+    describe('REFERRAL_COMMISSION_TIERS constant specification', () => {
+      it('defines the 3 canonical tiers with contiguous invite ranges and matching rates', () => {
+        expect(REFERRAL_COMMISSION_TIERS).toHaveLength(3);
+
+        expect(REFERRAL_COMMISSION_TIERS[0]).toEqual({
+          minInvites: 0,
+          maxInvites: 10,
+          ratePercent: 3,
+          rateDecimal: 0.03,
+        });
+
+        expect(REFERRAL_COMMISSION_TIERS[1]).toEqual({
+          minInvites: 11,
+          maxInvites: 30,
+          ratePercent: 5,
+          rateDecimal: 0.05,
+        });
+
+        expect(REFERRAL_COMMISSION_TIERS[2]).toEqual({
+          minInvites: 31,
+          maxInvites: Infinity,
+          ratePercent: 7,
+          rateDecimal: 0.07,
+        });
+      });
     });
   });
 });

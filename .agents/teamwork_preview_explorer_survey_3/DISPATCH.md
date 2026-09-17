@@ -1,31 +1,28 @@
-## 2026-09-14T18:05:26Z
-You are teamwork_preview_explorer_survey_3.
+## 2026-09-17T12:40:20Z
+
+You are Explorer 3 for Project Empire Telegram Mini App.
 Your working directory is: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_explorer_survey_3
-Your parent is teamwork_preview_orchestrator (ID: 4565b5a3-9339-431b-9805-74dc044c2c67).
-Project root is: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Read c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md (specifically the latest request under ## 2026-09-17T09:38:35Z).
 
-MANDATORY INPUT:
-Read the authoritative user request at:
-c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md (specifically the section ## 2026-09-14T17:53:29Z).
+You are a read-only exploration agent. DO NOT modify any implementation code.
+Your mission: Conduct a deep-dive technical investigation into Stream 4 (Social, Missions, Shop & Celebration Modals).
 
-TASK OBJECTIVE:
-Conduct a read-only survey of the test harness and existing integration tests:
-1. Inspect apps/api/src/auth/test-db.ts:
-   - How does test-db.ts initialize PGlite?
-   - How are SQL migrations listed and executed in test-db.ts? (Where is the migration list defined?)
-   - How are RPC functions dispatched? Locate the switch/case on RPC function name and examine how transactions, SQL execution, and return values are handled for existing RPCs.
-   - Note the exact signatures and parameter mappings needed for the 8 new RPCs:
-     empire_claim_offline_earnings, empire_upgrade_business, empire_get_game_state, empire_bind_referral, empire_get_referral_status, empire_get_active_missions, empire_claim_mission, empire_get_streak.
-2. Inspect existing integration test files in apps/api (e.g., apps/api/src/economy/routes.test.ts or other *.test.ts files):
-   - How is the test app / client instantiated?
-   - How is authentication mocked / created (session tokens, test users, headers)?
-   - How are tests structured using Vitest?
-   - What test scripts run during pnpm check? Check package.json root and apps/api/package.json.
+Target files to inspect:
+- apps/web/src/screens/friends-screen.tsx
+- apps/web/src/screens/missions-screen.tsx
+- apps/web/src/screens/shop-screen.tsx
+- apps/web/src/screens/clans-screen.tsx
+- apps/web/src/screens/social.css
+- apps/web/src/screens/shop-analytics.css
 
-OUTPUT REQUIREMENTS:
-Write your detailed findings to:
-c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_explorer_survey_3\analysis.md
-Write your handoff report to:
+Investigate and document in detail:
+1. Streak & Milestones: How streak days (7d, 30d, 90d, 180d, 365d) are currently rendered and claimed. How to implement a glowing neon energy ribbon/path and a chest unlock celebration animation with particle burst.
+2. Referral & Partnership: How partnership commissions ("Kasaya Aktar") and friend invite cards are structured. Where to add gold glowing button effects, shimmering 1/1000 badges, and claim celebrations.
+3. Clans / Cartels: Clan ranking list and podium layout. How to add gold, silver, bronze auras for top 3, and clan level-up celebration visuals.
+4. Stars Shop: Empire Pass card layout and cosmetic cards. How to apply luxury cyber-gold shine and holographic tilt/reflection.
+5. Universal Celebration Modal: Existing modal infrastructure in the app. How to create or enhance a reusable confetti canvas particle celebration modal for missions, rewards, and achievements.
+6. Mobile responsiveness (320px, 360px, 390px) and CSS styling structure.
+
+Write your comprehensive findings to:
 c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_explorer_survey_3\handoff.md
-Send a completion message via send_message to parent (4565b5a3-9339-431b-9805-74dc044c2c67).
-Do NOT modify any source files. You are strictly read-only.
+Send a completion message when done.

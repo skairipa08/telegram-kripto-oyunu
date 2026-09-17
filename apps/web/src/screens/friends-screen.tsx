@@ -7,12 +7,18 @@ import {
   ResourceNotice,
   SectionTitle,
 } from '../game/ui';
+import { ShareReferralModal } from '../components/share-referral-modal';
+import { CelebrationModal } from '../components/celebration-modal';
+import { ClansScreen } from './clans-screen';
 import './social.css';
 
 type FriendsScreenProps = {
   resource: ScreenResource<FriendsView>;
-  bindingFeedback?: ActionFeedback | null;
+  bindingFeedback?: ActionFeedback | null | undefined;
   onRetryBinding?: (() => void) | undefined;
+  userCash?: number | undefined;
+  userId?: string | undefined;
+  onCashUpdated?: ((newCash: number) => void) | undefined;
 };
 
 const referralMilestones = [1, 3, 5, 10, 25, 50] as const;
@@ -39,7 +45,7 @@ export function isSafeTelegramInvite(value: string) {
       /^\/[A-Za-z0-9_]+\/?$/.test(url.pathname) &&
       params.length === 1 &&
       params[0]?.[0] === 'startapp' &&
-      /^ref_[A-Za-z0-9]+$/.test(params[0]?.[1] ?? '')
+      /^ref_[A-Za-z0-9_]+$/.test(params[0]?.[1] ?? '')
     );
   } catch {
     return false;
@@ -84,11 +90,63 @@ export function FriendsScreen({
   resource,
   bindingFeedback = null,
   onRetryBinding,
+  userCash = 0,
+  userId = '',
+  onCashUpdated,
 }: FriendsScreenProps) {
+  const [activeTab, setActiveTab] = useState<'friends' | 'clans'>('friends');
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>(
     'idle',
   );
+  const [isClaimingKickback, setIsClaimingKickback] = useState(false);
+  const [kickbackFeedback, setKickbackFeedback] = useState<string | null>(null);
+  const [celebration, setCelebration] = useState<{
+    isOpen: boolean;
+    title: string;
+    subtitle?: string;
+    rewardValue: string;
+    badgeName?: string;
+    icon?: string;
+  } | null>(null);
   const data = resource.status === 'ready' ? resource.data : null;
+
+  const handleClaimKickback = async () => {
+    setIsClaimingKickback(true);
+    setKickbackFeedback(null);
+    try {
+      const res = await fetch('/api/referral/claim-kickback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (res.ok) {
+        const d = (await res.json()) as {
+          claimedCash: number;
+          newCash: number;
+        };
+        setKickbackFeedback(
+          `Tebrikler! ${formatNumber(d.claimedCash)} Nakit kasanıza aktarıldı.`,
+        );
+        if (d.claimedCash > 0) {
+          setCelebration({
+            isOpen: true,
+            title: 'Ortaklık Primi Kasaya Aktarıldı!',
+            subtitle:
+              'Davet ettiğin arkadaş ağının cirosundan payına düşen prim hesabına geçti.',
+            rewardValue: `+${formatNumber(d.claimedCash)} Nakit`,
+            badgeName: 'Binde 1 Gelir Payı',
+            icon: '💰',
+          });
+        }
+        if (onCashUpdated) onCashUpdated(d.newCash);
+        if (resource.onRetry) resource.onRetry();
+      }
+    } catch {
+      setKickbackFeedback('Prim aktarılırken bir hata oluştu.');
+    } finally {
+      setIsClaimingKickback(false);
+    }
+  };
 
   const copyInvite = async () => {
     if (!data || !isSafeTelegramInvite(data.link)) {
@@ -104,6 +162,51 @@ export function FriendsScreen({
     }
   };
 
+  const renderTabSwitcher = () => (
+    <div
+      style={{
+        display: 'flex',
+        gap: '8px',
+        marginBottom: '16px',
+      }}
+    >
+      <button
+        type="button"
+        className={activeTab === 'friends' ? 'button' : 'button secondary'}
+        onClick={() => setActiveTab('friends')}
+        style={{ flex: 1, padding: '10px 14px', fontSize: '13px' }}
+      >
+        👥 Arkadaş Ağım & Gelir Payı
+      </button>
+      <button
+        type="button"
+        className={activeTab === 'clans' ? 'button' : 'button secondary'}
+        onClick={() => setActiveTab('clans')}
+        style={{ flex: 1, padding: '10px 14px', fontSize: '13px' }}
+      >
+        🛡️ Karteller (Klanlar)
+      </button>
+    </div>
+  );
+
+  if (activeTab === 'clans') {
+    return (
+      <section className="social-screen friends-screen" aria-label="Karteller">
+        <SectionTitle
+          eyebrow="Birlikten Kuvvet Doğar"
+          title="Karteller & Holdingler"
+          description="Telegram kanalları ve oyuncularla bir araya gel, imparatorluk gücünü birleştir ve ekstra üretim bonusları kazan."
+        />
+        {renderTabSwitcher()}
+        <ClansScreen
+          userCash={userCash}
+          userId={userId}
+          onCashUpdated={onCashUpdated}
+        />
+      </section>
+    );
+  }
+
   if (!data) {
     return (
       <section className="social-screen friends-screen" aria-label="Arkadaşlar">
@@ -112,6 +215,7 @@ export function FriendsScreen({
           title="Arkadaşlar"
           description="Davet ettiğin oyuncuların kalıcı ilerlemesi, imparatorluğuna yeni bir gelir hattı açar."
         />
+        {renderTabSwitcher()}
         {bindingFeedback && (
           <>
             <p
@@ -157,6 +261,7 @@ export function FriendsScreen({
         title="Arkadaşlar"
         description="Güçlü ekonomiler tek başına kurulmaz. Ekibini davet et, kalıcı ilerlemeyi birlikte büyüt."
       />
+      {renderTabSwitcher()}
 
       {bindingFeedback && (
         <>
@@ -203,6 +308,29 @@ export function FriendsScreen({
               {copyStatus === 'copied' ? 'Kopyalandı' : 'Bağlantıyı kopyala'}
             </button>
           </div>
+          <button
+            type="button"
+            className="button"
+            onClick={() => setIsShareModalOpen(true)}
+            disabled={!safeInvite}
+            style={{
+              width: '100%',
+              marginTop: '12px',
+              padding: '12px',
+              fontWeight: 'bold',
+              background: 'linear-gradient(135deg, #f1c99a 0%, #d49347 100%)',
+              color: '#0a0e17',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <span>🚀</span>
+            <span>Telegram'da Arkadaşlarını Davet Et (+5.000 Nakit)</span>
+          </button>
           <p
             className={`copy-status ${copyStatus === 'error' ? 'is-error' : ''}`}
             aria-live="polite"
@@ -380,6 +508,93 @@ export function FriendsScreen({
         </div>
       </div>
 
+      {/* 0.1% (1/1000) Invitee Cash Kickback & Revenue Milestones Card */}
+      <div className="panel referral-kickback-panel">
+        <div className="kickback-header">
+          <div>
+            <p className="kickback-eyebrow">CİRO VE KAZANÇ PAYI</p>
+            <h3 className="kickback-title">🔥 Binde 1 (%0.1) Ortak Primi</h3>
+          </div>
+          <span className="kickback-badge">Oran: ‰1 (%0.1)</span>
+        </div>
+
+        <p className="kickback-desc">
+          Davet ettiğin her arkadaşın oyunda nakit kazandıkça{' '}
+          <strong>binde biri (%0.1)</strong> anında doğrudan senin kasana akar!
+          Örneğin arkadaşın <strong>1.000.000 Nakit</strong> kazandığında sana{' '}
+          <strong>+1.000 Nakit</strong> net gelir yansır.
+        </p>
+
+        <div className="kickback-metrics-grid">
+          <div className="kickback-metric-card">
+            <span className="metric-label">Toplam Ciro Primi</span>
+            <strong className="metric-val-green">
+              +{formatNumber(data.totalKickbackCashEarned ?? 0)} Nakit
+            </strong>
+          </div>
+
+          <div className="kickback-metric-card">
+            <span className="metric-label">Birikmiş / Toplanabilir</span>
+            <strong className="metric-val-gold">
+              +{formatNumber(data.unclaimedKickbackCash ?? 0)} Nakit
+            </strong>
+          </div>
+        </div>
+
+        {(data.unclaimedKickbackCash ?? 0) > 0 && (
+          <button
+            type="button"
+            className="button kickback-claim-glow"
+            onClick={() => void handleClaimKickback()}
+            disabled={isClaimingKickback}
+            style={{
+              width: '100%',
+              marginBottom: '14px',
+              padding: '12px',
+              fontWeight: 'bold',
+              fontSize: '14px',
+            }}
+          >
+            {isClaimingKickback
+              ? 'Aktarılıyor...'
+              : `💰 Biriken ${formatNumber(data.unclaimedKickbackCash ?? 0)} Nakdi Kasaya Aktar`}
+          </button>
+        )}
+
+        {kickbackFeedback && (
+          <p
+            style={{
+              color: '#34d399',
+              fontSize: '13px',
+              fontWeight: 'bold',
+              marginBottom: '10px',
+            }}
+          >
+            {kickbackFeedback}
+          </p>
+        )}
+
+        <div>
+          <span className="kickback-milestones-title">
+            🎯 Ortak Ciro Eşikleri (Arkadaşın kazandıkça):
+          </span>
+          <div className="kickback-milestones-list">
+            {[
+              { target: '100K', reward: '+100 Nakit' },
+              { target: '1M', reward: '+1.000 Nakit' },
+              { target: '10M', reward: '+10.000 Nakit' },
+              { target: '100M', reward: '+100.000 Nakit' },
+              { target: '1B', reward: '+1.000.000 Nakit' },
+            ].map((item, idx) => (
+              <span key={idx} className="kickback-milestone-chip">
+                <span>{item.target} Ciro 👉</span>{' '}
+                <strong>{item.reward}</strong>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="referral-progress panel">
         <div className="referral-progress-heading">
           <div>
@@ -478,6 +693,24 @@ export function FriendsScreen({
           </ul>
         )}
       </div>
+
+      <ShareReferralModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        referralLink={data.link}
+      />
+
+      {celebration && (
+        <CelebrationModal
+          isOpen={celebration.isOpen}
+          onClose={() => setCelebration(null)}
+          title={celebration.title}
+          subtitle={celebration.subtitle}
+          rewardValue={celebration.rewardValue}
+          badgeName={celebration.badgeName}
+          icon={celebration.icon}
+        />
+      )}
     </section>
   );
 }

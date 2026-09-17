@@ -3,11 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "dev": "vite --host 0.0.0.0 --port 5173 --strictPort",
     "typecheck": "tsc -p tsconfig.json",
     "build": "vite build"
   },
   "dependencies": {
+    "@empire/game-core": "workspace:*",
     "@empire/shared": "workspace:*",
     "@tanstack/react-query": "^5.90.0",
     "react": "^19.2.0",

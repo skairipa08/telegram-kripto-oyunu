@@ -1,13 +1,14 @@
-﻿# Progress - 2026-09-16T11:55:00Z
-- Last visited: 2026-09-16T11:55:00Z
-- Status: Completed empirical stress-testing and adversarial probing of Stream 2.
-- Completed:
-  - Vector 1: Mobile viewport arithmetic, CSS audit (fixed widths, grid columns, gaps, touch targets)
-  - Vector 2: Adversarial state handling across all 4 games (Catizen Merge, Notcoin Tap, Dynasty Cipher, Crypto Crash)
-  - Vector 3: Audio synthesizer safety & Telegram haptic fallback verification
-  - Vector 4: Executed pnpm --filter @empire/web test, pnpm vitest run, pnpm build, pnpm typecheck, pnpm eslint
-  - Discovered 2 race conditions / timer leaks in CryptoCrashGame and touch target ergonomical defects
-  - Created and ran 31 automated empirical challenge tests in apps/web/src/game/arcade-stream2-challenger.test.ts (all passing)
-- Next steps:
-  - Generate handoff.md with 5 components and unambiguous verdict: VERDICT: REQUEST_CHANGES
-  - Send message to orchestrator with verdict and handoff path
+# Progress - Challenger 2
+
+**Last visited**: 2026-09-17T09:56:30Z
+**Status**: IN_PROGRESS
+**Objective**: Adversarially challenge arcade games and particle systems under intense interactive loads.
+
+## Current Tasks
+- [x] Record incoming dispatch message
+- [x] Update BRIEFING.md and situational awareness
+- [ ] Inspect source code of Notcoin Tap, Catizen Merge, Crypto Crash, Dynasty Cipher, and CelebrationModal
+- [ ] Run baseline vitest suites: `pnpm vitest run apps/web/src/screens/arcade-screen.test.tsx apps/web/src/game/arcade-stream2-challenger.test.ts`
+- [ ] Write and run empirical adversarial stress test harness (multi-touch concurrency, 100-tier gradients, particle leak/cleanup, trajectory limits)
+- [ ] Verify memory leak protection (rAF cancellation, timers cleared, zero heap buildup) and GPU performance
+- [ ] Generate handoff report with explicit verdict (APPROVE / REJECT)

@@ -716,4 +716,661 @@
   .social-screen * {
     scroll-behavior: auto !important;
   }
+  .kickback-claim-glow::after,
+  .badge-shimmer-gold,
+  .sa-cyber-gold-sweep,
+  .clan-podium-crown,
+  .targetNodePulse {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   STREAM 4: KICKBACK, CLAN PODIUM, STREAK RIBBON & CELEBRATION STYLES
+   ========================================================================== */
+
+/* 1. Referral & Partnership Kickback Claim Glow */
+.kickback-claim-glow {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    #ffd700 0%,
+    #f59e0b 50%,
+    #d97706 100%
+  ) !important;
+  color: #0b0f17 !important;
+  font-weight: 800 !important;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  box-shadow:
+    0 0 24px rgba(245, 158, 11, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.kickback-claim-glow:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 32px rgba(245, 158, 11, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.kickback-claim-glow:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.kickback-claim-glow:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.kickback-claim-glow::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 60%
+  );
+  transform: rotate(25deg);
+  animation: goldShimmerSweep 3s infinite;
+  pointer-events: none;
+}
+
+@keyframes goldShimmerSweep {
+  0% {
+    transform: translateX(-120%) rotate(25deg);
+  }
+  35%,
+  100% {
+    transform: translateX(120%) rotate(25deg);
+  }
+}
+
+/* Shimmering ‰1 (1/1000) badge */
+.badge-shimmer-gold {
+  background: linear-gradient(
+    90deg,
+    #eab308 0%,
+    #fef08a 25%,
+    #eab308 50%,
+    #fef08a 75%,
+    #eab308 100%
+  ) !important;
+  background-size: 200% auto !important;
+  color: #0b0f17 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 14px rgba(234, 179, 8, 0.5);
+  animation: badgeShimmer 3s linear infinite;
+}
+
+@keyframes badgeShimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* High-contrast kickback panel & milestone tier chips */
+.referral-kickback-panel {
+  margin-top: 16px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #141b2d 0%, #0c1220 100%) !important;
+  border: 1.5px solid rgba(234, 179, 8, 0.45) !important;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+.referral-kickback-panel .kickback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.referral-kickback-panel .kickback-eyebrow {
+  color: #fbbf24 !important;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 4px 0;
+}
+
+.referral-kickback-panel .kickback-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.referral-kickback-panel .kickback-badge {
+  background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+  color: #0b0f19 !important;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.4);
+}
+
+.referral-kickback-panel .kickback-desc {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #e2e8f0 !important;
+  margin: 0 0 16px 0;
+}
+
+.referral-kickback-panel .kickback-desc strong {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.referral-kickback-panel .kickback-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.referral-kickback-panel .kickback-metric-card {
+  padding: 14px;
+  border-radius: 10px;
+  background: #1a233a !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.referral-kickback-panel .kickback-metric-card .metric-label {
+  font-size: 12px;
+  color: #94a3b8 !important;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.referral-kickback-panel .kickback-metric-card .metric-val-green {
+  font-size: 1.15rem;
+  color: #34d399 !important;
+  font-weight: 800;
+  display: block;
+}
+
+.referral-kickback-panel .kickback-metric-card .metric-val-gold {
+  font-size: 1.15rem;
+  color: #fbbf24 !important;
+  font-weight: 800;
+  display: block;
+}
+
+.referral-kickback-panel .kickback-milestones-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #f1f5f9 !important;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.referral-kickback-panel .kickback-milestones-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kickback-milestone-chip {
+  font-size: 11.5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #1e293b !important;
+  border: 1px solid rgba(234, 179, 8, 0.45) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+}
+
+.kickback-milestone-chip strong {
+  color: #34d399 !important;
+  font-weight: 800;
+}
+
+.kickback-milestone-chip:hover {
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.45);
+  background: #243048 !important;
+}
+
+/* 2. Clan Olympic 3-Pedestal Podium & Auras */
+.clan-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 24px 12px 14px;
+  background: radial-gradient(
+    circle at 50% 15%,
+    rgba(241, 201, 154, 0.1),
+    transparent 70%
+  );
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.clan-podium-pedestal {
+  flex: 1;
+  max-width: 140px;
+  min-width: 90px;
+  border-radius: 16px;
+  padding: 14px 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.clan-podium-pedestal:hover {
+  transform: translateY(-3px);
+}
+
+/* #1 Gold Podium (Center, Tallest) */
+.clan-podium-pedestal.gold {
+  order: 2;
+  min-height: 195px;
+  border: 2px solid #ffd700;
+  background: radial-gradient(
+    circle at top,
+    rgba(255, 215, 0, 0.22),
+    rgba(20, 26, 38, 0.96)
+  );
+  box-shadow:
+    0 0 28px rgba(255, 215, 0, 0.45),
+    inset 0 0 14px rgba(255, 215, 0, 0.2);
+  z-index: 2;
+}
+
+/* #2 Silver Podium (Left) */
+.clan-podium-pedestal.silver {
+  order: 1;
+  min-height: 168px;
+  border: 2px solid #cbd5e1;
+  background: radial-gradient(
+    circle at top,
+    rgba(203, 213, 225, 0.18),
+    rgba(20, 26, 38, 0.96)
+  );
+  box-shadow:
+    0 0 20px rgba(203, 213, 225, 0.35),
+    inset 0 0 10px rgba(203, 213, 225, 0.15);
+  z-index: 1;
+}
+
+/* #3 Bronze Podium (Right) */
+.clan-podium-pedestal.bronze {
+  order: 3;
+  min-height: 148px;
+  border: 2px solid #d97706;
+  background: radial-gradient(
+    circle at top,
+    rgba(217, 119, 6, 0.18),
+    rgba(20, 26, 38, 0.96)
+  );
+  box-shadow:
+    0 0 18px rgba(217, 119, 6, 0.35),
+    inset 0 0 10px rgba(217, 119, 6, 0.12);
+  z-index: 1;
+}
+
+.clan-podium-crown {
+  position: absolute;
+  top: -20px;
+  font-size: 24px;
+  filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.8));
+  animation: crownFloat 2.2s ease-in-out infinite;
+}
+
+@keyframes crownFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.clan-podium-rank-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-bottom: 6px;
+}
+
+.clan-podium-pedestal.gold .clan-podium-rank-tag {
+  background: #ffd700;
+  color: #0b0f17;
+}
+
+.clan-podium-pedestal.silver .clan-podium-rank-tag {
+  background: #cbd5e1;
+  color: #0b0f17;
+}
+
+.clan-podium-pedestal.bronze .clan-podium-rank-tag {
+  background: #d97706;
+  color: #fff;
+}
+
+.clan-podium-emblem {
+  font-size: 30px;
+  margin-bottom: 4px;
+}
+
+.clan-podium-name {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.clan-podium-tag {
+  font-size: 10px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.clan-podium-prod {
+  font-size: 10px;
+  color: #ffd700;
+  font-weight: 600;
+  margin-top: auto;
+}
+
+/* Clan level-up progress bar in my_clan */
+.clan-level-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(241, 201, 154, 0.06);
+  border: 1px solid rgba(241, 201, 154, 0.25);
+  margin-bottom: 16px;
+}
+
+.clan-level-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.clan-level-progress-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.clan-level-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #38bdf8, #ffd700);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  transition: width 0.4s ease;
+}
+
+/* 3. Streak & Milestones Energy Ribbon & Node Glowing */
+.missions-milestones-grid {
+  position: relative;
+  padding-left: 20px;
+}
+
+.missions-milestones-grid::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 24px;
+  bottom: 24px;
+  width: 4px;
+  background: linear-gradient(
+    180deg,
+    #7ed2ad 0%,
+    #e1b47e 50%,
+    rgba(150, 160, 180, 0.25) 100%
+  );
+  box-shadow:
+    0 0 12px rgba(126, 210, 173, 0.7),
+    0 0 22px rgba(225, 180, 126, 0.4);
+  border-radius: 2px;
+  z-index: 0;
+}
+
+.milestone-card {
+  position: relative;
+  z-index: 1;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.milestone-card::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 22px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #101926;
+  border: 2px solid rgba(150, 160, 180, 0.4);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+.milestone-card.is-achieved::before {
+  border-color: #7ed2ad;
+  background: #7ed2ad;
+  box-shadow: 0 0 10px rgba(126, 210, 173, 0.8);
+}
+
+.milestone-card.is-target::before {
+  border-color: #e1b47e;
+  background: #ffd700;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
+  animation: targetNodePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes targetNodePulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+  }
+  50% {
+    transform: scale(1.3);
+    box-shadow: 0 0 16px rgba(255, 215, 0, 1);
+  }
+}
+
+.milestone-card.is-achieved {
+  border-color: rgba(126, 210, 173, 0.4);
+  background: linear-gradient(
+    135deg,
+    rgba(126, 210, 173, 0.06),
+    rgba(18, 25, 38, 0.95)
+  );
+}
+
+.milestone-card.is-target {
+  border-color: rgba(225, 180, 126, 0.6);
+  background: linear-gradient(
+    135deg,
+    rgba(225, 180, 126, 0.08),
+    rgba(24, 32, 48, 0.95)
+  );
+  box-shadow: 0 0 20px rgba(225, 180, 126, 0.25);
+}
+
+/* Daily streak claim box & chest */
+.streak-claim-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.12),
+    rgba(245, 158, 11, 0.18)
+  );
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.streak-chest-icon {
+  font-size: 32px;
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.streak-chest-icon.unlocked {
+  animation: chestShakeAndOpen 0.7s ease forwards;
+}
+
+@keyframes chestShakeAndOpen {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  20% {
+    transform: scale(1.1) rotate(-8deg);
+  }
+  40% {
+    transform: scale(1.15) rotate(8deg);
+  }
+  60% {
+    transform: scale(1.2) rotate(-4deg);
+  }
+  80% {
+    transform: scale(1.25) rotate(0deg);
+  }
+  100% {
+    transform: scale(1.2) translateY(-4px);
+  }
+}
+
+.streak-claim-btn {
+  padding: 10px 18px;
+  min-height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffd700, #f59e0b);
+  color: #0b0f17;
+  font-weight: 800;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.streak-claim-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.7);
+}
+
+.streak-claim-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* Mobile Responsiveness for 320px - 390px */
+@media (max-width: 390px) {
+  .clan-podium {
+    gap: 6px;
+    padding-inline: 4px;
+  }
+  .clan-podium-pedestal {
+    min-width: 80px;
+    padding: 10px 4px 8px;
+  }
+  .clan-podium-pedestal.gold {
+    min-height: 175px;
+  }
+  .clan-podium-pedestal.silver {
+    min-height: 155px;
+  }
+  .clan-podium-pedestal.bronze {
+    min-height: 135px;
+  }
+  .clan-podium-name {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 359px) {
+  .clan-podium {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .clan-podium-pedestal {
+    max-width: 100%;
+    min-height: 0 !important;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  .clan-podium-pedestal.gold {
+    order: 1;
+  }
+  .clan-podium-pedestal.silver {
+    order: 2;
+  }
+  .clan-podium-pedestal.bronze {
+    order: 3;
+  }
+  .clan-podium-crown {
+    position: static;
+    margin-right: 6px;
+  }
+  .missions-milestones-grid {
+    padding-left: 14px;
+  }
+  .milestone-card::before {
+    left: -13px;
+  }
 }

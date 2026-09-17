@@ -1,5 +1,5 @@
 export type GameTab =
-  'empire' | 'missions' | 'friends' | 'leaderboard' | 'shop';
+  'empire' | 'arcade' | 'missions' | 'friends' | 'leaderboard' | 'shop';
 export type ScreenResource<T> = {
   status: 'loading' | 'ready' | 'error' | 'unavailable';
   data: T | null;
@@ -33,11 +33,23 @@ export type MissionView = {
   status: 'in_progress' | 'completed' | 'claimed';
 };
 export type MissionsView = { streak: number; missions: MissionView[] };
+export type InviteeMilestoneView = {
+  targetCash: number;
+  rewardCash: number;
+  label: string;
+  completed: boolean;
+  claimed: boolean;
+};
+
 export type FriendsView = {
   link: string;
   totalInvites: number;
   qualified: number;
   earnedPoints: number;
+  totalKickbackCashEarned?: number;
+  unclaimedKickbackCash?: number;
+  commissionRatePercent?: number;
+  inviteeMilestones?: InviteeMilestoneView[];
   friends:
     { name: string; initial: string; stage: string; days: number }[] | null;
 };

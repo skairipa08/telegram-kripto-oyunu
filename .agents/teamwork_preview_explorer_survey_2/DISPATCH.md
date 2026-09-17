@@ -1,32 +1,26 @@
-## 2026-09-14T18:05:26Z
-
-You are teamwork_preview_explorer_survey_2.
+## 2026-09-17T09:40:19Z
+You are Explorer 2 for Project Empire Telegram Mini App.
 Your working directory is: c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_explorer_survey_2
-Your parent is teamwork_preview_orchestrator (ID: 4565b5a3-9339-431b-9805-74dc044c2c67).
-Project root is: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Read c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md (specifically the latest request under ## 2026-09-17T09:38:35Z).
 
-MANDATORY INPUT:
-Read the authoritative user request at:
-c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\ORIGINAL_REQUEST.md (specifically the section ## 2026-09-14T17:53:29Z).
+You are a read-only exploration agent. DO NOT modify any implementation code.
+Your mission: Conduct a deep-dive technical investigation into Stream 3 (Arcade Suite "Game Juice" & Particle FX).
 
-TASK OBJECTIVE:
-Conduct a read-only survey of the API route architecture, middleware, and mounting conventions:
-1. Inspect apps/api/src/economy/routes.ts:
-   - How are existing economy routes implemented (e.g. GET /roi, GET /simulation)?
-   - How is EconomyStore injected or accessed?
-   - How is authentication handled in existing routes? (Look for auth middleware, session tokens, user ID extraction like c.get('user') or authContext).
-2. Inspect apps/api/src/index.ts:
-   - How are routes mounted? Note the dual mounting at / and /api prefixes.
-   - What sub-apps/routers exist? How are dependencies (like EconomyStore or Supabase client) passed?
-3. Inspect other route modules (e.g. apps/api/src/auth/routes.ts, leaderboard, shop) to see common patterns for error handling, Zod validation, HTTP response formatting (e.g. 400 for validation / business error, 401 for unauthorized, etc.).
-4. Determine the best structural organization for the new routes:
-   - POST /economy/claim and POST /economy/upgrade into apps/api/src/economy/routes.ts.
-   - For GET /game/state, GET /missions/active, POST /missions/:id/claim, GET /streak, POST /referral/bind, GET /referral/status: should they be new route files (e.g. game/routes.ts, missions/routes.ts, streak/routes.ts, referral/routes.ts) or unified, and how should they be wired into apps/api/src/index.ts?
+Target files to inspect:
+- apps/web/src/components/arcade.css
+- apps/web/src/components/catizen-merge-game.tsx
+- apps/web/src/components/crypto-crash-game.tsx
+- apps/web/src/components/notcoin-tap-game.tsx
+- apps/web/src/components/dynasty-cipher-game.tsx
 
-OUTPUT REQUIREMENTS:
-Write your detailed findings to:
-c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_explorer_survey_2\analysis.md
-Write your handoff report to:
+Investigate and document in detail:
+1. Notcoin Tap Game: Current touch event handling, coin rendering, energy bar. How to add 3D dynamic squish tilt (perspective + rotateX/rotateY based on touch point), multi-touch "CRIT! +50" spark particles, and neon flow wave in energy bar.
+2. Catizen Merge Game: Grid system, tile states, drag/tap merge mechanics. How to add confetti/star particle explosions on merge, box drop shake, and distinct cyber-luxe gradients/glow for up to 100 levels.
+3. Crypto Crash Game: Live candlestick / multiplier chart rendering (canvas or DOM), rocket/neon trail, tension heartbeat pulsing as multiplier rises, screen shake on cashout/crash, dramatic red mist on crash and confetti victory flash on cashout.
+4. Dynasty Cipher Game: Terminal / matrix character stream, glitch effects, neon decode glow on successful hack.
+5. Performance and 60fps considerations: how to ensure particle systems use canvas or GPU-accelerated CSS transform/opacity with zero memory leaks and cleanup on unmount.
+6. Mobile responsiveness on 320px-390px screens.
+
+Write your comprehensive findings to:
 c:\Users\Administrator\Desktop\telegram kripto oyunu\.agents\teamwork_preview_explorer_survey_2\handoff.md
-Send a completion message via send_message to parent (4565b5a3-9339-431b-9805-74dc044c2c67).
-Do NOT modify any source files. You are strictly read-only.
+Send a completion message when done.

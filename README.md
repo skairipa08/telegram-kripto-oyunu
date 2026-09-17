@@ -19,6 +19,21 @@ pnpm dev
 Web: http://127.0.0.1:5173 — API: http://127.0.0.1:8787/health.
 Web `/api` isteklerini yerelde Vite üzerinden API'ye iletir. 1. adımda credential gerekmez. İlgili portlar boş olmalıdır. Üretimde aynı origin `/api` yönlendirmesi henüz kurulmamıştır; bu adım yayına alma içermez.
 
+## DEV Auth Bypass (Supabase olmadan yerel UI testi)
+
+Supabase olmadan oyun arayüzünü açmak için geçici bir bypass aktif edilmiştir.
+Aktif etmek veya devre dışı bırakmak için `apps/api/.dev.vars` dosyasındaki
+`DEV_AUTH_BYPASS` değerini `true` / `false` olarak ayarla.
+
+| Dosya                                           | Değişiklik                                                                 |
+| ----------------------------------------------- | -------------------------------------------------------------------------- |
+| `apps/api/src/index.ts`                         | `DEV_AUTH_BYPASS=true` iken `/me/state` mock `PlayerState` döndürür        |
+| `apps/web/src/telegram/use-telegram-web-app.ts` | DEV modunda `window.Telegram` yoksa `initData='dev_bypass=1'` enjekte eder |
+| `apps/api/.dev.vars`                            | `DEV_AUTH_BYPASS=true` satırı (Git dışı, yalnızca local)                   |
+
+> **Üretimde kullanma.** Cloudflare Worker secrets'ına bu flag eklenmemelidir.
+> Detaylı geri alma adımları HANDOFF.md'dedir.
+
 ## Komutlar
 
 | Komut               | İşlev                                     |
