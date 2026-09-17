@@ -18,19 +18,33 @@ export function authConfig(env: Bindings) {
     SUPABASE_URL: url,
     SUPABASE_SERVICE_ROLE_KEY: key,
   } = env;
+
+  const secretLen = secret ? new TextEncoder().encode(secret).length : 0;
+  console.log('[DEBUG authConfig]', {
+    hasBot: !!bot,
+    hasSecret: !!secret,
+    secretLen,
+    origin,
+    url,
+    hasLimiter: !!env.AUTH_RATE_LIMIT,
+    devBypass: (env as Record<string, unknown>).DEV_AUTH_BYPASS,
+  });
+
   if (
     !bot ||
     !secret ||
-    new TextEncoder().encode(secret).length < 32 ||
+    secretLen < 32 ||
     !origin
-  )
+  ) {
+    console.log('[DEBUG authConfig FAIL 0] basic fields check failed!', { hasBot: !!bot, hasSecret: !!secret, secretLen, origin });
     return null;
+  }
 
   const isDev =
-    (env as Record<string, unknown>).DEV_AUTH_BYPASS === 'true' || !url;
+    (env as Record<string, unknown>).DEV_AUTH_BYPASS === 'true' || !url || !env.AUTH_RATE_LIMIT;
   const limiter =
     env.AUTH_RATE_LIMIT ??
-    (isDev ? { limit: async () => ({ success: true }) } : undefined);
+    ({ limit: async () => ({ success: true }) });
   if (!limiter) return null;
 
   try {
@@ -41,15 +55,20 @@ export function authConfig(env: Bindings) {
       app.hostname.endsWith('.ngrok-free.dev') ||
       app.hostname.endsWith('.ngrok-free.app') ||
       app.hostname.endsWith('.ngrok.io') ||
-      app.hostname.endsWith('.ngrok.app');
+      app.hostname.endsWith('.ngrok.app') ||
+      app.hostname.endsWith('.trycloudflare.com') ||
+      app.hostname.endsWith('.pages.dev') ||
+      app.hostname.endsWith('.vercel.app');
 
     if (
       (app.protocol !== 'https:' && !isLocal) ||
       app.origin !== origin ||
       app.username ||
       app.password
-    )
+    ) {
+      console.log('[DEBUG authConfig FAIL 1] app check', { protocol: app.protocol, isLocal, appOrigin: app.origin, origin });
       return null;
+    }
 
     if (url) {
       const database = new URL(url);
@@ -58,12 +77,16 @@ export function authConfig(env: Bindings) {
         database.origin !== url ||
         database.username ||
         database.password
-      )
+      ) {
+        console.log('[DEBUG authConfig FAIL 2] db check', { dbProtocol: database.protocol, dbOrigin: database.origin, url });
         return null;
+      }
     } else if (!isDev) {
+      console.log('[DEBUG authConfig FAIL 3] not dev and no url');
       return null;
     }
-  } catch {
+  } catch (err) {
+    console.log('[DEBUG authConfig CATCH]', err);
     return null;
   }
   return {

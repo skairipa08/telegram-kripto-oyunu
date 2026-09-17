@@ -185,18 +185,19 @@ export function createApp(
         username: 'dev_user',
         language_code: 'tr',
       },
-      'dev-fingerprint',
-      'dev-hash',
+      '0'.repeat(63) + '1',
+      '0'.repeat(63) + '2',
       Math.floor(Date.now() / 1000),
     );
     if (loginRes.outcome === 'ok') {
       const config = authConfig(c.env);
       if (config) {
         const { sid, issuedAt: iat, expiresAt: exp } = loginRes.session;
+        const sessionToken = await signSession({ sid, iat, exp }, config.secret);
         setCookie(
           c,
           COOKIE,
-          await signSession({ sid, iat, exp }, config.secret),
+          sessionToken,
           {
             secure: true,
             httpOnly: true,
@@ -205,6 +206,16 @@ export function createApp(
             maxAge: Math.max(0, exp - Math.floor(Date.now() / 1000)),
           },
         );
+        c.header('X-Empire-Session', sessionToken);
+        return c.json({
+          apiVersion: 'v1',
+          user: loginRes.session.user,
+          session: {
+            expiresAt: new Date(loginRes.session.expiresAt * 1000).toISOString(),
+            token: sessionToken,
+          },
+          game: { status: 'not_initialized' },
+        });
       }
       return c.json({
         apiVersion: 'v1',

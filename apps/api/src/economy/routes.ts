@@ -60,7 +60,9 @@ export function createEconomyRoutes(
   routes.get('/economy/roi', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -223,7 +225,9 @@ export function createEconomyRoutes(
   routes.post('/economy/claim', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -289,7 +293,9 @@ export function createEconomyRoutes(
   routes.post('/economy/upgrade', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -401,7 +407,9 @@ export function createEconomyRoutes(
   routes.get('/game/state', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -483,7 +491,9 @@ export function createEconomyRoutes(
   ) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -514,7 +524,9 @@ export function createEconomyRoutes(
   const handleClaimMission = async (c: Context<{ Bindings: Bindings }>) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -574,7 +586,9 @@ export function createEconomyRoutes(
   routes.get('/streak', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -604,7 +618,9 @@ export function createEconomyRoutes(
   const handleClaimStreak = async (c: Context<{ Bindings: Bindings }>) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -652,7 +668,9 @@ export function createEconomyRoutes(
   routes.post('/referral/bind', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -696,7 +714,9 @@ export function createEconomyRoutes(
   routes.get('/referral/status', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -739,7 +759,9 @@ export function createEconomyRoutes(
   routes.post('/referral/claim-kickback', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -772,7 +794,9 @@ export function createEconomyRoutes(
   ) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,

@@ -19,11 +19,14 @@ export interface ConfigStore {
 }
 
 export class SupabaseConfigStore implements ConfigStore {
+  private readonly fetcher: typeof fetch;
   constructor(
     private readonly url: string,
     private readonly serviceKey: string,
-    private readonly fetcher: typeof fetch = fetch,
-  ) {}
+    fetcher: typeof fetch = fetch,
+  ) {
+    this.fetcher = (...args: Parameters<typeof fetch>) => fetcher(...args);
+  }
 
   private async rpc(
     name: string,
@@ -38,7 +41,7 @@ export class SupabaseConfigStore implements ConfigStore {
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(5000),
-      redirect: 'error',
+      redirect: 'manual',
     });
     if (!response.ok) {
       throw new Error(

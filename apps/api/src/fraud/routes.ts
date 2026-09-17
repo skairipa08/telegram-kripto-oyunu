@@ -46,7 +46,9 @@ export function createFraudRoutes(
   routes.get('/admin/fraud/flags', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -92,7 +94,9 @@ export function createFraudRoutes(
   routes.get('/admin/fraud/frozen', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -136,7 +140,9 @@ export function createFraudRoutes(
   routes.post('/admin/fraud/review', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,

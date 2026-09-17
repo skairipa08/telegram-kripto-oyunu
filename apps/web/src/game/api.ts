@@ -1,4 +1,4 @@
-import { ApiError } from '../api/client';
+import { ApiError, getSessionToken, setSessionToken } from '../api/client';
 
 export async function getGameResource<T>(
   path: string,
@@ -6,11 +6,24 @@ export async function getGameResource<T>(
   signal?: AbortSignal,
 ): Promise<T> {
   const timeout = AbortSignal.timeout(8000);
+  const token = getSessionToken();
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+    headers['X-Empire-Session'] = token;
+  }
+
   const response = await fetch(path, {
     credentials: 'same-origin',
-    headers: { Accept: 'application/json' },
+    headers,
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
+
+  const returnedToken = response.headers.get('x-empire-session');
+  if (returnedToken) {
+    setSessionToken(returnedToken);
+  }
+
   if (!response.ok) {
     let code = 'UNAVAILABLE';
     try {

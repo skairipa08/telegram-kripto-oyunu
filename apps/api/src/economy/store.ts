@@ -104,11 +104,14 @@ export interface EconomyStore {
 }
 
 export class SupabaseEconomyStore implements EconomyStore {
+  private readonly fetcher: typeof fetch;
   constructor(
     private readonly url: string,
     private readonly serviceKey: string,
-    private readonly fetcher: typeof fetch = fetch,
-  ) {}
+    fetcher: typeof fetch = fetch,
+  ) {
+    this.fetcher = (...args: Parameters<typeof fetch>) => fetcher(...args);
+  }
 
   private async rpc(
     name: string,
@@ -123,7 +126,7 @@ export class SupabaseEconomyStore implements EconomyStore {
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(5000),
-      redirect: 'error',
+      redirect: 'manual',
     });
 
     if (!response.ok) {

@@ -30,7 +30,9 @@ export function createClanRoutes(
   routes.get('/clans/leaderboard', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -62,7 +64,9 @@ export function createClanRoutes(
   routes.get('/clans/my', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -91,7 +95,9 @@ export function createClanRoutes(
   routes.post('/clans/create', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -140,7 +146,9 @@ export function createClanRoutes(
   routes.post('/clans/join', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,

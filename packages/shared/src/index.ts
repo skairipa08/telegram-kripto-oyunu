@@ -106,7 +106,10 @@ export const playerStateSchema = z.object({
     username: z.string().nullable(),
     language: z.string().nullable(),
   }),
-  session: z.object({ expiresAt: z.iso.datetime() }),
+  session: z.object({
+    expiresAt: z.iso.datetime(),
+    token: z.string().optional(),
+  }),
   game: z.union([
     z.object({ status: z.literal('not_initialized') }),
     z.object({

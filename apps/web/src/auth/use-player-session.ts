@@ -39,9 +39,12 @@ export function usePlayerSession(initData: string | null) {
         if (!canAuthenticate || !initData) throw error;
 
         try {
-          await authenticateTelegram(initData, requestId);
+          const authenticatedState = await authenticateTelegram(
+            initData,
+            requestId,
+          );
           initialAuthenticationAllowed.current = false;
-          return await getPlayerState();
+          return authenticatedState;
         } catch (authError) {
           const recovery =
             authError instanceof ApiError

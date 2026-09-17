@@ -47,7 +47,9 @@ export function createShopRoutes(
   routes.get('/shop', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -90,7 +92,9 @@ export function createShopRoutes(
   routes.post('/shop/invoice', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
@@ -144,7 +148,9 @@ export function createShopRoutes(
   routes.get('/shop/invoices/:id', async (c) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,

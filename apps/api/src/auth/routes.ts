@@ -15,6 +15,13 @@ import { SupabaseAuthStore, type AuthStore, type StoredSession } from './store';
 export const COOKIE = '__Host-empire_session';
 export function sessionCookie(header: string) {
   if (header.length > 8192) return null;
+  const trimmed = header.trim();
+  if (trimmed.startsWith('Bearer ')) {
+    return trimmed.slice(7).trim() || null;
+  }
+  if (trimmed.startsWith('ey') && trimmed.includes('.')) {
+    return trimmed;
+  }
   const values = header
     .split(';')
     .map((v) => v.trim())
@@ -22,12 +29,24 @@ export function sessionCookie(header: string) {
   return values.length === 1 ? values[0]!.slice(COOKIE.length + 1) : null;
 }
 
+export function getAuthHeader(c: { req: { header: (name: string) => string | undefined } }): string | undefined {
+  return (
+    c.req.header('Cookie') ??
+    c.req.header('Authorization') ??
+    c.req.header('X-Empire-Session')
+  );
+}
+
 export async function getCurrentUserSession(
-  header: string | undefined,
+  headerOrContext: string | { req: { header: (name: string) => string | undefined } } | undefined,
   env: Bindings,
   store: AuthStore,
   now: () => number = () => Math.floor(Date.now() / 1000),
 ): Promise<StoredSession | null> {
+  if (!headerOrContext) return null;
+  const header = typeof headerOrContext === 'string'
+    ? headerOrContext
+    : getAuthHeader(headerOrContext);
   if (!header) return null;
   const token = sessionCookie(header);
   if (!token) return null;
@@ -48,11 +67,14 @@ export async function getCurrentUserSession(
   return record;
 }
 
-function state(session: StoredSession): PlayerState {
+function state(session: StoredSession, token?: string): PlayerState {
   return {
     apiVersion: 'v1',
     user: session.user,
-    session: { expiresAt: new Date(session.expiresAt * 1000).toISOString() },
+    session: {
+      expiresAt: new Date(session.expiresAt * 1000).toISOString(),
+      ...(token ? { token } : {}),
+    },
     game: { status: 'not_initialized' },
   };
 }
@@ -101,7 +123,10 @@ export function createAuthRoutes(
               u.hostname.endsWith('.ngrok-free.dev') ||
               u.hostname.endsWith('.ngrok-free.app') ||
               u.hostname.endsWith('.ngrok.io') ||
-              u.hostname.endsWith('.ngrok.app');
+              u.hostname.endsWith('.ngrok.app') ||
+              u.hostname.endsWith('.trycloudflare.com') ||
+              u.hostname.endsWith('.pages.dev') ||
+              u.hostname.endsWith('.vercel.app');
           } catch {
             allowed = false;
           }
@@ -161,7 +186,7 @@ export function createAuthRoutes(
     ) {
       verified = {
         authDate: now(),
-        fingerprint: 'dev-fingerprint',
+        fingerprint: await keyedDigest(`dev.fingerprint:${body.requestId}`, config.secret),
         user: {
           id: 99999999,
           first_name: 'Dev',
@@ -205,21 +230,24 @@ export function createAuthRoutes(
     )
       throw new Error('Invalid stored session');
     const { sid, issuedAt: iat, expiresAt: exp } = result.session;
-    setCookie(c, COOKIE, await signSession({ sid, iat, exp }, config.secret), {
+    const sessionToken = await signSession({ sid, iat, exp }, config.secret);
+    setCookie(c, COOKIE, sessionToken, {
       secure: true,
       httpOnly: true,
       sameSite: 'None',
       path: '/',
       maxAge: Math.max(0, exp - now()),
     });
-    return c.json(state(result.session));
+    c.header('X-Empire-Session', sessionToken);
+    return c.json(state(result.session, sessionToken));
   });
   routes.get('/me/state', async (c) => {
-    if (!sessionCookie(c.req.header('Cookie') ?? ''))
+    const authHeader = getAuthHeader(c);
+    if (!authHeader || !sessionCookie(authHeader))
       return c.json(error('UNAUTHORIZED'), 401);
     if (!authConfig(c.env ?? {})) return c.json(error('AUTH_UNAVAILABLE'), 503);
     const record = await current(
-      c.req.header('Cookie') ?? '',
+      authHeader,
       c.env,
       makeStore(c.env),
     );
@@ -234,7 +262,8 @@ export function createAuthRoutes(
       return c.json(error('INVALID_REQUEST'), 400);
     }
     const store = makeStore(c.env);
-    const record = await current(c.req.header('Cookie') ?? '', c.env, store);
+    const authHeader = getAuthHeader(c);
+    const record = await current(authHeader ?? '', c.env, store);
     if (record) await store.revoke(record.sid);
     setCookie(c, COOKIE, '', {
       secure: true,
@@ -245,6 +274,9 @@ export function createAuthRoutes(
     });
     return c.body(null, 204);
   });
-  routes.onError((_err, c) => c.json(error('AUTH_UNAVAILABLE'), 503));
+  routes.onError((err, c) => {
+    console.error('[AUTH ON_ERROR]:', err);
+    return c.json(error('AUTH_UNAVAILABLE'), 503);
+  });
   return routes;
 }

@@ -2,7 +2,10 @@ import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App } from './app';
+import { setupFetchInterceptor } from './api/auth-fetch';
 import './styles.css';
+
+setupFetchInterceptor();
 
 const queryClient = new QueryClient({
   defaultOptions: {

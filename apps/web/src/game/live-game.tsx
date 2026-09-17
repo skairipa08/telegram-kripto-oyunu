@@ -65,7 +65,7 @@ import { LeaderboardScreen } from '../screens/leaderboard-screen';
 import { ShopScreen } from '../screens/shop-screen';
 import { AdminScreen } from '../screens/admin-screen';
 import { isDesignatedAdmin } from '../shell/admin-gate';
-import { ApiError } from '../api/client';
+import { ApiError, getSessionToken, setSessionToken } from '../api/client';
 
 async function postGameResource<T>(
   path: string,
@@ -73,16 +73,28 @@ async function postGameResource<T>(
   schema: { parse: (value: unknown) => T },
 ): Promise<T> {
   const timeout = AbortSignal.timeout(8000);
+  const token = getSessionToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+    headers['X-Empire-Session'] = token;
+  }
+
   const response = await fetch(path, {
     method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
+    credentials: 'include',
+    headers,
     body: JSON.stringify(body),
     signal: timeout,
   });
+
+  const returnedToken = response.headers.get('x-empire-session');
+  if (returnedToken) {
+    setSessionToken(returnedToken);
+  }
 
   if (!response.ok) {
     let code = 'UNAVAILABLE';

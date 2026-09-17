@@ -53,7 +53,9 @@ export function createAdminRoutes(
   const checkSuperadmin = async (c: Context<{ Bindings: Bindings }>) => {
     const authStore = makeAuthStore(c.env);
     const session = await getCurrentUserSession(
-      c.req.header('Cookie'),
+      c.req.header('Cookie') ??
+        c.req.header('Authorization') ??
+        c.req.header('X-Empire-Session'),
       c.env,
       authStore,
       now,
