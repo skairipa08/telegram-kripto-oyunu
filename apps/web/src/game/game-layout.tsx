@@ -3,15 +3,8 @@ import type { ReactNode } from 'react';
 import type { GameTab } from './types';
 import { Icon } from '../components/icons';
 import { AnimatedCounter } from '../components/animated-counter';
-
-const tabs: { key: GameTab; label: string; short: string }[] = [
-  { key: 'empire', label: 'İmparatorluk', short: 'İmparatorluk' },
-  { key: 'arcade', label: 'Mini Oyunlar', short: 'Oyunlar' },
-  { key: 'missions', label: 'Görevler', short: 'Görevler' },
-  { key: 'friends', label: 'Arkadaşlar', short: 'Arkadaşlar' },
-  { key: 'leaderboard', label: 'Sıralama', short: 'Sıralama' },
-  { key: 'shop', label: 'Mağaza', short: 'Mağaza' },
-];
+import { useI18n } from '../i18n/i18n-context';
+import { LanguageSelector } from '../i18n/language-selector';
 
 export function GameLayout({
   tab,
@@ -42,6 +35,17 @@ export function GameLayout({
   isAdmin?: boolean;
   onOpenAdmin?: () => void;
 }) {
+  const { t } = useI18n();
+
+  const tabs: { key: GameTab; label: string; short: string }[] = [
+    { key: 'empire', label: t('nav_empire'), short: t('nav_empire') },
+    { key: 'arcade', label: t('nav_arcade'), short: t('nav_arcade') },
+    { key: 'missions', label: t('nav_missions'), short: t('nav_missions') },
+    { key: 'friends', label: t('nav_friends'), short: t('nav_friends') },
+    { key: 'leaderboard', label: t('nav_leaderboard'), short: t('nav_leaderboard') },
+    { key: 'shop', label: t('nav_shop'), short: t('nav_shop') },
+  ];
+
   const [accountOpen, setAccountOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -82,7 +86,7 @@ export function GameLayout({
             EMPIRE<small>BUILD YOUR LEGACY</small>
           </span>
         </a>
-        <p className="rail-label">OYUN ALANIN</p>
+        <p className="rail-label">{t('header_play_zone')}</p>
         <nav aria-label="Ana menü" className="desktop-navigation">
           {tabs.map((item) => (
             <button
@@ -104,11 +108,14 @@ export function GameLayout({
               aria-label="Yönetici Paneli"
             >
               <span aria-hidden="true">🛡️</span>
-              <span>Yönetici</span>
+              <span>{t('nav_admin')}</span>
             </button>
           )}
         </nav>
         <div className="rail-bottom">
+          <div style={{ marginBottom: '10px' }}>
+            <LanguageSelector />
+          </div>
           <div className="rail-quote">
             <span aria-hidden="true">✧</span>
             <p>
@@ -136,13 +143,13 @@ export function GameLayout({
             EMPIRE<span>.</span>
           </div>
           <div className="topbar-breadcrumb">
-            OYUN ALANIN <span>/</span> {tabs.find((t) => t.key === tab)?.label}
+            {t('header_play_zone')} <span>/</span> {tabs.find((t) => t.key === tab)?.label}
           </div>
           <div className="wallet-strip" aria-label="Bakiyeler">
             <span className="wallet-pill wallet-cash">
               <i aria-hidden="true" className="cash-dot" />{' '}
               <AnimatedCounter value={cash} compact showSparksOnIncrease />
-              <small>Nakit</small>
+              <small>{t('header_cash')}</small>
             </span>
             <span className="wallet-pill wallet-points">
               <i aria-hidden="true" className="point-dot" />{' '}
@@ -151,7 +158,7 @@ export function GameLayout({
                 compact
                 showSparksOnIncrease={false}
               />
-              <small>SP</small>
+              <small>{t('header_season_points')}</small>
             </span>
             {totalLevel > 0 && (
               <span
@@ -162,10 +169,11 @@ export function GameLayout({
                   👑
                 </i>{' '}
                 <strong className="level-text">Lv.{totalLevel}</strong>
-                <small>Seviye</small>
+                <small>{t('header_level')}</small>
               </span>
             )}
           </div>
+          <LanguageSelector />
           {isAdmin && onOpenAdmin && (
             <button
               type="button"
@@ -280,11 +288,11 @@ export function GameLayout({
         className="account-dialog"
       >
         <div className="dialog-title">
-          <h2>Hesabın</h2>
+          <h2>{t('header_account')}</h2>
           <button
             className="icon-button"
             onClick={() => setAccountOpen(false)}
-            aria-label="Kapat"
+            aria-label={t('btn_close')}
           >
             ×
           </button>
@@ -294,7 +302,7 @@ export function GameLayout({
         <p className="muted">
           {preview
             ? 'Bu oyuncu yalnız tasarım önizlemesine aittir.'
-            : 'Telegram hesabınla bağlısın.'}
+            : `${t('header_connected_as')} Telegram`}
         </p>
         {isAdmin && onOpenAdmin && (
           <button
@@ -306,7 +314,7 @@ export function GameLayout({
               onOpenAdmin();
             }}
           >
-            🛡️ Yönetici Paneli
+            🛡️ {t('nav_admin')}
           </button>
         )}
         {onLogout && (
@@ -315,7 +323,7 @@ export function GameLayout({
             onClick={onLogout}
             disabled={isLoggingOut}
           >
-            {isLoggingOut ? 'Çıkılıyor…' : 'Çıkış yap'}
+            {isLoggingOut ? t('header_logging_out') : t('header_logout')}
           </button>
         )}
         {logoutFailed && <p role="alert">Çıkış tamamlanamadı. Tekrar dene.</p>}

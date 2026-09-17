@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App } from './app';
 import { setupFetchInterceptor } from './api/auth-fetch';
+import { I18nProvider } from './i18n/i18n-context';
 import './styles.css';
 
 setupFetchInterceptor();
@@ -26,16 +27,19 @@ const Preview = import.meta.env.DEV
   : null;
 const showPreview =
   import.meta.env.DEV && window.location.pathname === '/design-preview';
+
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      {showPreview && Preview ? (
-        <Suspense fallback={<p role="status">Tasarım yükleniyor…</p>}>
-          <Preview />
-        </Suspense>
-      ) : (
-        <App />
-      )}
+      <I18nProvider>
+        {showPreview && Preview ? (
+          <Suspense fallback={<p role="status">Tasarım yükleniyor…</p>}>
+            <Preview />
+          </Suspense>
+        ) : (
+          <App />
+        )}
+      </I18nProvider>
     </QueryClientProvider>
   </React.StrictMode>,
 );
