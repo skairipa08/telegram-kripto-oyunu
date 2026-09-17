@@ -23,6 +23,10 @@ import type { ClanStore } from './clans/store';
 import { createClanRoutes } from './clans/routes';
 import type { ComboStore } from './combo/store';
 import { createComboRoutes } from './combo/routes';
+import { cors } from 'hono/cors';
+import { secureHeaders } from 'hono/secure-headers';
+import { bodyLimit } from 'hono/body-limit';
+import { createSlidingWindowRateLimiter } from './security/rate-limiter';
 
 const healthHandler = (c: { json: (data: HealthResponse) => Response }) =>
   c.json({
@@ -165,6 +169,75 @@ export function createApp(
           )
         : defaultAdminStore);
 
+  // 1. Security Headers (nosniff, clickjacking, XSS, etc.)
+  app.use('*', secureHeaders());
+
+  // 2. CORS configuration for Telegram Mini App & API clients
+  app.use(
+    '*',
+    cors({
+      origin: (origin) => origin || '*',
+      allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Empire-Session',
+        'X-Telegram-Bot-Api-Secret-Token',
+        'X-Dev-Bypass',
+        'X-Bypass-Rate-Limit',
+        'Accept',
+        'Origin',
+      ],
+      exposeHeaders: [
+        'X-RateLimit-Limit',
+        'X-RateLimit-Remaining',
+        'X-RateLimit-Reset',
+        'Retry-After',
+      ],
+      credentials: true,
+    }),
+  );
+
+  // 3. Payload size protection (max 256KB to block memory exhaustion attacks)
+  app.use(
+    '*',
+    bodyLimit({
+      maxSize: 256 * 1024,
+      onError: (c) =>
+        c.json(
+          {
+            apiVersion: 'v1',
+            error: {
+              code: 'PAYLOAD_TOO_LARGE',
+              message: 'İstek gövdesi izin verilen boyutu aşıyor.',
+            },
+          },
+          413,
+        ),
+    }),
+  );
+
+  // 4. Global sliding-window rate limiter (180 req/min per client/IP)
+  app.use('*', createSlidingWindowRateLimiter({ windowMs: 60_000, max: 180 }));
+
+  // 5. Strict rate limiter on sensitive mutation endpoints (30 req/min)
+  app.use(
+    '/clans/create',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 30 }),
+  );
+  app.use(
+    '/api/clans/create',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 30 }),
+  );
+  app.use(
+    '/shop/invoice',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 30 }),
+  );
+  app.use(
+    '/api/shop/invoice',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 30 }),
+  );
+
   app.get('/health', healthHandler);
   app.get('/api/health', healthHandler);
 
@@ -302,6 +375,25 @@ export function createApp(
   const combo = createComboRoutes(factories.makeComboStore, getAuthStore, now);
   app.route('/', combo);
   app.route('/api', combo);
+
+  app.onError((err, c) => {
+    if (err instanceof SyntaxError || (err as { status?: number }).status === 400) {
+      return c.json(
+        {
+          apiVersion: 'v1',
+          error: { code: 'BAD_REQUEST', message: 'Geçersiz istek içeriği.' },
+        },
+        400,
+      );
+    }
+    return c.json(
+      {
+        apiVersion: 'v1',
+        error: { code: 'INTERNAL_ERROR' },
+      },
+      500,
+    );
+  });
 
   app.notFound((c) =>
     c.json({ apiVersion: 'v1', error: { code: 'NOT_FOUND' } }, 404),
