@@ -193,25 +193,25 @@ export function createApp(
       const config = authConfig(c.env);
       if (config) {
         const { sid, issuedAt: iat, expiresAt: exp } = loginRes.session;
-        const sessionToken = await signSession({ sid, iat, exp }, config.secret);
-        setCookie(
-          c,
-          COOKIE,
-          sessionToken,
-          {
-            secure: true,
-            httpOnly: true,
-            sameSite: 'None',
-            path: '/',
-            maxAge: Math.max(0, exp - Math.floor(Date.now() / 1000)),
-          },
+        const sessionToken = await signSession(
+          { sid, iat, exp },
+          config.secret,
         );
+        setCookie(c, COOKIE, sessionToken, {
+          secure: true,
+          httpOnly: true,
+          sameSite: 'None',
+          path: '/',
+          maxAge: Math.max(0, exp - Math.floor(Date.now() / 1000)),
+        });
         c.header('X-Empire-Session', sessionToken);
         return c.json({
           apiVersion: 'v1',
           user: loginRes.session.user,
           session: {
-            expiresAt: new Date(loginRes.session.expiresAt * 1000).toISOString(),
+            expiresAt: new Date(
+              loginRes.session.expiresAt * 1000,
+            ).toISOString(),
             token: sessionToken,
           },
           game: { status: 'not_initialized' },

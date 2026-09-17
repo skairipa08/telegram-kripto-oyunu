@@ -29,7 +29,9 @@ export function sessionCookie(header: string) {
   return values.length === 1 ? values[0]!.slice(COOKIE.length + 1) : null;
 }
 
-export function getAuthHeader(c: { req: { header: (name: string) => string | undefined } }): string | undefined {
+export function getAuthHeader(c: {
+  req: { header: (name: string) => string | undefined };
+}): string | undefined {
   return (
     c.req.header('Cookie') ??
     c.req.header('Authorization') ??
@@ -38,15 +40,19 @@ export function getAuthHeader(c: { req: { header: (name: string) => string | und
 }
 
 export async function getCurrentUserSession(
-  headerOrContext: string | { req: { header: (name: string) => string | undefined } } | undefined,
+  headerOrContext:
+    | string
+    | { req: { header: (name: string) => string | undefined } }
+    | undefined,
   env: Bindings,
   store: AuthStore,
   now: () => number = () => Math.floor(Date.now() / 1000),
 ): Promise<StoredSession | null> {
   if (!headerOrContext) return null;
-  const header = typeof headerOrContext === 'string'
-    ? headerOrContext
-    : getAuthHeader(headerOrContext);
+  const header =
+    typeof headerOrContext === 'string'
+      ? headerOrContext
+      : getAuthHeader(headerOrContext);
   if (!header) return null;
   const token = sessionCookie(header);
   if (!token) return null;
@@ -186,7 +192,10 @@ export function createAuthRoutes(
     ) {
       verified = {
         authDate: now(),
-        fingerprint: await keyedDigest(`dev.fingerprint:${body.requestId}`, config.secret),
+        fingerprint: await keyedDigest(
+          `dev.fingerprint:${body.requestId}`,
+          config.secret,
+        ),
         user: {
           id: 99999999,
           first_name: 'Dev',
@@ -246,11 +255,7 @@ export function createAuthRoutes(
     if (!authHeader || !sessionCookie(authHeader))
       return c.json(error('UNAUTHORIZED'), 401);
     if (!authConfig(c.env ?? {})) return c.json(error('AUTH_UNAVAILABLE'), 503);
-    const record = await current(
-      authHeader,
-      c.env,
-      makeStore(c.env),
-    );
+    const record = await current(authHeader, c.env, makeStore(c.env));
     return record ? c.json(state(record)) : c.json(error('UNAUTHORIZED'), 401);
   });
   routes.post('/auth/logout', async (c) => {

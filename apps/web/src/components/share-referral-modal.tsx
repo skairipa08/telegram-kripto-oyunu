@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './arcade.css';
 
 export interface ShareReferralModalProps {
@@ -37,6 +38,29 @@ export function ShareReferralModal({
   const [selectedTemplate, setSelectedTemplate] = useState<string>('starter');
   const [copied, setCopied] = useState(false);
 
+  // Lock background scrolling when modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, [isOpen]);
+
+  // Handle escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const currentTemplate =
@@ -65,7 +89,7 @@ export function ShareReferralModal({
     }
   };
 
-  return (
+  const modalContent = (
     <div
       role="dialog"
       aria-modal="true"
@@ -73,13 +97,21 @@ export function ShareReferralModal({
       style={{
         position: 'fixed',
         inset: 0,
+        width: '100vw',
+        height: '100vh',
+        minHeight: '100dvh',
         backgroundColor: 'rgba(5, 10, 18, 0.85)',
         backdropFilter: 'blur(8px)',
-        zIndex: 9999,
+        WebkitBackdropFilter: 'blur(8px)',
+        zIndex: 999999,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '16px',
+        boxSizing: 'border-box',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -88,8 +120,12 @@ export function ShareReferralModal({
       <div
         className="panel"
         style={{
+          position: 'relative',
           width: '100%',
           maxWidth: '420px',
+          maxHeight: 'calc(100dvh - 32px)',
+          overflowY: 'auto',
+          margin: 'auto',
           background: 'linear-gradient(180deg, #162032 0%, #0d1422 100%)',
           border: '1px solid rgba(241, 201, 154, 0.35)',
           borderRadius: '16px',
@@ -303,4 +339,10 @@ export function ShareReferralModal({
       </div>
     </div>
   );
+
+  if (typeof document === 'undefined') {
+    return modalContent;
+  }
+
+  return createPortal(modalContent, document.body);
 }

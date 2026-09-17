@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface CelebrationModalProps {
   isOpen: boolean;
@@ -155,6 +156,19 @@ export function CelebrationModal({
     };
   }, [isOpen, startConfetti]);
 
+  // Lock background scrolling when modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, [isOpen]);
+
   // Handle escape key
   useEffect(() => {
     if (!isOpen) return;
@@ -167,7 +181,7 @@ export function CelebrationModal({
 
   if (!isOpen) return null;
 
-  return (
+  const modalMarkup = (
     <div
       role="dialog"
       aria-modal="true"
@@ -176,14 +190,21 @@ export function CelebrationModal({
       style={{
         position: 'fixed',
         inset: 0,
+        width: '100vw',
+        height: '100vh',
+        minHeight: '100dvh',
         backgroundColor: 'rgba(5, 10, 18, 0.88)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        zIndex: 10000,
+        zIndex: 999999,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '16px',
+        boxSizing: 'border-box',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
         animation: 'celebrationBackdropFadeIn 0.25s ease-out forwards',
       }}
       onClick={(e) => {
@@ -196,6 +217,8 @@ export function CelebrationModal({
         style={{
           position: 'absolute',
           inset: 0,
+          width: '100%',
+          height: '100%',
           pointerEvents: 'none',
           zIndex: 1,
         }}
@@ -209,6 +232,9 @@ export function CelebrationModal({
           zIndex: 2,
           width: '100%',
           maxWidth: '380px',
+          maxHeight: 'calc(100dvh - 32px)',
+          overflowY: 'auto',
+          margin: 'auto',
           background: 'linear-gradient(180deg, #182438 0%, #0d1624 100%)',
           border: '2px solid rgba(241, 201, 154, 0.5)',
           borderRadius: '24px',
@@ -410,4 +436,10 @@ export function CelebrationModal({
       `}</style>
     </div>
   );
+
+  if (typeof document === 'undefined') {
+    return modalMarkup;
+  }
+
+  return createPortal(modalMarkup, document.body);
 }

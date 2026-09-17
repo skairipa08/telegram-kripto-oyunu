@@ -30,21 +30,23 @@ export function authConfig(env: Bindings) {
     devBypass: (env as Record<string, unknown>).DEV_AUTH_BYPASS,
   });
 
-  if (
-    !bot ||
-    !secret ||
-    secretLen < 32 ||
-    !origin
-  ) {
-    console.log('[DEBUG authConfig FAIL 0] basic fields check failed!', { hasBot: !!bot, hasSecret: !!secret, secretLen, origin });
+  if (!bot || !secret || secretLen < 32 || !origin) {
+    console.log('[DEBUG authConfig FAIL 0] basic fields check failed!', {
+      hasBot: !!bot,
+      hasSecret: !!secret,
+      secretLen,
+      origin,
+    });
     return null;
   }
 
   const isDev =
-    (env as Record<string, unknown>).DEV_AUTH_BYPASS === 'true' || !url || !env.AUTH_RATE_LIMIT;
-  const limiter =
-    env.AUTH_RATE_LIMIT ??
-    ({ limit: async () => ({ success: true }) });
+    (env as Record<string, unknown>).DEV_AUTH_BYPASS === 'true' ||
+    !url ||
+    !env.AUTH_RATE_LIMIT;
+  const limiter = env.AUTH_RATE_LIMIT ?? {
+    limit: async () => ({ success: true }),
+  };
   if (!limiter) return null;
 
   try {
@@ -66,7 +68,12 @@ export function authConfig(env: Bindings) {
       app.username ||
       app.password
     ) {
-      console.log('[DEBUG authConfig FAIL 1] app check', { protocol: app.protocol, isLocal, appOrigin: app.origin, origin });
+      console.log('[DEBUG authConfig FAIL 1] app check', {
+        protocol: app.protocol,
+        isLocal,
+        appOrigin: app.origin,
+        origin,
+      });
       return null;
     }
 
@@ -78,7 +85,11 @@ export function authConfig(env: Bindings) {
         database.username ||
         database.password
       ) {
-        console.log('[DEBUG authConfig FAIL 2] db check', { dbProtocol: database.protocol, dbOrigin: database.origin, url });
+        console.log('[DEBUG authConfig FAIL 2] db check', {
+          dbProtocol: database.protocol,
+          dbOrigin: database.origin,
+          url,
+        });
         return null;
       }
     } else if (!isDev) {

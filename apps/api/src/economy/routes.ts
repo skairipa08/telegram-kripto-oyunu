@@ -117,7 +117,9 @@ export function createEconomyRoutes(
         baseIncome: b.baseIncome,
         upgradeCost,
         productionPerSecond: currentProd,
-        lastClaimAt: new Date(String(b.lastClaimAt ?? Date.now())).toISOString(),
+        lastClaimAt: new Date(
+          String(b.lastClaimAt ?? Date.now()),
+        ).toISOString(),
         paybackPeriodSeconds: payback,
         marginalRoi,
         nextProductionPerSecond: nextProd,

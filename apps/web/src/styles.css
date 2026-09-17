@@ -349,7 +349,6 @@ svg {
 .screen-transition-pane {
   width: 100%;
   animation: screenSlideFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
-  will-change: transform, opacity;
 }
 
 .animated-counter-root {
