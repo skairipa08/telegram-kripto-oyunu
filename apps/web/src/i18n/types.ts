@@ -1,4 +1,4 @@
-export type SupportedLanguage = 'en' | 'tr' | 'ru' | 'id' | 'vi' | 'hi' | 'fa' | 'uz';
+export type SupportedLanguage = 'en' | 'tr' | 'ru' | 'es' | 'id' | 'vi' | 'hi' | 'fa' | 'uz';
 
 export interface LanguageInfo {
   code: SupportedLanguage;
@@ -9,6 +9,7 @@ export interface LanguageInfo {
 
 export const SUPPORTED_LANGUAGES: LanguageInfo[] = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
+  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
   { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷' },
   { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
   { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', flag: '🇮🇩' },

@@ -13,6 +13,7 @@ import type {
 } from './types';
 import { SUPPORTED_LANGUAGES } from './types';
 import { en } from './translations/en';
+import { es } from './translations/es';
 import { tr } from './translations/tr';
 import { ru } from './translations/ru';
 import { id } from './translations/id';
@@ -25,6 +26,7 @@ const STORAGE_KEY = 'empire_language';
 
 const VALID_CODES: Set<SupportedLanguage> = new Set([
   'en',
+  'es',
   'tr',
   'ru',
   'id',
@@ -36,6 +38,7 @@ const VALID_CODES: Set<SupportedLanguage> = new Set([
 
 const dictionaries: Record<SupportedLanguage, TranslationKeys> = {
   en,
+  es,
   tr,
   ru,
   id,

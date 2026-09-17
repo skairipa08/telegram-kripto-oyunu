@@ -1,5 +1,6 @@
 ﻿import { describe, it, expect } from 'vitest';
 import { en } from './translations/en';
+import { es } from './translations/es';
 import { tr } from './translations/tr';
 import { ru } from './translations/ru';
 import { id } from './translations/id';
@@ -12,6 +13,7 @@ import { SUPPORTED_LANGUAGES, type SupportedLanguage, type TranslationKeys } fro
 describe('i18n localization dictionaries', () => {
   const dicts: Record<SupportedLanguage, TranslationKeys> = {
     en,
+    es,
     tr,
     ru,
     id,
@@ -21,9 +23,10 @@ describe('i18n localization dictionaries', () => {
     uz,
   };
 
-  it('supports all 8 target languages with flags and native names', () => {
+  it('supports all 9 target languages with flags and native names', () => {
     expect(SUPPORTED_LANGUAGES.map((l) => l.code)).toEqual([
       'en',
+      'es',
       'tr',
       'ru',
       'id',
@@ -34,7 +37,7 @@ describe('i18n localization dictionaries', () => {
     ]);
   });
 
-  it('ensures all translation keys match exactly across all 8 languages', () => {
+  it('ensures all translation keys match exactly across all 9 languages', () => {
     const enKeys = Object.keys(en).sort();
     for (const [code, dict] of Object.entries(dicts)) {
       const keys = Object.keys(dict).sort();
@@ -42,7 +45,7 @@ describe('i18n localization dictionaries', () => {
     }
   });
 
-  it('has non-empty values for every key in all 8 languages', () => {
+  it('has non-empty values for every key in all 9 languages', () => {
     for (const [code, dict] of Object.entries(dicts)) {
       for (const [key, value] of Object.entries(dict)) {
         expect(value, `${code} missing key ${key}`).toBeTruthy();
