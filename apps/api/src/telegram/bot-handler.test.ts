@@ -168,5 +168,105 @@ describe('Telegram Bot Handler & MVP Integration', () => {
         0,
       );
     });
+
+    it('sends sendPhoto HTTP POST request when withPhoto is true and photoUrl exists', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ ok: true, result: { message_id: 43 } }),
+      });
+
+      const result = await handleTelegramBotMessage({
+        token: '123456:FAKE_TELEGRAM_TOKEN',
+        appOrigin: 'https://empire.example',
+        chatId: 987654321,
+        text: '/start',
+        username: 'JohnDoe',
+        firstName: 'John',
+        languageCode: 'en',
+        withPhoto: true,
+        fetcher: mockFetch as unknown as typeof fetch,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.action).toBe('start');
+      expect(result.method).toBe('sendPhoto');
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const [calledUrl, calledInit] = mockFetch.mock.calls[0] as [
+        string,
+        RequestInit,
+      ];
+      expect(calledUrl).toBe(
+        'https://api.telegram.org/bot123456:FAKE_TELEGRAM_TOKEN/sendPhoto',
+      );
+      const sentPayload = JSON.parse(String(calledInit.body)) as {
+        chat_id: number;
+        photo: string;
+        caption: string;
+        parse_mode: string;
+      };
+      expect(sentPayload.photo).toBe('https://empire.example/assets/empire-coin.png');
+      expect(sentPayload.caption).toContain('STARTER BONUS: +5,000 CASH!');
+    });
+
+    it('falls back to sendMessage if sendPhoto returns non-ok response', async () => {
+      const mockFetch = vi
+        .fn()
+        // First call: sendPhoto fails
+        .mockResolvedValueOnce({ ok: false, status: 400 })
+        // Second call: sendMessage succeeds
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ ok: true, result: { message_id: 44 } }),
+        });
+
+      const result = await handleTelegramBotMessage({
+        token: '123456:FAKE_TELEGRAM_TOKEN',
+        appOrigin: 'https://empire.example',
+        chatId: 987654321,
+        text: '/start',
+        withPhoto: true,
+        fetcher: mockFetch as unknown as typeof fetch,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.method).toBe('sendMessage');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch.mock.calls[0]?.[0]).toBe(
+        'https://api.telegram.org/bot123456:FAKE_TELEGRAM_TOKEN/sendPhoto',
+      );
+      expect(mockFetch.mock.calls[1]?.[0]).toBe(
+        'https://api.telegram.org/bot123456:FAKE_TELEGRAM_TOKEN/sendMessage',
+      );
+    });
+
+    it('localizes /start response to English, Russian, and Spanish with +5000 Cash bonus', () => {
+      const en = buildBotResponse({
+        text: '/start',
+        firstName: 'Alex',
+        appOrigin: 'https://empire.example',
+        languageCode: 'en-US',
+      });
+      expect(en.replyText).toContain('Welcome to Project Empire, Alex!');
+      expect(en.replyText).toContain('STARTER BONUS: +5,000 CASH!');
+      expect(en.photoUrl).toBe('https://empire.example/assets/empire-coin.png');
+
+      const ru = buildBotResponse({
+        text: '/start',
+        firstName: 'Ivan',
+        appOrigin: 'https://empire.example',
+        languageCode: 'ru',
+      });
+      expect(ru.replyText).toContain('Добро пожаловать в Project Empire, Ivan!');
+      expect(ru.replyText).toContain('СТАРТОВЫЙ БОНУС: +5 000 НАЛИЧНЫХ!');
+
+      const es = buildBotResponse({
+        text: '/start',
+        firstName: 'Carlos',
+        appOrigin: 'https://empire.example',
+        languageCode: 'es',
+      });
+      expect(es.replyText).toContain('¡Bienvenido a Project Empire, Carlos!');
+      expect(es.replyText).toContain('¡BONO DE BIENVENIDA: +5.000 CASH!');
+    });
   });
 });

@@ -276,13 +276,19 @@ export function createShopRoutes(
     ) {
       const msg = payloadObj.message as {
         chat?: { id: number | string };
-        from?: { id: number | string; username?: string; first_name?: string };
+        from?: {
+          id: number | string;
+          username?: string;
+          first_name?: string;
+          language_code?: string;
+        };
         text?: string;
       };
       const chatId = msg.chat?.id;
       const text = msg.text?.trim() || '';
       const username = msg.from?.username;
       const firstName = msg.from?.first_name || 'Girişimci';
+      const languageCode = msg.from?.language_code;
 
       if (chatId && c.env.TELEGRAM_BOT_TOKEN) {
         await handleTelegramBotMessage({
@@ -292,6 +298,8 @@ export function createShopRoutes(
           text,
           username,
           firstName,
+          languageCode,
+          withPhoto: true,
         });
       }
 

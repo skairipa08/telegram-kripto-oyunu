@@ -125,19 +125,39 @@ async function main() {
             `[${new Date().toLocaleTimeString()}] 💬 Mesaj: "${text}" | Gönderen: ${firstName} (@${username || 'yok'}) ${isAdmin ? '[🛡️ ADMIN]' : ''}`,
           );
 
-          const { replyText, replyMarkup } = buildBotResponse({
+          const { replyText, replyMarkup, photoUrl } = buildBotResponse({
             text,
             firstName,
             username,
             appOrigin,
+            languageCode: from?.language_code,
           });
 
-          await apiRequest('sendMessage', {
-            chat_id: chatId,
-            text: replyText,
-            parse_mode: 'Markdown',
-            reply_markup: replyMarkup,
-          });
+          if (photoUrl && text.startsWith('/start')) {
+            try {
+              await apiRequest('sendPhoto', {
+                chat_id: chatId,
+                photo: photoUrl,
+                caption: replyText,
+                parse_mode: 'Markdown',
+                reply_markup: replyMarkup,
+              });
+            } catch {
+              await apiRequest('sendMessage', {
+                chat_id: chatId,
+                text: replyText,
+                parse_mode: 'Markdown',
+                reply_markup: replyMarkup,
+              });
+            }
+          } else {
+            await apiRequest('sendMessage', {
+              chat_id: chatId,
+              text: replyText,
+              parse_mode: 'Markdown',
+              reply_markup: replyMarkup,
+            });
+          }
 
           console.log(
             `[${new Date().toLocaleTimeString()}] ✅ Yanıt iletildi -> Chat ID: ${chatId}`,
