@@ -23,7 +23,9 @@ export const playerBusinessSchema = z.object({
   baseIncome: z.number().positive(),
   upgradeCost: z.number().positive(),
   productionPerSecond: z.number().nonnegative(),
-  lastClaimAt: z.iso.datetime(),
+  lastClaimAt: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'Invalid ISO datetime',
+  }),
   paybackPeriodSeconds: z
     .number()
     .nonnegative()
