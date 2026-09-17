@@ -13,6 +13,7 @@ import {
 } from '@empire/shared';
 import { formatNumber } from '../game/ui';
 import { ShareReferralModal } from '../components/share-referral-modal';
+import { getSessionToken } from '../api/client';
 import './social.css';
 
 export interface ClansScreenProps {
@@ -59,9 +60,15 @@ export function ClansScreen({
   const leaderboardQuery = useQuery({
     queryKey: ['clans-leaderboard'],
     queryFn: async () => {
+      const token = getSessionToken();
+      const headers: Record<string, string> = { Accept: 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Empire-Session'] = token;
+      }
       const res = await fetch('/api/clans/leaderboard', {
-        credentials: 'same-origin',
-        headers: { Accept: 'application/json' },
+        credentials: 'include',
+        headers,
       });
       if (!res.ok) throw new Error('Karteller listesi alınamadı');
       const data = await res.json();
@@ -74,9 +81,15 @@ export function ClansScreen({
   const myClanQuery = useQuery({
     queryKey: ['clans-my'],
     queryFn: async () => {
+      const token = getSessionToken();
+      const headers: Record<string, string> = { Accept: 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Empire-Session'] = token;
+      }
       const res = await fetch('/api/clans/my', {
-        credentials: 'same-origin',
-        headers: { Accept: 'application/json' },
+        credentials: 'include',
+        headers,
       });
       if (!res.ok) throw new Error('Kartel bilgisi alınamadı');
       const data = await res.json();
@@ -90,14 +103,20 @@ export function ClansScreen({
   // Create Clan Mutation
   const createClanMutation = useMutation({
     mutationFn: async () => {
+      const token = getSessionToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Origin: window.location.origin,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Empire-Session'] = token;
+      }
       const res = await fetch('/api/clans/create', {
         method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Origin: window.location.origin,
-        },
+        credentials: 'include',
+        headers,
         body: JSON.stringify({
           name: createName.trim(),
           tag: createTag.trim().toUpperCase(),
@@ -127,6 +146,7 @@ export function ClansScreen({
       });
       queryClient.invalidateQueries({ queryKey: ['clans-my'] });
       queryClient.invalidateQueries({ queryKey: ['clans-leaderboard'] });
+      queryClient.invalidateQueries({ queryKey: ['game-design'] });
       queryClient.invalidateQueries({ queryKey: ['economy'] });
       if (data.newCash && onCashUpdated) onCashUpdated(data.newCash);
       setActiveSubTab('my_clan');
@@ -139,14 +159,20 @@ export function ClansScreen({
   // Join Clan Mutation
   const joinClanMutation = useMutation({
     mutationFn: async (clanId: string) => {
+      const token = getSessionToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Origin: window.location.origin,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Empire-Session'] = token;
+      }
       const res = await fetch('/api/clans/join', {
         method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Origin: window.location.origin,
-        },
+        credentials: 'include',
+        headers,
         body: JSON.stringify({ clanId }),
       });
 

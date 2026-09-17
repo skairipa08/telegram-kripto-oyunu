@@ -28,6 +28,8 @@ export interface TelegramWebApp {
   readonly contentSafeAreaInset?: TelegramSafeAreaInset;
   ready(): void;
   expand(): void;
+  disableVerticalSwipes?(): void;
+  enableClosingConfirmation?(): void;
   onEvent(event: TelegramWebAppEvent, callback: () => void): void;
   offEvent(event: TelegramWebAppEvent, callback: () => void): void;
   openInvoice?(

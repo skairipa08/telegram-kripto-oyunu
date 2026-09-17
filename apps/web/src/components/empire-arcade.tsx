@@ -218,6 +218,7 @@ export function EmpireArcade({
         {game === 'tap' && (
           <NotcoinTapGame
             preview={preview}
+            playerCash={playerCash}
             {...(onPreviewReward ? { onReward: onPreviewReward } : {})}
           />
         )}
@@ -231,6 +232,8 @@ export function EmpireArcade({
         {game === 'crash' && (
           <CryptoCrashGame
             preview={preview}
+            playerCash={playerCash}
+            {...(onCashUpdated ? { onCashUpdated } : {})}
             {...(onPreviewReward ? { onReward: onPreviewReward } : {})}
           />
         )}
@@ -253,6 +256,7 @@ export function EmpireArcade({
             referralLink={referralLink ?? ''}
             clanTag={clanTag}
             clanName={clanName}
+            {...(onCashUpdated ? { onRewardClaimed: onCashUpdated } : {})}
           />
         )}
         {game === 'cipher' && (

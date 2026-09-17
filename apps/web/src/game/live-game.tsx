@@ -803,6 +803,21 @@ export function GameShell({
           {tab === 'arcade' && (
             <ArcadeScreen
               playerCash={economy.data?.currentCash ?? 10000}
+              onReward={(amount) => {
+                queryClient.setQueryData(
+                  ['game-design', actor, 'economy'],
+                  (old: EconomyRoiResponse | undefined) => {
+                    if (!old) return old;
+                    return {
+                      ...old,
+                      currentCash: Math.max(
+                        0,
+                        Math.floor(old.currentCash + amount),
+                      ),
+                    };
+                  },
+                );
+              }}
               onCashUpdated={(cash) => {
                 queryClient.setQueryData(
                   ['game-design', actor, 'economy'],
@@ -882,6 +897,18 @@ export function GameShell({
                     }
                   : undefined
               }
+              onCashUpdated={(cash) => {
+                queryClient.setQueryData(
+                  ['game-design', actor, 'economy'],
+                  (old: EconomyRoiResponse | undefined) => {
+                    if (!old) return old;
+                    return {
+                      ...old,
+                      currentCash: Math.max(0, Math.floor(cash)),
+                    };
+                  },
+                );
+              }}
             />
           )}
           {tab === 'leaderboard' && (

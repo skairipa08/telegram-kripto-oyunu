@@ -77,9 +77,10 @@ export function useTelegramWebApp() {
     syncAppearance();
     for (const event of events) webApp.onEvent(event, syncAppearance);
 
-    if (initData) {
-      webApp.ready();
-      webApp.expand();
+    webApp.ready();
+    webApp.expand();
+    if (typeof webApp.disableVerticalSwipes === 'function') {
+      webApp.disableVerticalSwipes();
     }
 
     return () => {

@@ -1,4 +1,4 @@
-import { ApiError } from '../api/client';
+import { ApiError, getSessionToken } from '../api/client';
 import type {
   AdminAuditLogDto,
   AdminFraudFlagDto,
@@ -12,6 +12,19 @@ import type {
   FraudAccountView,
   FrozenRewardView,
 } from './admin-types';
+
+function getAdminHeaders(extra?: Record<string, string>): Record<string, string> {
+  const token = getSessionToken();
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    ...extra,
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+    headers['X-Empire-Session'] = token;
+  }
+  return headers;
+}
 
 async function parseApiError(response: Response): Promise<never> {
   let code = 'ADMIN_API_ERROR';
@@ -29,8 +42,8 @@ export async function fetchPublicConfig(
 ): Promise<PublicConfigResponse> {
   const timeout = AbortSignal.timeout(8000);
   const res = await fetch('/api/config/public', {
-    credentials: 'same-origin',
-    headers: { Accept: 'application/json' },
+    credentials: 'include',
+    headers: getAdminHeaders(),
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
   if (!res.ok) await parseApiError(res);
@@ -46,11 +59,8 @@ export async function updateFeatureFlag(
   const timeout = AbortSignal.timeout(8000);
   const res = await fetch('/api/admin/config', {
     method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
+    credentials: 'include',
+    headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ key, value, reason, requestId }),
     signal: timeout,
   });
@@ -69,8 +79,8 @@ export async function fetchFraudFlags(
   const path = `/api/admin/fraud/flags${query.toString() ? `?${query}` : ''}`;
   const timeout = AbortSignal.timeout(8000);
   const res = await fetch(path, {
-    credentials: 'same-origin',
-    headers: { Accept: 'application/json' },
+    credentials: 'include',
+    headers: getAdminHeaders(),
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
   if (!res.ok) await parseApiError(res);
@@ -88,8 +98,8 @@ export async function fetchFrozenRewards(
   const path = `/api/admin/fraud/frozen${query.toString() ? `?${query}` : ''}`;
   const timeout = AbortSignal.timeout(8000);
   const res = await fetch(path, {
-    credentials: 'same-origin',
-    headers: { Accept: 'application/json' },
+    credentials: 'include',
+    headers: getAdminHeaders(),
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
   if (!res.ok) await parseApiError(res);
@@ -107,11 +117,8 @@ export async function submitFraudReview(
   const timeout = AbortSignal.timeout(8000);
   const res = await fetch('/api/admin/fraud/review', {
     method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
+    credentials: 'include',
+    headers: getAdminHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ rewardId, decision, reason }),
     signal: timeout,
   });
@@ -130,8 +137,8 @@ export async function fetchAuditLogs(
   const path = `/api/admin/audit-logs${query.toString() ? `?${query}` : ''}`;
   const timeout = AbortSignal.timeout(8000);
   const res = await fetch(path, {
-    credentials: 'same-origin',
-    headers: { Accept: 'application/json' },
+    credentials: 'include',
+    headers: getAdminHeaders(),
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
   if (!res.ok) await parseApiError(res);

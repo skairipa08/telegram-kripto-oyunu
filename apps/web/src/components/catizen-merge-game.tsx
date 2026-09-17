@@ -16,9 +16,12 @@ import {
   playMergeSound,
   playTapSound,
   playUnboxSound,
+  playWinSound,
 } from '../game/arcade-audio';
 import { hapticMerge, hapticSuccess, hapticTap } from '../game/arcade-haptics';
 import './arcade.css';
+
+const MERGE_STORAGE_KEY = 'empire_catizen_board_v1';
 
 export interface CatizenMergeGameProps {
   autoMerge?: boolean;
@@ -127,7 +130,22 @@ export function CatizenMergeGame({
   autoMerge: initialAutoMerge = false,
   onReward,
 }: CatizenMergeGameProps) {
-  const [board, setBoard] = useState<MergeSlot[]>(() => createInitialBoard());
+  const [board, setBoard] = useState<MergeSlot[]>(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const saved = window.localStorage.getItem(MERGE_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved) as MergeSlot[];
+          if (Array.isArray(parsed) && parsed.length === 12) {
+            return parsed;
+          }
+        }
+      } catch {
+        // Fallback to fresh board
+      }
+    }
+    return createInitialBoard();
+  });
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -154,6 +172,13 @@ export function CatizenMergeGame({
 
   useEffect(() => {
     boardRef.current = board;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem(MERGE_STORAGE_KEY, JSON.stringify(board));
+      } catch {
+        // Ignore storage errors
+      }
+    }
   }, [board]);
 
   // Sync prop changes for autoMerge
@@ -525,6 +550,18 @@ export function CatizenMergeGame({
     }
   }
 
+  function handleCollectBank() {
+    if (accumulatedCash <= 0) return;
+    const amount = accumulatedCash;
+    setAccumulatedCash(0);
+    playWinSound();
+    hapticSuccess();
+    if (onReward) {
+      onReward(amount);
+    }
+    setToastMessage(`💰 Kasadaki +${amount.toLocaleString()} Nakit hesabına aktarıldı!`);
+  }
+
   const currentDps = calculateBoardDps(board);
 
   return (
@@ -538,6 +575,27 @@ export function CatizenMergeGame({
         <div className="catizen-stat-pill">
           <span className="label">Kasa Bankası</span>
           <strong>🪙 {accumulatedCash}</strong>
+          {accumulatedCash > 0 && (
+            <button
+              type="button"
+              className="catizen-collect-btn"
+              onClick={handleCollectBank}
+              aria-label="Kasadaki nakdi topla"
+              style={{
+                marginLeft: '6px',
+                padding: '2px 8px',
+                borderRadius: '6px',
+                background: 'var(--accent)',
+                color: 'var(--accent-ink)',
+                border: 'none',
+                fontWeight: 'bold',
+                fontSize: '11px',
+                cursor: 'pointer',
+              }}
+            >
+              Topla
+            </button>
+          )}
         </div>
         {lastMergedTier && (
           <div className="catizen-stat-pill">

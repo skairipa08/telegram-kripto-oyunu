@@ -24,6 +24,7 @@ import './arcade.css';
 export interface CryptoCrashGameProps {
   playerCash?: number;
   onReward?: (amount: number) => void;
+  onCashUpdated?: (newCash: number) => void;
   preview?: boolean;
 }
 
@@ -32,6 +33,7 @@ type GamePhase = 'idle' | 'countdown' | 'running' | 'cashed_out' | 'crashed';
 export function CryptoCrashGame({
   playerCash = 1000,
   onReward,
+  onCashUpdated,
 }: CryptoCrashGameProps) {
   const initialStake =
     playerCash >= MIN_STAKE ? Math.min(100, playerCash) : MIN_STAKE;
@@ -620,6 +622,13 @@ export function CryptoCrashGame({
     setPhase('countdown');
     setCountdown(3);
 
+    // Deduct stake at the start of round
+    if (onCashUpdated) {
+      onCashUpdated(Math.max(0, playerCash - stake));
+    } else if (onReward) {
+      onReward(-stake);
+    }
+
     countTimerRef.current = window.setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -695,7 +704,11 @@ export function CryptoCrashGame({
 
     playWinSound();
     hapticSuccess();
-    if (onReward) onReward(payout);
+    if (onCashUpdated) {
+      onCashUpdated(playerCash + payout);
+    } else if (onReward) {
+      onReward(payout);
+    }
   }
 
   const tier = getMultiplierTier(multiplier);

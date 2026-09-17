@@ -10,6 +10,7 @@ import {
 import { ShareReferralModal } from '../components/share-referral-modal';
 import { CelebrationModal } from '../components/celebration-modal';
 import { ClansScreen } from './clans-screen';
+import { getSessionToken } from '../api/client';
 import './social.css';
 
 type FriendsScreenProps = {
@@ -115,9 +116,19 @@ export function FriendsScreen({
     setIsClaimingKickback(true);
     setKickbackFeedback(null);
     try {
+      const token = getSessionToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Empire-Session'] = token;
+      }
       const res = await fetch('/api/referral/claim-kickback', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers,
       });
       if (res.ok) {
         const d = (await res.json()) as {
@@ -140,9 +151,19 @@ export function FriendsScreen({
         }
         if (onCashUpdated) onCashUpdated(d.newCash);
         if (resource.onRetry) resource.onRetry();
+      } else {
+        const errData = (await res.json().catch(() => null)) as {
+          error?: { message?: string; code?: string };
+        } | null;
+        setKickbackFeedback(
+          errData?.error?.message ??
+            (errData?.error?.code === 'NOTHING_TO_CLAIM'
+              ? 'Şu anda aktarılacak bekleyen ortaklık primi bulunmuyor.'
+              : 'Ortaklık primi aktarılamadı. Lütfen oturumunuzu kontrol edin.'),
+        );
       }
     } catch {
-      setKickbackFeedback('Prim aktarılırken bir hata oluştu.');
+      setKickbackFeedback('Prim aktarılırken bir ağ hatası oluştu.');
     } finally {
       setIsClaimingKickback(false);
     }

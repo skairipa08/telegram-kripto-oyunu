@@ -66,9 +66,14 @@
 * {
   box-sizing: border-box;
 }
+html,
 body {
   margin: 0;
   min-width: 0;
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
 }
 button,
 input,

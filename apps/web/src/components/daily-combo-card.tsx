@@ -18,6 +18,7 @@ import {
   submitDailyCipherResponseSchema,
 } from '@empire/shared';
 import { ShareReferralModal } from './share-referral-modal';
+import { getSessionToken } from '../api/client';
 import './arcade.css';
 
 export interface DailyComboCardProps {
@@ -380,9 +381,15 @@ function DailyComboCardLive({
   const comboStatus = useQuery({
     queryKey: ['daily-combo-status', todayStr],
     queryFn: async () => {
+      const token = getSessionToken();
+      const headers: Record<string, string> = { Accept: 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Empire-Session'] = token;
+      }
       const res = await fetch(`/api/combo/status?date=${todayStr}`, {
-        credentials: 'same-origin',
-        headers: { Accept: 'application/json' },
+        credentials: 'include',
+        headers,
       });
       if (!res.ok) throw new Error('Status alınamadı');
       const data = await res.json();
@@ -393,14 +400,20 @@ function DailyComboCardLive({
 
   const claimComboMutation = useMutation({
     mutationFn: async (slugs: [string, string, string]) => {
+      const token = getSessionToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Origin: window.location.origin,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Empire-Session'] = token;
+      }
       const res = await fetch('/api/combo/claim', {
         method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Origin: window.location.origin,
-        },
+        credentials: 'include',
+        headers,
         body: JSON.stringify({
           date: todayStr,
           selectedSlugs: slugs,
@@ -425,6 +438,7 @@ function DailyComboCardLive({
         message: `Tebrikler! +${data.rewardCash.toLocaleString()} Nakit & +${data.rewardSeasonPoints} Sezon Puanı kazandın!`,
       });
       queryClient.invalidateQueries({ queryKey: ['daily-combo-status'] });
+      queryClient.invalidateQueries({ queryKey: ['game-design'] });
       queryClient.invalidateQueries({ queryKey: ['economy'] });
       if (data.newCash && onRewardClaimed) {
         onRewardClaimed(data.newCash);
@@ -440,14 +454,20 @@ function DailyComboCardLive({
 
   const claimCipherMutation = useMutation({
     mutationFn: async (word: string) => {
+      const token = getSessionToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Origin: window.location.origin,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Empire-Session'] = token;
+      }
       const res = await fetch('/api/combo/cipher-claim', {
         method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Origin: window.location.origin,
-        },
+        credentials: 'include',
+        headers,
         body: JSON.stringify({
           date: todayStr,
           solvedWord: word.trim().toUpperCase(),
@@ -472,6 +492,7 @@ function DailyComboCardLive({
         message: `Mors Şifresi Çözüldü! +${data.rewardCash.toLocaleString()} Nakit & +${data.rewardSeasonPoints} Sezon Puanı!`,
       });
       queryClient.invalidateQueries({ queryKey: ['daily-combo-status'] });
+      queryClient.invalidateQueries({ queryKey: ['game-design'] });
       queryClient.invalidateQueries({ queryKey: ['economy'] });
       if (data.newCash && onRewardClaimed) {
         onRewardClaimed(data.newCash);
