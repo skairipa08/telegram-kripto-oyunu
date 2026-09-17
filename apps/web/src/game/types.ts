@@ -32,7 +32,13 @@ export type MissionView = {
   reward: number;
   status: 'in_progress' | 'completed' | 'claimed';
 };
-export type MissionsView = { streak: number; missions: MissionView[] };
+export type MissionsView = {
+  streak: number;
+  canClaimStreak?: boolean;
+  streakClaimedToday?: boolean;
+  todayRewardPoints?: number;
+  missions: MissionView[];
+};
 export type InviteeMilestoneView = {
   targetCash: number;
   rewardCash: number;

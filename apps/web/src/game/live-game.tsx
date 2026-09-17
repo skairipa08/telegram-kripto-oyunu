@@ -9,6 +9,7 @@ import {
   bindReferralResponseSchema,
   claimCashResponseSchema,
   claimMissionResponseSchema,
+  claimStreakResponseSchema,
   createInvoiceResponseSchema,
   economyRoiResponseSchema,
   leaderboardResponseSchema,
@@ -21,6 +22,7 @@ import {
   upgradeBusinessResponseSchema,
 } from '@empire/shared';
 import type {
+  ClaimStreakResponse,
   EconomyRoiResponse,
   PlayerMissionInstance,
   PlayerReferralOverview,
@@ -301,6 +303,44 @@ export function GameShell({
     },
   });
 
+  const claimStreakMutation = useMutation({
+    mutationFn: (requestId: string) =>
+      postGameResource(
+        '/api/streak/claim',
+        { requestId },
+        claimStreakResponseSchema,
+      ),
+    onSuccess: async (result: ClaimStreakResponse) => {
+      queryClient.setQueryData<PlayerState>(
+        ['game-design', actor, 'state'],
+        (old) => {
+          if (!old || old.game.status !== 'active') return old;
+          return {
+            ...old,
+            game: {
+              ...old.game,
+              economy: {
+                ...old.game.economy,
+                seasonPoints: result.newSeasonPoints,
+              },
+            },
+          };
+        },
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['game-design', actor, 'streak'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['game-design', actor, 'economy'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['game-design', actor, 'state'],
+        }),
+      ]);
+    },
+  });
+
   const referral = useQuery({
     queryKey: ['game-design', actor, 'referral'],
     enabled: tab === 'friends',
@@ -500,6 +540,8 @@ export function GameShell({
     },
   ];
 
+  const streakClaimedToday = streak.data ? !streak.data.canClaimToday : false;
+
   const missionsResource: ScreenResource<MissionsView> = {
     status: missions.isPending || streak.isPending ? 'loading' : 'ready',
     onRetry: () => {
@@ -509,6 +551,9 @@ export function GameShell({
     data: missions.data
       ? {
           streak: rawStreak,
+          canClaimStreak: streak.data ? streak.data.canClaimToday : true,
+          streakClaimedToday,
+          todayRewardPoints: streak.data?.todayRewardPoints ?? 125,
           missions: rawMissions.map((m) => ({
             id: m.id,
             title: m.title,
@@ -522,6 +567,9 @@ export function GameShell({
         }
       : {
           streak: rawStreak || 1,
+          canClaimStreak: streak.data ? streak.data.canClaimToday : true,
+          streakClaimedToday,
+          todayRewardPoints: streak.data?.todayRewardPoints ?? 125,
           missions: fallbackMissions,
         },
   };
@@ -802,6 +850,16 @@ export function GameShell({
                   : null
               }
               claimFeedback={missionFeedback}
+              onClaimStreak={async () => {
+                const reqId = crypto.randomUUID();
+                const result = await claimStreakMutation.mutateAsync(reqId);
+                return {
+                  rewardPoints: result.rewardPoints,
+                  newStreak: result.newStreak,
+                  newSeasonPoints: result.newSeasonPoints,
+                  isCycleBonus: result.isCycleBonus,
+                };
+              }}
             />
           )}
           {tab === 'friends' && (

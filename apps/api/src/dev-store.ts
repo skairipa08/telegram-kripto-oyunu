@@ -556,13 +556,16 @@ export class MemoryEconomyStore implements EconomyStore {
 
   async getStreak(userId: string): Promise<Record<string, unknown>> {
     const p = this.getOrCreate(userId);
+    const today = new Date().toISOString().slice(0, 10);
+    const claimedToday = Boolean(p.streak.lastClaimDate?.startsWith(today));
+    const isCycleBonus = (p.streak.currentStreak + 1) % 7 === 0;
     return {
       currentStreak: p.streak.currentStreak,
       longestStreak: Math.max(p.streak.currentStreak, 1),
-      canClaimToday: true,
+      canClaimToday: !claimedToday,
       lastClaimDate: p.streak.lastClaimDate,
-      todayRewardPoints: 50,
-      isCycleBonusToday: p.streak.currentStreak % 7 === 0,
+      todayRewardPoints: isCycleBonus ? 500 : 125,
+      isCycleBonusToday: isCycleBonus,
       streakMilestones: [
         { day: 7, cashReward: 500, pointsReward: 1.0, claimed: false },
         { day: 30, cashReward: 5000, pointsReward: 2.5, claimed: false },
@@ -579,15 +582,36 @@ export class MemoryEconomyStore implements EconomyStore {
   ): Promise<Record<string, unknown>> {
     void requestId;
     const p = this.getOrCreate(userId);
-    p.streak.currentStreak += 1;
+    const today = new Date().toISOString().slice(0, 10);
+    if (p.streak.lastClaimDate?.startsWith(today)) {
+      return { error: 'ALREADY_CLAIMED' };
+    }
+
+    const yesterday = new Date(Date.now() - 86400000)
+      .toISOString()
+      .slice(0, 10);
+    if (p.streak.lastClaimDate?.startsWith(yesterday)) {
+      p.streak.currentStreak += 1;
+    } else {
+      p.streak.currentStreak = 1;
+    }
     p.streak.lastClaimDate = new Date().toISOString();
+    const isCycleBonus = p.streak.currentStreak % 7 === 0;
+    const rewardPoints = isCycleBonus ? 500 : 125;
     const rewardCash = 500 * p.streak.currentStreak;
     p.cash += rewardCash;
+    p.seasonPoints += rewardPoints;
+
     return {
       success: true,
       currentStreak: p.streak.currentStreak,
+      newStreak: p.streak.currentStreak,
+      rewardPoints,
+      newSeasonPoints: p.seasonPoints,
+      isCycleBonus,
       rewardCash,
       newCash: p.cash,
+      claimedAt: p.streak.lastClaimDate,
     };
   }
 

@@ -115,4 +115,46 @@ describe('MissionsScreen: Extended Streak Milestone Track', () => {
     expect(matches).toHaveLength(5);
     expect(markup).toContain('İmparatorluk Kıdemlisi');
   });
+
+  it('renders streak chest as available when canClaimStreak is true', () => {
+    const markup = renderToStaticMarkup(
+      <MissionsScreen
+        resource={{
+          status: 'ready',
+          data: {
+            streak: 1,
+            canClaimStreak: true,
+            streakClaimedToday: false,
+            missions: [],
+          },
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Sandığı Aç');
+    expect(markup).toContain('Günlük Seri Sandığı');
+    expect(markup).not.toContain('Bugünün Sandığı Açıldı!');
+    expect(markup).not.toContain('disabled=""');
+  });
+
+  it('renders streak chest as claimed and disabled when already claimed today (F5 reload scenario)', () => {
+    const markup = renderToStaticMarkup(
+      <MissionsScreen
+        resource={{
+          status: 'ready',
+          data: {
+            streak: 1,
+            canClaimStreak: false,
+            streakClaimedToday: true,
+            missions: [],
+          },
+        }}
+      />,
+    );
+
+    expect(markup).toContain('✓ Alındı');
+    expect(markup).toContain('Bugünün Sandığı Açıldı!');
+    expect(markup).toContain('Yarın yeni ödül için geri dön.');
+    expect(markup).toContain('disabled=""');
+  });
 });

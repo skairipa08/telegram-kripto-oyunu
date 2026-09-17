@@ -8,6 +8,7 @@ import {
   SectionTitle,
 } from '../game/ui';
 import { CelebrationModal } from '../components/celebration-modal';
+import { getSessionToken } from '../api/client';
 import './empire-missions.css';
 import '../components/arcade.css';
 import './social.css';
@@ -135,10 +136,17 @@ export const FALLBACK_LIFETIME_MISSIONS: readonly MissionView[] = [
   },
 ];
 
+export type StreakClaimResult = {
+  rewardPoints: number;
+  newStreak: number;
+  newSeasonPoints?: number;
+  isCycleBonus?: boolean;
+};
+
 type MissionsScreenProps = {
   resource: ScreenResource<MissionsView>;
   onClaim?: (id: string) => void;
-  onClaimStreak?: () => void;
+  onClaimStreak?: () => Promise<StreakClaimResult | null> | void;
   pendingMissionId?: string | null;
   retryMissionId?: string | null;
   claimFeedback?: ActionFeedback | null;
@@ -251,7 +259,17 @@ export function MissionsScreen({
 }: MissionsScreenProps) {
   const [filter, setFilter] = useState<MissionFilter>('daily');
   const [isStreakClaiming, setIsStreakClaiming] = useState(false);
-  const [isStreakClaimed, setIsStreakClaimed] = useState(false);
+  const [localStreakClaimed, setLocalStreakClaimed] = useState(false);
+  const [streakClaimError, setStreakClaimError] = useState<string | null>(null);
+
+  // Check if streak is claimed either locally in this session or in backend data
+  const isStreakClaimed =
+    localStreakClaimed ||
+    (resource.data
+      ? resource.data.canClaimStreak === false ||
+        resource.data.streakClaimedToday === true
+      : false);
+
   const [celebration, setCelebration] = useState<{
     isOpen: boolean;
     title: string;
@@ -264,29 +282,74 @@ export function MissionsScreen({
   const handleClaimDailyStreak = async () => {
     if (isStreakClaiming || isStreakClaimed) return;
     setIsStreakClaiming(true);
+    setStreakClaimError(null);
     try {
+      let result: StreakClaimResult | null = null;
       if (onClaimStreak) {
-        onClaimStreak();
+        const res = await onClaimStreak();
+        if (res) result = res;
       } else {
-        await fetch('/api/streak/claim', {
+        const token = getSessionToken();
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+          headers['X-Empire-Session'] = token;
+        }
+        const resp = await fetch('/api/streak/claim', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          headers,
           body: JSON.stringify({ requestId: crypto.randomUUID() }),
         });
+        if (resp.ok) {
+          const data = (await resp.json()) as Record<string, unknown>;
+          result = {
+            rewardPoints: Number(data.rewardPoints ?? 125),
+            newStreak: Number(
+              data.newStreak ??
+                (resource.data?.streak ? resource.data.streak + 1 : 1),
+            ),
+            newSeasonPoints: Number(data.newSeasonPoints ?? 0),
+            isCycleBonus: Boolean(data.isCycleBonus),
+          };
+        } else {
+          const errData = (await resp.json().catch(() => null)) as {
+            error?: { code?: string };
+          } | null;
+          throw new Error(errData?.error?.code ?? 'CLAIM_FAILED');
+        }
       }
-    } catch {
-      // Graceful fallback for mock/offline preview
+
+      if (result) {
+        setLocalStreakClaimed(true);
+        const streakNum =
+          result.newStreak ||
+          (resource.data?.streak ? resource.data.streak + 1 : 1);
+        setCelebration({
+          isOpen: true,
+          title: `${formatNumber(streakNum)}. Gün Serisi Tamamlandı!`,
+          subtitle: result.isCycleBonus
+            ? 'Döngü Bonusu Kazanıldı! Ekstra puan hesabına aktarıldı.'
+            : 'Günlük giriş serini başarıyla korudun ve ritmi sürdürdün.',
+          rewardValue: `+${formatNumber(result.rewardPoints)} Sezon Puanı`,
+          icon: result.isCycleBonus ? '🏆' : '🎁',
+        });
+      }
+    } catch (err: unknown) {
+      const errCode = (err as Error)?.message || '';
+      if (errCode === 'ALREADY_CLAIMED') {
+        setLocalStreakClaimed(true);
+        setStreakClaimError('Bugünün sandığı zaten açılmış.');
+      } else {
+        setStreakClaimError(
+          'Sandık açılırken bir hata oluştu. Lütfen tekrar dene.',
+        );
+      }
     } finally {
       setIsStreakClaiming(false);
-      setIsStreakClaimed(true);
-      const currentStreak = resource.data?.streak ?? 1;
-      setCelebration({
-        isOpen: true,
-        title: `${formatNumber(currentStreak > 0 ? currentStreak : 1)}. Gün Serisi Tamamlandı!`,
-        subtitle: 'Günlük giriş serini başarıyla korudun ve ritmi sürdürdün.',
-        rewardValue: '+250 Sezon Puanı',
-        icon: '🎁',
-      });
     }
   };
 
@@ -384,6 +447,19 @@ export function MissionsScreen({
                 : 'Sandığı Aç'}
           </button>
         </div>
+        {streakClaimError && (
+          <p
+            role="alert"
+            style={{
+              color: '#f87171',
+              fontSize: '12px',
+              marginTop: '8px',
+              textAlign: 'center',
+            }}
+          >
+            {streakClaimError}
+          </p>
+        )}
       </article>
 
       {/* Extended Streak Milestones Visual Track */}
