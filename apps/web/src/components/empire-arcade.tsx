@@ -244,6 +244,7 @@ export function EmpireArcade({
             playerCash={playerCash}
             onCashUpdated={onCashUpdated}
             preview={preview}
+            {...(referralLink ? { referralLink } : {})}
           />
         )}
         {game === 'predictions' && (

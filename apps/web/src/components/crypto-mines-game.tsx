@@ -21,6 +21,7 @@ export interface CryptoMinesGameProps {
   playerCash?: number | undefined;
   onCashUpdated?: ((newCash: number) => void) | undefined;
   preview?: boolean | undefined;
+  referralLink?: string | undefined;
 }
 
 const QUICK_CHIPS = [10, 50, 100, 500, 1000];
@@ -30,6 +31,7 @@ export function CryptoMinesGame({
   playerCash = 10000,
   onCashUpdated,
   preview = false,
+  referralLink,
 }: CryptoMinesGameProps) {
   void preview;
   const [stakeInput, setStakeInput] = useState<string>('100');
@@ -323,6 +325,43 @@ export function CryptoMinesGame({
         >
           {message}
         </div>
+      )}
+
+      {gameState.status === 'cashed_out' && (
+        <button
+          type="button"
+          className="button"
+          onClick={() => {
+            const link = referralLink || 'https://t.me/ProjectEmpireBot';
+            const multText = `${gameState.currentMultiplier.toFixed(2)}x`;
+            const profitText = `+${formatNumber(gameState.payoutCash)} Nakit`;
+            const text = `💎 Mayın Tarlası'nda ${gameState.revealedTiles.length} elmas bulup ${multText} çarpanla ${profitText} kazandım! 💣 Sen de katıl, +5.000 Nakit hoş geldin bonusuyla başla: `;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+            if (window.Telegram?.WebApp?.openTelegramLink) {
+              window.Telegram.WebApp.openTelegramLink(shareUrl);
+            } else {
+              window.open(shareUrl, '_blank', 'noopener,noreferrer');
+            }
+          }}
+          style={{
+            width: '100%',
+            padding: '10px 16px',
+            fontWeight: 800,
+            fontSize: '14px',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)',
+            color: '#0a0e17',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            boxShadow: '0 0 15px rgba(16, 185, 129, 0.4)',
+          }}
+        >
+          🚀 Arkadaşlarına Hava At (+5.000 Bonus Daveti)
+        </button>
       )}
 
       {/* Game Action Controls */}
