@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '../i18n/i18n-context';
 import './arcade.css';
 
 export interface ShareReferralModalProps {
@@ -10,24 +11,6 @@ export interface ShareReferralModalProps {
   clanTag?: string | undefined;
 }
 
-const SHARE_TEMPLATES = [
-  {
-    id: 'starter',
-    label: '🚀 +5.000 Nakit Bonusu',
-    text: '🚀 Benimle kripto imparatorluğunu kur! Linke tıkla, anında +5.000 Nakit başlangıç sermayesi kazan: ',
-  },
-  {
-    id: 'clan',
-    label: '🛡️ Kartele Katılım',
-    text: '🛡️ Kartelimize katıl! Birlikte holdingleri birleştirip liderlik tablosunu fethedelim: ',
-  },
-  {
-    id: 'whale',
-    label: '💎 Ortak Yatırımcı',
-    text: '💎 Project Empire holdingime ortak arıyorum. İşletmelerini kur, birlikte büyüyelim: ',
-  },
-] as const;
-
 export function ShareReferralModal({
   isOpen,
   onClose,
@@ -35,8 +18,27 @@ export function ShareReferralModal({
   clanName,
   clanTag,
 }: ShareReferralModalProps) {
+  const { t } = useI18n();
   const [selectedTemplate, setSelectedTemplate] = useState<string>('starter');
   const [copied, setCopied] = useState(false);
+
+  const shareTemplates = [
+    {
+      id: 'starter',
+      label: t('share_template_starter_label'),
+      text: t('share_template_starter_text'),
+    },
+    {
+      id: 'clan',
+      label: t('share_template_clan_label'),
+      text: t('share_template_clan_text'),
+    },
+    {
+      id: 'whale',
+      label: t('share_template_whale_label'),
+      text: t('share_template_whale_text'),
+    },
+  ] as const;
 
   // Lock background scrolling when modal is open
   useEffect(() => {
@@ -64,8 +66,8 @@ export function ShareReferralModal({
   if (!isOpen) return null;
 
   const currentTemplate =
-    SHARE_TEMPLATES.find((t) => t.id === selectedTemplate) ??
-    SHARE_TEMPLATES[0]!;
+    shareTemplates.find((t) => t.id === selectedTemplate) ??
+    shareTemplates[0]!;
 
   const fullShareText = `${currentTemplate.text}${referralLink}`;
 
@@ -73,6 +75,9 @@ export function ShareReferralModal({
     try {
       await navigator.clipboard.writeText(fullShareText);
       setCopied(true);
+      if (window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+      }
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback
@@ -153,7 +158,7 @@ export function ShareReferralModal({
                 letterSpacing: '0.05em',
               }}
             >
-              ORTAK YATIRIMCI DAVETİ
+              {t('friends_eyebrow')}
             </span>
             <h2
               id="share-modal-title"
@@ -163,7 +168,7 @@ export function ShareReferralModal({
                 color: '#fff',
               }}
             >
-              Arkadaşını Çağır, Birlikte Kazan
+              {t('share_modal_title')}
             </h2>
           </div>
           <button
@@ -178,7 +183,7 @@ export function ShareReferralModal({
               lineHeight: 1,
               padding: '4px',
             }}
-            aria-label="Kapat"
+            aria-label={t('btn_close')}
           >
             ✕
           </button>
@@ -205,7 +210,7 @@ export function ShareReferralModal({
                 {clanName}
               </strong>
               <small style={{ fontSize: '11px', opacity: 0.8 }}>
-                Bu linkle gelenler doğrudan karteline katılacak!
+                {t('friends_tab_clans')}
               </small>
             </div>
           </div>
@@ -227,13 +232,11 @@ export function ShareReferralModal({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '18px' }}>🎁</span>
             <strong style={{ color: '#22c55e' }}>
-              Karşılıklı +5.000 Nakit Hediyesi
+              {t('friends_invite_card_title')}
             </strong>
           </div>
           <span style={{ opacity: 0.85, fontSize: '12px' }}>
-            Davet ettiğin her kişi anında <strong>5.000 Nakit</strong> kazanır.
-            Sen de anında <strong>5.000 Nakit</strong> ve anlık kazancından{' '}
-            <strong>%3 - %7 pasif pay</strong> alırsın!
+            {t('share_modal_subtitle')}
           </span>
         </div>
 
@@ -246,10 +249,10 @@ export function ShareReferralModal({
               marginBottom: '6px',
             }}
           >
-            Paylaşım Mesaj Şablonu:
+            {t('btn_share')}:
           </label>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {SHARE_TEMPLATES.map((tmpl) => (
+            {shareTemplates.map((tmpl) => (
               <button
                 key={tmpl.id}
                 type="button"
@@ -311,7 +314,7 @@ export function ShareReferralModal({
             }}
             onClick={() => void handleCopy()}
           >
-            {copied ? '✓ Kopyalandı' : 'Kopyala'}
+            {copied ? `✓ ${t('btn_copied')}` : t('btn_copy')}
           </button>
         </div>
 
@@ -334,7 +337,7 @@ export function ShareReferralModal({
           onClick={handleTelegramShare}
         >
           <span style={{ fontSize: '18px' }}>✈️</span>
-          Telegram'da Paylaş
+          {t('share_btn_telegram')}
         </button>
       </div>
     </div>

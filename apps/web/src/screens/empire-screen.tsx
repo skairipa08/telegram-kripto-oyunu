@@ -3,6 +3,7 @@ import type { BusinessView, EmpireView, ScreenResource } from '../game/types';
 import type { ActionFeedback } from '../game/live-game-model';
 import { formatNumber, ResourceNotice, SectionTitle } from '../game/ui';
 import { ShareReferralModal } from '../components/share-referral-modal';
+import { useI18n } from '../i18n/i18n-context';
 import './empire-missions.css';
 
 type EmpireScreenProps = {
@@ -494,6 +495,7 @@ export function EmpireScreen({
   clanTag,
   clanName,
 }: EmpireScreenProps) {
+  const { t } = useI18n();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [floatingCoins, setFloatingCoins] = useState<FloatingCoin[]>([]);
   const [floatingClaimBadge, setFloatingClaimBadge] =
@@ -564,13 +566,13 @@ export function EmpireScreen({
 
   if (resource.status !== 'ready' || !resource.data) {
     return (
-      <section className="empire-screen" aria-label="İmparatorluk">
+      <section className="empire-screen" aria-label={t('empire_title')}>
         <SectionTitle
-          eyebrow="ŞEHRİNİN EKONOMİSİ"
-          title="İmparatorluk"
-          description="İşletmelerini büyüt, üretimi hızlandır ve sezon boyunca yüksel."
+          eyebrow={t('empire_eyebrow')}
+          title={t('empire_title')}
+          description={t('empire_description')}
         />
-        <ResourceNotice resource={resource} label="İmparatorluk verileri" />
+        <ResourceNotice resource={resource} label={t('empire_title')} />
       </section>
     );
   }
@@ -588,21 +590,21 @@ export function EmpireScreen({
   };
 
   return (
-    <section className="empire-screen" aria-label="İmparatorluk">
+    <section className="empire-screen" aria-label={t('empire_title')}>
       <SectionTitle
-        eyebrow="ŞEHRİNİN EKONOMİSİ"
-        title="İmparatorluk"
-        description="İşletmelerini büyüt, üretimi hızlandır ve sezon boyunca yüksel."
+        eyebrow={t('empire_eyebrow')}
+        title={t('empire_title')}
+        description={t('empire_description')}
       />
 
       <div className="empire-ledger" aria-label="Ekonomi özeti">
         <div>
-          <span>Nakit</span>
+          <span>{t('header_cash')}</span>
           <strong>{formatNumber(data.cash)}</strong>
           <small>Cash</small>
         </div>
         <div>
-          <span>Sezon puanı</span>
+          <span>{t('header_season_points')}</span>
           <strong>{formatNumber(data.seasonPoints)}</strong>
           <small>SP</small>
         </div>
@@ -629,12 +631,10 @@ export function EmpireScreen({
             <strong
               style={{ display: 'block', fontSize: '15px', color: '#f1c99a' }}
             >
-              🤝 Ortak Yatırımcı Çağır (+5.000 Nakit)
+              {t('empire_invite_banner_title')}
             </strong>
             <span style={{ fontSize: '12px', color: '#cbd5e1' }}>
-              Arkadaşlarını davet et, anında <strong>+5.000 Nakit</strong>,
-              %7'ye varan kademeli komisyon ve{' '}
-              <strong>%0.1 ortak ciro primi</strong> kazan!
+              {t('empire_invite_banner_desc')}
             </span>
           </div>
           <button
@@ -648,16 +648,16 @@ export function EmpireScreen({
               whiteSpace: 'nowrap',
             }}
           >
-            🚀 Davet Et
+            🚀 {t('btn_share')}
           </button>
         </div>
       )}
 
       <article className="panel empire-production">
         <div className="empire-production-copy">
-          <p className="eyebrow">CANLI ÜRETİM</p>
+          <p className="eyebrow">{t('empire_eyebrow')}</p>
           <h2>
-            <span>{formatNumber(data.production, true)}</span> / saniye
+            <span>{formatNumber(data.production, true)}</span> {t('empire_per_sec')}
           </h2>
           <p className="muted">
             Çevrimdışı üretim {formatNumber(data.offlineHours)} saate kadar
@@ -665,7 +665,7 @@ export function EmpireScreen({
           </p>
           <div className="empire-claim-row">
             <div>
-              <span>Toplanabilir gelir</span>
+              <span>{t('empire_claimable')}</span>
               <strong>{formatNumber(data.claimable)}</strong>
             </div>
             <div className="empire-claim-action-wrap">
@@ -676,10 +676,10 @@ export function EmpireScreen({
                 onClick={handleClaim}
               >
                 {isClaimPending
-                  ? 'Toplanıyor…'
+                  ? t('empire_claiming')
                   : claimRetryAvailable
-                    ? 'Tekrar dene'
-                    : 'Geliri topla'}
+                    ? t('btn_retry')
+                    : t('empire_collect_income')}
               </button>
               {floatingClaimBadge && (
                 <span

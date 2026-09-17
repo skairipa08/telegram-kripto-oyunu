@@ -1,4 +1,4 @@
-﻿import type { TranslationKeys } from '../types';
+import type { TranslationKeys } from '../types';
 
 export const es: TranslationKeys = {
   // Navigation Tabs
@@ -53,7 +53,88 @@ export const es: TranslationKeys = {
   btn_copy: 'Copiar',
   btn_copied: '¡Copiado!',
   btn_retry: 'Reintentar',
+  btn_share: 'Compartir',
   status_loading: 'Cargando…',
   status_success: '¡Éxito!',
   status_error: 'Ocurrió un error',
+
+  // Share Modal & Referral Virality
+  share_modal_title: 'Invitar Co-Inversores',
+  share_modal_subtitle: '¡Comparte tu enlace con amigos, ambos ganarán +5.000 Efectivo al instante!',
+  share_template_starter_label: '🚀 Bono de +5.000 Efectivo',
+  share_template_starter_text: '🚀 ¡Construye tu imperio cripto conmigo! Haz clic en el enlace y obtén +5.000 Efectivo de inicio: ',
+  share_template_clan_label: '🛡️ Únete al Cartel',
+  share_template_clan_text: '🛡️ ¡Únete a nuestro cartel! Unamos holdings y conquistemos la clasificación juntos: ',
+  share_template_whale_label: '💎 Co-Inversor',
+  share_template_whale_text: '💎 Busco co-inversores para mi holding Project Empire. Crea tus negocios y crezcamos juntos: ',
+  share_btn_telegram: 'Compartir por Telegram',
+  share_btn_copy: 'Copiar enlace de invitación',
+  share_direct_link: 'Enlace directo de invitación',
+
+  // Friends / Partners Screen
+  friends_title: 'Socios y Alianzas',
+  friends_eyebrow: 'CRECER JUNTOS',
+  friends_description: 'Invita a co-inversores, gana comisiones por volumen de ventas y forma holdings de carteles.',
+  friends_tab_partners: 'Socios',
+  friends_tab_clans: 'Carteles',
+  friends_invite_card_title: 'Tu enlace de invitación',
+  friends_invite_card_desc: '¡+5.000 Efectivo instantáneo y comisiones escalonadas de por vida por cada amigo activo!',
+  friends_journey_title: 'Camino de la Asociación',
+  friends_step_activation: 'Activación',
+  friends_step_day2: 'Día 2',
+  friends_step_day7: 'Día 7',
+  friends_step_growth: 'Crecimiento',
+  friends_step_activation_desc: 'Entrada al juego',
+  friends_step_day2_desc: 'Regreso al juego',
+  friends_step_day7_desc: 'Lealtad semanal',
+  friends_step_growth_desc: 'Expansión económica',
+  friends_no_partners: 'Sin co-inversores aún',
+  friends_no_partners_desc: 'Comparte tu enlace con amigos o en grupos de Telegram para sumar a tus primeros socios.',
+
+  // Business Tiers in Empire
+  tier_local: 'Empresa Local',
+  tier_tech: 'Tecnología y Finanzas',
+  tier_quantum: 'Cuántica e IA',
+  tier_space: 'Espacio y Galaxia',
+
+  // Missions Screen
+  missions_title: 'Misiones y Recompensas',
+  missions_eyebrow: 'CENTRO DE OPERACIONES',
+  missions_description: 'Completa metas diarias y comunitarias para ganar efectivo y puntos de temporada.',
+  missions_tab_daily: 'Diarias',
+  missions_tab_social: 'Comunidad',
+  missions_tab_special: 'Especiales',
+  missions_claim: 'Reclamar Recompensa',
+  missions_claimed: 'Completado',
+  missions_chest_claim: 'Abrir Cofre',
+  missions_chest_claimed: '✓ Reclamado',
+  missions_chest_claiming: 'Abriendo…',
+  missions_chest_title_unlocked: '¡Cofre de hoy desbloqueado!',
+  missions_chest_title_daily: 'Cofre de racha diaria',
+  missions_chest_sub_unlocked: 'Vuelve mañana por una nueva recompensa.',
+  missions_chest_sub_daily: 'Inicia sesión a diario para abrir tu cofre.',
+
+  // Empire Screen Additional
+  empire_claiming: 'Recolectando…',
+  empire_collect_income: 'Recolectar ingresos',
+
+  // Leaderboard Screen
+  lb_title: 'Tabla de Clasificación',
+  lb_eyebrow: 'PRESTIGIO GLOBAL',
+  lb_description: 'Los mejores imperios clasificados por generación de ingresos y puntos de temporada.',
+  lb_tab_all: 'General',
+  lb_tab_weekly: 'Semanal',
+  lb_rank: 'Puesto',
+
+  // Shop Screen
+  shop_title: 'Tienda del Imperio',
+  shop_eyebrow: 'CAPITAL Y MEJORAS',
+  shop_description: 'Adquiere paquetes estratégicos y potenciadores para acelerar tu imperio.',
+  shop_buy: 'Comprar',
+  shop_purchased: 'Adquirido',
+  shop_sales_soon: 'Próximamente',
+  shop_payment_opening: 'Abriendo pago…',
+  shop_pass_active: 'Empire Pass Activo',
+  shop_pass_active_badge: 'Empire Pass Activo',
+  shop_pass_buy: 'Obtener Empire Pass',
 };

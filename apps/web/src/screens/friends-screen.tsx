@@ -11,6 +11,7 @@ import { ShareReferralModal } from '../components/share-referral-modal';
 import { CelebrationModal } from '../components/celebration-modal';
 import { ClansScreen } from './clans-screen';
 import { getSessionToken } from '../api/client';
+import { useI18n } from '../i18n/i18n-context';
 import './social.css';
 
 type FriendsScreenProps = {
@@ -23,13 +24,6 @@ type FriendsScreenProps = {
 };
 
 const referralMilestones = [1, 3, 5, 10, 25, 50] as const;
-
-const journeySteps = [
-  { label: 'Aktivasyon', detail: 'Oyuna katılım', reward: '0,5 SRU' },
-  { label: '2. gün', detail: 'Geri dönüş', reward: '1 SRU' },
-  { label: '7. gün', detail: 'Haftalık bağlılık', reward: '2 SRU' },
-  { label: 'İlerleme', detail: 'Ekonomide gelişim', reward: '1,5 SRU' },
-] as const;
 
 export function isSafeTelegramInvite(value: string) {
   try {
@@ -95,6 +89,7 @@ export function FriendsScreen({
   userId = '',
   onCashUpdated,
 }: FriendsScreenProps) {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<'friends' | 'clans'>('friends');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>(
@@ -111,6 +106,13 @@ export function FriendsScreen({
     icon?: string;
   } | null>(null);
   const data = resource.status === 'ready' ? resource.data : null;
+
+  const journeySteps = [
+    { label: t('friends_step_activation'), detail: t('friends_step_activation_desc'), reward: '0,5 SRU' },
+    { label: t('friends_step_day2'), detail: t('friends_step_day2_desc'), reward: '1 SRU' },
+    { label: t('friends_step_day7'), detail: t('friends_step_day7_desc'), reward: '2 SRU' },
+    { label: t('friends_step_growth'), detail: t('friends_step_growth_desc'), reward: '1,5 SRU' },
+  ];
 
   const handleClaimKickback = async () => {
     setIsClaimingKickback(true);
@@ -178,6 +180,9 @@ export function FriendsScreen({
     try {
       await navigator.clipboard.writeText(data.link);
       setCopyStatus('copied');
+      if (window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+      }
     } catch {
       setCopyStatus('error');
     }
@@ -197,7 +202,7 @@ export function FriendsScreen({
         onClick={() => setActiveTab('friends')}
         style={{ flex: 1, padding: '10px 14px', fontSize: '13px' }}
       >
-        👥 Arkadaş Ağım & Gelir Payı
+        👥 {t('friends_tab_partners')}
       </button>
       <button
         type="button"
@@ -205,7 +210,7 @@ export function FriendsScreen({
         onClick={() => setActiveTab('clans')}
         style={{ flex: 1, padding: '10px 14px', fontSize: '13px' }}
       >
-        🛡️ Karteller (Klanlar)
+        🛡️ {t('friends_tab_clans')}
       </button>
     </div>
   );
@@ -276,11 +281,11 @@ export function FriendsScreen({
   const safeInvite = isSafeTelegramInvite(data.link);
 
   return (
-    <section className="social-screen friends-screen" aria-label="Arkadaşlar">
+    <section className="social-screen friends-screen" aria-label={t('friends_title')}>
       <SectionTitle
-        eyebrow="Ortak büyüme"
-        title="Arkadaşlar"
-        description="Güçlü ekonomiler tek başına kurulmaz. Ekibini davet et, kalıcı ilerlemeyi birlikte büyüt."
+        eyebrow={t('friends_eyebrow')}
+        title={t('friends_title')}
+        description={t('friends_description')}
       />
       {renderTabSwitcher()}
 
@@ -299,7 +304,7 @@ export function FriendsScreen({
               type="button"
               onClick={onRetryBinding}
             >
-              Tekrar dene
+              {t('btn_retry')}
             </button>
           )}
         </>
@@ -307,18 +312,17 @@ export function FriendsScreen({
 
       <div className="friends-invite panel">
         <div className="friends-invite-copy">
-          <p className="eyebrow">Özel davet hattın</p>
-          <h2>Şehre yeni ortaklar çağır</h2>
+          <p className="eyebrow">{t('friends_invite_card_title')}</p>
+          <h2>{t('friends_title')}</h2>
           <p className="muted">
-            Bağlantıyı dilediğin yerde paylaş. Gönderim yalnızca senin
-            kontrolünde kalır.
+            {t('friends_invite_card_desc')}
           </p>
           <div className="invite-link-strip">
             <span
               className="invite-link"
               title={safeInvite ? data.link : undefined}
             >
-              {safeInvite ? data.link : 'Davet bağlantısı kullanılamıyor'}
+              {safeInvite ? data.link : '...'}
             </span>
             <button
               className="button invite-copy-button"
@@ -326,7 +330,7 @@ export function FriendsScreen({
               onClick={() => void copyInvite()}
               disabled={!safeInvite}
             >
-              {copyStatus === 'copied' ? 'Kopyalandı' : 'Bağlantıyı kopyala'}
+              {copyStatus === 'copied' ? `✓ ${t('btn_copied')}` : t('btn_copy')}
             </button>
           </div>
           <button
@@ -350,17 +354,17 @@ export function FriendsScreen({
             }}
           >
             <span>🚀</span>
-            <span>Telegram'da Arkadaşlarını Davet Et (+5.000 Nakit)</span>
+            <span>{t('share_btn_telegram')} (+5.000 Cash)</span>
           </button>
           <p
             className={`copy-status ${copyStatus === 'error' ? 'is-error' : ''}`}
             aria-live="polite"
           >
-            {copyStatus === 'copied' && 'Davet bağlantısı panoya kopyalandı.'}
+            {copyStatus === 'copied' && `✓ ${t('btn_copied')}`}
             {copyStatus === 'error' &&
               (safeInvite
-                ? 'Bağlantı kopyalanamadı. Tarayıcı izinlerini kontrol et.'
-                : 'Güvenli bir Telegram davet bağlantısı alınamadı.')}
+                ? t('status_error')
+                : '...')}
           </p>
         </div>
         <FriendsArtwork />
@@ -692,8 +696,8 @@ export function FriendsScreen({
           </div>
         ) : data.friends.length === 0 ? (
           <EmptyState
-            title="İlk ortağın için yer hazır"
-            description="Davet bağlantını paylaşınca katılan oyuncuların ilerlemesi burada görünür."
+            title={t('friends_no_partners')}
+            description={t('friends_no_partners_desc')}
           />
         ) : (
           <ul className="friends-list">

@@ -7,6 +7,7 @@ import {
   ResourceNotice,
   SectionTitle,
 } from '../game/ui';
+import { useI18n } from '../i18n/i18n-context';
 import './shop-analytics.css';
 
 export type ShopScreenProps = {
@@ -107,6 +108,7 @@ export function ShopScreen({
   purchasingSku = null,
   purchaseFeedback = null,
 }: ShopScreenProps) {
+  const { t } = useI18n();
   const [category, setCategory] = useState<ShopCategory>('all');
 
   if (resource.status !== 'ready' || !resource.data) {
@@ -118,8 +120,8 @@ export function ShopScreen({
         };
     return (
       <section className="sa-screen sa-shop" aria-labelledby="shop-title">
-        <SectionTitle eyebrow="SEÇKİN KOLEKSİYON" title="Mağaza" />
-        <ResourceNotice resource={unavailableResource} label="Mağaza" />
+        <SectionTitle eyebrow={t('shop_eyebrow')} title={t('shop_title')} />
+        <ResourceNotice resource={unavailableResource} label={t('shop_title')} />
       </section>
     );
   }
@@ -137,14 +139,14 @@ export function ShopScreen({
   return (
     <section className="sa-screen sa-shop" aria-labelledby="shop-title">
       <SectionTitle
-        eyebrow="SEÇKİN KOLEKSİYON"
-        title="Mağaza"
-        description="Şehrinin ritmini koruyan ayrıcalıklar ve imparatorluğuna karakter katan seçkin parçalar."
+        eyebrow={t('shop_eyebrow')}
+        title={t('shop_title')}
+        description={t('shop_description')}
         action={
           passActive ? (
-            <span className="badge sa-active-badge">Empire Pass aktif</span>
+            <span className="badge sa-active-badge">{t('shop_pass_active_badge')}</span>
           ) : !starsPaymentsEnabled ? (
-            <span className="badge sa-badge-soon">Yakında</span>
+            <span className="badge sa-badge-soon">{t('shop_sales_soon')}</span>
           ) : undefined
         }
       />
@@ -152,7 +154,7 @@ export function ShopScreen({
       <div
         className="missions-segments"
         role="group"
-        aria-label="Mağaza kategorileri"
+        aria-label={t('shop_title')}
         style={{ marginBottom: '18px' }}
       >
         <button
@@ -160,7 +162,7 @@ export function ShopScreen({
           aria-pressed={category === 'all'}
           onClick={() => setCategory('all')}
         >
-          Tümü
+          {t('lb_tab_all')}
         </button>
         <button
           type="button"
@@ -252,12 +254,12 @@ export function ShopScreen({
                 }}
               >
                 {!starsPaymentsEnabled
-                  ? 'Satışlar yakında'
+                  ? t('shop_sales_soon')
                   : isPassPurchasing
-                    ? 'Ödeme açılıyor…'
+                    ? t('shop_payment_opening')
                     : passActive
-                      ? 'Empire Pass Aktif'
-                      : 'Empire Pass Al'}
+                      ? t('shop_pass_active')
+                      : t('shop_pass_buy')}
               </button>
             </div>
           </article>

@@ -159,13 +159,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 export function useI18n(): I18nContextValue {
   const context = useContext(I18nContext);
   if (!context) {
-    // Graceful fallback if rendered outside provider
+    // Graceful fallback if rendered outside provider (e.g. unit tests)
     return {
-      language: 'en',
+      language: 'tr',
       setLanguage: () => {},
-      t: (key, fallback) => en[key] ?? fallback ?? key,
+      t: (key, fallback) => tr[key] ?? en[key] ?? fallback ?? key,
       supportedLanguages: SUPPORTED_LANGUAGES,
-      currentLanguageInfo: SUPPORTED_LANGUAGES[0]!,
+      currentLanguageInfo:
+        SUPPORTED_LANGUAGES.find((l) => l.code === 'tr') ??
+        SUPPORTED_LANGUAGES[0]!,
     };
   }
   return context;

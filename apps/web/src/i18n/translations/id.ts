@@ -16,7 +16,7 @@ export const id: TranslationKeys = {
   header_level: 'Level',
   header_account: 'Akun',
   header_logout: 'Keluar',
-  header_logging_out: 'Sedang keluar�',
+  header_logging_out: 'Sedang keluar…',
   header_connected_as: 'Terhubung sebagai',
   header_play_zone: 'ZONA PERMAINAN',
 
@@ -29,7 +29,7 @@ export const id: TranslationKeys = {
   empire_per_sec: '/det',
   empire_upgrade: 'Tingkatkan',
   empire_max_level: 'Level Maks',
-  empire_invite_banner_title: '?? Undang Rekan Investor (+5.000 Uang)',
+  empire_invite_banner_title: '🤝 Undang Rekan Investor (+5.000 Uang)',
   empire_invite_banner_desc: 'Undang teman, dapatkan instan +5.000 Uang, komisi berjenjang hingga 7% dan kickback omzet 0.1% seumur hidup!',
 
   // Arcade / Mini-games
@@ -53,7 +53,88 @@ export const id: TranslationKeys = {
   btn_copy: 'Salin',
   btn_copied: 'Tersalin!',
   btn_retry: 'Coba Lagi',
-  status_loading: 'Memuat�',
+  btn_share: 'Bagikan',
+  status_loading: 'Memuat…',
   status_success: 'Berhasil!',
   status_error: 'Terjadi kesalahan',
+
+  // Share Modal & Referral Virality
+  share_modal_title: 'Undang Rekan Investor',
+  share_modal_subtitle: 'Bagikan tautan undanganmu, kalian berdua langsung mendapatkan bonus awal +5.000 Uang!',
+  share_template_starter_label: '🚀 Bonus +5.000 Uang',
+  share_template_starter_text: '🚀 Bangun kerajaan kriptomu bersamaku! Klik tautan dan dapatkan bonus awal +5.000 Uang: ',
+  share_template_clan_label: '🛡️ Gabung Kartel',
+  share_template_clan_text: '🛡️ Gabung dengan kartel kami! Mari satukan holding dan kuasai papan peringkat bersama: ',
+  share_template_whale_label: '💎 Rekan Investor',
+  share_template_whale_text: '💎 Mencari rekan investor di holding Project Empire. Bangun bisnismu dan berkembanglah bersamaku: ',
+  share_btn_telegram: 'Bagikan via Telegram',
+  share_btn_copy: 'Salin Tautan Undangan',
+  share_direct_link: 'Tautan Undangan Langsung',
+
+  // Friends / Partners Screen
+  friends_title: 'Mitra & Aliansi',
+  friends_eyebrow: 'TUMBUH BERSAMA',
+  friends_description: 'Undang rekan investor, dapatkan komisi omzet, dan bangun holding kartel.',
+  friends_tab_partners: 'Mitra',
+  friends_tab_clans: 'Kartel',
+  friends_invite_card_title: 'Tautan Undangan Khusus',
+  friends_invite_card_desc: 'Dapatkan instan +5.000 Uang dan bagi hasil bertingkat seumur hidup untuk setiap teman aktif!',
+  friends_journey_title: 'Perjalanan Kemitraan',
+  friends_step_activation: 'Aktivasi',
+  friends_step_day2: 'Hari ke-2',
+  friends_step_day7: 'Hari ke-7',
+  friends_step_growth: 'Pertumbuhan',
+  friends_step_activation_desc: 'Bergabung dalam game',
+  friends_step_day2_desc: 'Kembali bermain',
+  friends_step_day7_desc: 'Loyalitas mingguan',
+  friends_step_growth_desc: 'Perkembangan ekonomi',
+  friends_no_partners: 'Belum ada rekan investor',
+  friends_no_partners_desc: 'Bagikan tautanmu ke teman atau grup Telegram untuk merekrut mitra pertamamu.',
+
+  // Business Tiers in Empire
+  tier_local: 'Usaha Lokal',
+  tier_tech: 'Teknologi & Finansial',
+  tier_quantum: 'Kuantum & AI',
+  tier_space: 'Antariksa & Galaksi',
+
+  // Missions Screen
+  missions_title: 'Misi & Hadiah',
+  missions_eyebrow: 'PUSAT OPERASI',
+  missions_description: 'Selesaikan misi harian dan komunitas untuk mendapatkan uang instan dan poin musim.',
+  missions_tab_daily: 'Harian',
+  missions_tab_social: 'Komunitas',
+  missions_tab_special: 'Khusus',
+  missions_claim: 'Klaim Hadiah',
+  missions_claimed: 'Selesai',
+  missions_chest_claim: 'Buka Peti',
+  missions_chest_claimed: '✓ Diklaim',
+  missions_chest_claiming: 'Membuka…',
+  missions_chest_title_unlocked: 'Peti Hari Ini Terbuka!',
+  missions_chest_title_daily: 'Peti Streak Harian',
+  missions_chest_sub_unlocked: 'Kembali besok untuk hadiah baru.',
+  missions_chest_sub_daily: 'Masuk setiap hari untuk membuka hadiahmu.',
+
+  // Empire Screen Additional
+  empire_claiming: 'Mengumpulkan…',
+  empire_collect_income: 'Kumpulkan pendapatan',
+
+  // Leaderboard Screen
+  lb_title: 'Papan Peringkat',
+  lb_eyebrow: 'PRESTISE GLOBAL',
+  lb_description: 'Kerajaan teratas berdasarkan perolehan pendapatan dan poin turnamen musiman.',
+  lb_tab_all: 'Semua Waktu',
+  lb_tab_weekly: 'Mingguan',
+  lb_rank: 'Peringkat',
+
+  // Shop Screen
+  shop_title: 'Toko Kerajaan',
+  shop_eyebrow: 'MODAL & PENINGKAT',
+  shop_description: 'Dapatkan paket booster strategis dan peningkatan untuk mempercepat kerajaanmu.',
+  shop_buy: 'Beli',
+  shop_purchased: 'Dimiliki',
+  shop_sales_soon: 'Segera hadir',
+  shop_payment_opening: 'Membuka pembayaran…',
+  shop_pass_active: 'Empire Pass Aktif',
+  shop_pass_active_badge: 'Empire Pass Aktif',
+  shop_pass_buy: 'Beli Empire Pass',
 };

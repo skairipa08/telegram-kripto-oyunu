@@ -1,4 +1,4 @@
-﻿import type { TranslationKeys } from '../types';
+import type { TranslationKeys } from '../types';
 
 export const fa: TranslationKeys = {
   // Navigation Tabs
@@ -53,7 +53,88 @@ export const fa: TranslationKeys = {
   btn_copy: 'کپی',
   btn_copied: 'کپی شد!',
   btn_retry: 'تلاش مجدد',
+  btn_share: 'اشتراک‌گذاری',
   status_loading: 'در حال بارگذاری…',
   status_success: 'موفقیت‌آمیز!',
   status_error: 'خطایی رخ داد',
+
+  // Share Modal & Referral Virality
+  share_modal_title: 'دعوت از هم‌سرمایه‌گذاران',
+  share_modal_subtitle: 'لینک دعوت خود را با دوستان به اشتراک بگذارید تا هر دو طرف ۵,۰۰۰ پول نقد هدیه بگیرید!',
+  share_template_starter_label: '🚀 پاداش +5,000 پول نقد',
+  share_template_starter_text: '🚀 با من امپراتوری کریپتوی خودت رو بساز! روی لینک کلیک کن و بلافاصله ۵,۰۰۰ پول نقد شروع بگیر: ',
+  share_template_clan_label: '🛡️ عضویت در کارتل',
+  share_template_clan_text: '🛡️ به کارتل ما بپیوند! بیایید با ادغام هلدینگ‌ها بر جدول برترین‌ها مسلط شویم: ',
+  share_template_whale_label: '💎 هم‌سرمایه‌گذار',
+  share_template_whale_text: '💎 به دنبال شریک برای هلدینگ Project Empire هستم. کسب‌وکارت را بساز و با هم رشد کنیم: ',
+  share_btn_telegram: 'اشتراک‌گذاری در تلگرام',
+  share_btn_copy: 'کپی لینک دعوت',
+  share_direct_link: 'لینک دعوت مستقیم',
+
+  // Friends / Partners Screen
+  friends_title: 'شرکا و اتحادها',
+  friends_eyebrow: 'رشد جمعی',
+  friends_description: 'هم‌سرمایه‌گذاران را دعوت کنید، پورسانت گردش مالی دریافت کنید و هلدینگ‌های کارتل بسازید.',
+  friends_tab_partners: 'شرکا',
+  friends_tab_clans: 'کارتل‌ها',
+  friends_invite_card_title: 'لینک اختصاصی دعوت شما',
+  friends_invite_card_desc: 'به ازای هر دوست فعال بلافاصله ۵,۰۰۰ پول نقد و پورسانت مادام‌العمر دریافت کنید!',
+  friends_journey_title: 'مسیر شراکت',
+  friends_step_activation: 'فعال‌سازی',
+  friends_step_day2: 'روز ۲',
+  friends_step_day7: 'روز ۷',
+  friends_step_growth: 'رشد',
+  friends_step_activation_desc: 'ورود به بازی',
+  friends_step_day2_desc: 'بازگشت به بازی',
+  friends_step_day7_desc: 'وفاداری هفتگی',
+  friends_step_growth_desc: 'توسعه اقتصادی',
+  friends_no_partners: 'هنوز هم‌سرمایه‌گذاری ثبت نشده',
+  friends_no_partners_desc: 'لینک دعوت خود را در تلگرام به اشتراک بگذارید تا اولین شرکای خود را جذب کنید.',
+
+  // Business Tiers in Empire
+  tier_local: 'کسب‌وکار محلی',
+  tier_tech: 'فناوری و مالی',
+  tier_quantum: 'کوانتوم و هوش مصنوعی',
+  tier_space: 'فضا و کهکشان',
+
+  // Missions Screen
+  missions_title: 'مأموریت‌ها و جوایز',
+  missions_eyebrow: 'مرکز عملیات',
+  missions_description: 'اهداف روزانه و اجتماعی را کامل کنید تا پول نقد و امتیاز فصل به دست آورید.',
+  missions_tab_daily: 'روزانه',
+  missions_tab_social: 'جامعه',
+  missions_tab_special: 'ویژه',
+  missions_claim: 'دریافت جایزه',
+  missions_claimed: 'انجام شد',
+  missions_chest_claim: 'باز کردن صندوق',
+  missions_chest_claimed: '✓ دریافت شد',
+  missions_chest_claiming: 'در حال باز شدن…',
+  missions_chest_title_unlocked: 'صندوق امروز باز شد!',
+  missions_chest_title_daily: 'صندوق زنجیره روزانه',
+  missions_chest_sub_unlocked: 'فردا برای پاداش جدید برگردید.',
+  missions_chest_sub_daily: 'برای باز کردن جایزه هر روز وارد شوید.',
+
+  // Empire Screen Additional
+  empire_claiming: 'در حال دریافت…',
+  empire_collect_income: 'دریافت درآمد',
+
+  // Leaderboard Screen
+  lb_title: 'جدول برترین‌ها',
+  lb_eyebrow: 'اعتبار جهانی',
+  lb_description: 'برترین امپراتوری‌ها بر اساس درآمد و امتیازات فصلی.',
+  lb_tab_all: 'کل دوران',
+  lb_tab_weekly: 'هفتگی',
+  lb_rank: 'رتبه',
+
+  // Shop Screen
+  shop_title: 'فروشگاه امپراتوری',
+  shop_eyebrow: 'سرمایه و تقویت‌کننده‌ها',
+  shop_description: 'برای شتاب دادن به پیشرفت امپراتوری بسته‌ها و ارتقاها را دریافت کنید.',
+  shop_buy: 'خرید',
+  shop_purchased: 'خریداری شد',
+  shop_sales_soon: 'به زودی',
+  shop_payment_opening: 'در حال باز شدن پرداخت…',
+  shop_pass_active: 'امپایر پس فعال',
+  shop_pass_active_badge: 'امپایر پس فعال',
+  shop_pass_buy: 'خرید امپایر پس',
 };

@@ -72,7 +72,88 @@ export interface TranslationKeys {
   btn_copy: string;
   btn_copied: string;
   btn_retry: string;
+  btn_share: string;
   status_loading: string;
   status_success: string;
   status_error: string;
+
+  // Share Modal & Referral Virality
+  share_modal_title: string;
+  share_modal_subtitle: string;
+  share_template_starter_label: string;
+  share_template_starter_text: string;
+  share_template_clan_label: string;
+  share_template_clan_text: string;
+  share_template_whale_label: string;
+  share_template_whale_text: string;
+  share_btn_telegram: string;
+  share_btn_copy: string;
+  share_direct_link: string;
+
+  // Friends / Partners Screen
+  friends_title: string;
+  friends_eyebrow: string;
+  friends_description: string;
+  friends_tab_partners: string;
+  friends_tab_clans: string;
+  friends_invite_card_title: string;
+  friends_invite_card_desc: string;
+  friends_journey_title: string;
+  friends_step_activation: string;
+  friends_step_day2: string;
+  friends_step_day7: string;
+  friends_step_growth: string;
+  friends_step_activation_desc: string;
+  friends_step_day2_desc: string;
+  friends_step_day7_desc: string;
+  friends_step_growth_desc: string;
+  friends_no_partners: string;
+  friends_no_partners_desc: string;
+
+  // Business Tiers in Empire
+  tier_local: string;
+  tier_tech: string;
+  tier_quantum: string;
+  tier_space: string;
+
+  // Missions Screen
+  missions_title: string;
+  missions_eyebrow: string;
+  missions_description: string;
+  missions_tab_daily: string;
+  missions_tab_social: string;
+  missions_tab_special: string;
+  missions_claim: string;
+  missions_claimed: string;
+  missions_chest_claim: string;
+  missions_chest_claimed: string;
+  missions_chest_claiming: string;
+  missions_chest_title_unlocked: string;
+  missions_chest_title_daily: string;
+  missions_chest_sub_unlocked: string;
+  missions_chest_sub_daily: string;
+
+  // Empire Screen Additional
+  empire_claiming: string;
+  empire_collect_income: string;
+
+  // Leaderboard Screen
+  lb_title: string;
+  lb_eyebrow: string;
+  lb_description: string;
+  lb_tab_all: string;
+  lb_tab_weekly: string;
+  lb_rank: string;
+
+  // Shop Screen
+  shop_title: string;
+  shop_eyebrow: string;
+  shop_description: string;
+  shop_buy: string;
+  shop_purchased: string;
+  shop_sales_soon: string;
+  shop_payment_opening: string;
+  shop_pass_active: string;
+  shop_pass_active_badge: string;
+  shop_pass_buy: string;
 }

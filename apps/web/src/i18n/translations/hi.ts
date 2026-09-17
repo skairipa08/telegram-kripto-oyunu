@@ -1,4 +1,4 @@
-﻿import type { TranslationKeys } from '../types';
+import type { TranslationKeys } from '../types';
 
 export const hi: TranslationKeys = {
   // Navigation Tabs
@@ -53,7 +53,88 @@ export const hi: TranslationKeys = {
   btn_copy: 'कॉपी करें',
   btn_copied: 'कॉपी हो गया!',
   btn_retry: 'पुनः प्रयास करें',
+  btn_share: 'शेयर करें',
   status_loading: 'लोड हो रहा है…',
   status_success: 'सफलता!',
   status_error: 'एक त्रुटि हुई',
+
+  // Share Modal & Referral Virality
+  share_modal_title: 'सह-निवेशकों को आमंत्रित करें',
+  share_modal_subtitle: 'मित्रों के साथ अपना लिंक साझा करें, आप दोनों को तुरंत +5,000 नकद बोनस मिलेगा!',
+  share_template_starter_label: '🚀 +5,000 नकद बोनस',
+  share_template_starter_text: '🚀 मेरे साथ अपना क्रिप्टो साम्राज्य बनाएं! लिंक पर क्लिक करें और तुरंत +5,000 नकद शुरुआती बोनस पाएं: ',
+  share_template_clan_label: '🛡️ कार्टेल में शामिल हों',
+  share_template_clan_text: '🛡️ हमारे कार्टेल में शामिल हों! होल्डिंग्स एकजुट करें और लीडरबोर्ड पर राज करें: ',
+  share_template_whale_label: '💎 सह-निवेशक',
+  share_template_whale_text: '💎 प्रोजेक्ट एम्पायर होल्डिंग में साझेदार खोज रहा हूँ। व्यवसाय बनाएं और साथ बढ़ें: ',
+  share_btn_telegram: 'Telegram पर शेयर करें',
+  share_btn_copy: 'आमंत्रण लिंक कॉपी करें',
+  share_direct_link: 'सीधा आमंत्रण लिंक',
+
+  // Friends / Partners Screen
+  friends_title: 'साझेदार और गठबंधन',
+  friends_eyebrow: 'साथ मिलकर बढ़ें',
+  friends_description: 'सह-निवेशकों को आमंत्रित करें, टर्नओवर कमीशन कमाएं और कार्टेल होल्डिंग्स बनाएं।',
+  friends_tab_partners: 'साझेदार',
+  friends_tab_clans: 'कार्टेल',
+  friends_invite_card_title: 'आपका रेफ़रल लिंक',
+  friends_invite_card_desc: 'प्रत्येक सक्रिय मित्र पर तुरंत +5,000 नकद और आजीवन स्तरीय कमीशन पाएं!',
+  friends_journey_title: 'साझेदारी की यात्रा',
+  friends_step_activation: 'सक्रियण',
+  friends_step_day2: 'दिन 2',
+  friends_step_day7: 'दिन 7',
+  friends_step_growth: 'विकास',
+  friends_step_activation_desc: 'गेम में शामिल हुए',
+  friends_step_day2_desc: 'खेलने लौटे',
+  friends_step_day7_desc: 'साप्ताहिक निष्ठा',
+  friends_step_growth_desc: 'आर्थिक विस्तार',
+  friends_no_partners: 'अभी कोई सह-निवेशक नहीं',
+  friends_no_partners_desc: 'अपने पहले साझेदारों को जोड़ने के लिए अपना आमंत्रण लिंक मित्रों या Telegram ग्रुप में साझा करें।',
+
+  // Business Tiers in Empire
+  tier_local: 'स्थानीय उद्यम',
+  tier_tech: 'तकनीक और वित्त',
+  tier_quantum: 'क्वांटम और एआई',
+  tier_space: 'अंतरिक्ष और गैलेक्सी',
+
+  // Missions Screen
+  missions_title: 'मिशन और पुरस्कार',
+  missions_eyebrow: 'ऑपरेशन्स केंद्र',
+  missions_description: 'नकद और सीजन अंक कमाने के लिए दैनिक और समुदाय मील के पत्थर पूरे करें।',
+  missions_tab_daily: 'दैनिक',
+  missions_tab_social: 'समुदाय',
+  missions_tab_special: 'विशेष',
+  missions_claim: 'दावा करें',
+  missions_claimed: 'प्राप्त किया',
+  missions_chest_claim: 'चेस्ट खोलें',
+  missions_chest_claimed: '✓ प्राप्त किया',
+  missions_chest_claiming: 'खुल रहा है…',
+  missions_chest_title_unlocked: 'आज का चेस्ट अनलॉक हुआ!',
+  missions_chest_title_daily: 'दैनिक स्ट्रीक चेस्ट',
+  missions_chest_sub_unlocked: 'नए इनाम के लिए कल वापस आएं।',
+  missions_chest_sub_daily: 'अपना इनाम खोलने के लिए रोज़ाना लॉग इन करें।',
+
+  // Empire Screen Additional
+  empire_claiming: 'एकत्र हो रहा है…',
+  empire_collect_income: 'आय एकत्र करें',
+
+  // Leaderboard Screen
+  lb_title: 'लीडरबोर्ड रैंकिंग',
+  lb_eyebrow: 'वैश्विक प्रतिष्ठा',
+  lb_description: 'राजस्व और टूर्नामेंट अंकों के आधार पर शीर्ष साम्राज्य।',
+  lb_tab_all: 'सभी समय',
+  lb_tab_weekly: 'साप्ताहिक',
+  lb_rank: 'स्थान',
+
+  // Shop Screen
+  shop_title: 'साम्राज्य की दुकान',
+  shop_eyebrow: 'पूंजी और बूस्टर्स',
+  shop_description: 'साम्राज्य के विकास को गति देने के लिए विशेष बूस्टर पैक प्राप्त करें।',
+  shop_buy: 'खरीदें',
+  shop_purchased: 'स्वामित्व में',
+  shop_sales_soon: 'जल्द आ रहा है',
+  shop_payment_opening: 'भुगतान खुल रहा है…',
+  shop_pass_active: 'एम्पायर पास सक्रिय',
+  shop_pass_active_badge: 'एम्पायर पास सक्रिय',
+  shop_pass_buy: 'एम्पायर पास लें',
 };

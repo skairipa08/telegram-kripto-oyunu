@@ -1,4 +1,4 @@
-﻿import type { TranslationKeys } from '../types';
+import type { TranslationKeys } from '../types';
 
 export const uz: TranslationKeys = {
   // Navigation Tabs
@@ -53,7 +53,88 @@ export const uz: TranslationKeys = {
   btn_copy: 'Nusxalash',
   btn_copied: 'Nusxalandi!',
   btn_retry: 'Qayta urinish',
+  btn_share: 'Ulashish',
   status_loading: 'Yuklanmoqda…',
   status_success: 'Muvaffaqiyatli!',
   status_error: 'Xatolik yuz berdi',
+
+  // Share Modal & Referral Virality
+  share_modal_title: 'Hamkor investorlarni taklif qilish',
+  share_modal_subtitle: 'Taklif havolangizni doʻstlaringiz bilan ulashing, ikkalangiz ham darhol +5 000 Naqd bonus olasiz!',
+  share_template_starter_label: '🚀 +5 000 Naqd bonusi',
+  share_template_starter_text: '🚀 Men bilan kripto imperiyangizni quring! Havolaga bosing va boshlangʻich +5 000 Naqd pul oling: ',
+  share_template_clan_label: '🛡️ Kartelga qoʻshilish',
+  share_template_clan_text: '🛡️ Bizning kartelga qoʻshiling! Holdinglarni birlashtirib reytingni birga zabt etamiz: ',
+  share_template_whale_label: '💎 Hamkor investor',
+  share_template_whale_text: '💎 Project Empire holdingimga hamkor qidirmoqdaman. Bizneslaringizni quring va birga oʻsing: ',
+  share_btn_telegram: 'Telegram orqali ulashish',
+  share_btn_copy: 'Taklif havolasini nusxalash',
+  share_direct_link: 'Toʻgʻridan-toʻgʻri taklif havolasi',
+
+  // Friends / Partners Screen
+  friends_title: 'Hamkorlar va Ittifoqlar',
+  friends_eyebrow: 'BIRGALIKDA OʻSISH',
+  friends_description: 'Hamkor investorlarni taklif qiling, aylanmadan komissiya oling va kartel holdinglarini yarating.',
+  friends_tab_partners: 'Hamkorlar',
+  friends_tab_clans: 'Kartellar',
+  friends_invite_card_title: 'Maxsus taklif havolangiz',
+  friends_invite_card_desc: 'Har bir faol doʻstingiz uchun darhol +5 000 Naqd va umrbod daromad foizini oling!',
+  friends_journey_title: 'Hamkorlik yoʻli',
+  friends_step_activation: 'Faollashtirish',
+  friends_step_day2: '2-kun',
+  friends_step_day7: '7-kun',
+  friends_step_growth: 'Oʻsish',
+  friends_step_activation_desc: 'Oʻyinga kirish',
+  friends_step_day2_desc: 'Oʻyinga qaytish',
+  friends_step_day7_desc: 'Haftalik sodiqlik',
+  friends_step_growth_desc: 'Iqtisodiy rivojlanish',
+  friends_no_partners: 'Hali hamkor investorlar yoʻq',
+  friends_no_partners_desc: 'Ilk hamkorlaringizni taklif qilish uchun havolani doʻstlaringiz yoki Telegram guruhlariga yuboring.',
+
+  // Business Tiers in Empire
+  tier_local: 'Mahalliy tashabbus',
+  tier_tech: 'Texnologiya va Moliya',
+  tier_quantum: 'Kvant va Sunʼiy intellekt',
+  tier_space: 'Koinot va Galaktika',
+
+  // Missions Screen
+  missions_title: 'Vazifalar va Mukofotlar',
+  missions_eyebrow: 'OPERATSIYA MARKAZI',
+  missions_description: 'Naqd pul va mavsum ballarini olish uchun kunlik va ijtimoiy vazifalarni bajaring.',
+  missions_tab_daily: 'Kunlik',
+  missions_tab_social: 'Hamjamiyat',
+  missions_tab_special: 'Maxsus',
+  missions_claim: 'Mukofotni olish',
+  missions_claimed: 'Bajarildi',
+  missions_chest_claim: 'Sandıqni ochish',
+  missions_chest_claimed: '✓ Olingan',
+  missions_chest_claiming: 'Ochilmoqda…',
+  missions_chest_title_unlocked: 'Bugungi sandiq ochildi!',
+  missions_chest_title_daily: 'Kunlik seriya sandigʻi',
+  missions_chest_sub_unlocked: 'Yangi mukofot uchun ertaga qayting.',
+  missions_chest_sub_daily: 'Sovgʻangizni ochish uchun har kuni kiring.',
+
+  // Empire Screen Additional
+  empire_claiming: 'Yigʻilmoqda…',
+  empire_collect_income: 'Daromadni yigʻish',
+
+  // Leaderboard Screen
+  lb_title: 'Reyting jadvali',
+  lb_eyebrow: 'GLOBAL OBROʻ',
+  lb_description: 'Daromad va mavsumiy turnir ballari boʻyicha yetakchi imperiyalar.',
+  lb_tab_all: 'Barcha vaqt',
+  lb_tab_weekly: 'Haftalik',
+  lb_rank: 'Oʻrin',
+
+  // Shop Screen
+  shop_title: 'Imperiya doʻkoni',
+  shop_eyebrow: 'KAPITAL VA KUCHAYTIRGICHLAR',
+  shop_description: 'Imperiyangizni tezlashtirish uchun maxsus paketlar va kuchaytirgichlarga ega boʻling.',
+  shop_buy: 'Sotib olish',
+  shop_purchased: 'Mavjud',
+  shop_sales_soon: 'Tez kunda',
+  shop_payment_opening: 'Toʻlov ochilmoqda…',
+  shop_pass_active: 'Empire Pass Faol',
+  shop_pass_active_badge: 'Empire Pass Faol',
+  shop_pass_buy: 'Empire Pass olish',
 };

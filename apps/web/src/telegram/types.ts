@@ -38,6 +38,13 @@ export interface TelegramWebApp {
   ): void;
   openTelegramLink?(url: string): void;
   openLink?(url: string): void;
+  HapticFeedback?: {
+    notificationOccurred(type: 'error' | 'success' | 'warning'): void;
+    impactOccurred(
+      style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft',
+    ): void;
+    selectionChanged(): void;
+  };
 }
 
 declare global {

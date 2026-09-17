@@ -5,6 +5,7 @@ import {
   ResourceNotice,
   SectionTitle,
 } from '../game/ui';
+import { useI18n } from '../i18n/i18n-context';
 import './social.css';
 
 type LeaderboardScope = 'global' | 'friends';
@@ -33,15 +34,16 @@ export function LeaderboardScreen({
   onLoadMore,
   loadingMore = false,
 }: LeaderboardScreenProps) {
+  const { t } = useI18n();
   const data = resource.status === 'ready' ? resource.data : null;
   const scopeLabel =
-    scope === 'global' ? 'Genel sıralama' : 'Arkadaş sıralaması';
+    scope === 'global' ? t('lb_tab_all') : t('nav_friends');
 
   const filters = (
     <div
       className="leaderboard-filters"
       role="group"
-      aria-label="Sıralama kapsamı"
+      aria-label={t('lb_title')}
     >
       <button
         type="button"
@@ -49,7 +51,7 @@ export function LeaderboardScreen({
         aria-pressed={scope === 'global'}
         onClick={() => onScopeChange('global')}
       >
-        Genel
+        {t('lb_tab_all')}
       </button>
       <button
         type="button"
@@ -57,7 +59,7 @@ export function LeaderboardScreen({
         aria-pressed={scope === 'friends'}
         onClick={() => onScopeChange('friends')}
       >
-        Arkadaşlar
+        {t('nav_friends')}
       </button>
     </div>
   );
@@ -94,27 +96,27 @@ export function LeaderboardScreen({
   return (
     <section
       className="social-screen leaderboard-screen"
-      aria-label="Liderlik tablosu"
+      aria-label={t('lb_title')}
     >
       <SectionTitle
-        eyebrow={data.seasonName}
-        title="Liderlik tablosu"
-        description="İmparatorluğunun sezon boyunca biriktirdiği gücü karşılaştır."
+        eyebrow={data.seasonName || t('lb_eyebrow')}
+        title={t('lb_title')}
+        description={t('lb_description')}
         action={filters}
       />
 
-      <aside className="own-rank panel" aria-label="Senin sıralaman">
+      <aside className="own-rank panel" aria-label={t('lb_rank')}>
         <RankEmblem />
         <div className="own-rank-copy">
-          <span className="eyebrow">Senin konumun</span>
+          <span className="eyebrow">{t('lb_rank')}</span>
           <strong>
             {data.ownRank === null
-              ? 'Sıralama dışında'
+              ? '-'
               : `#${formatNumber(data.ownRank)}`}
           </strong>
         </div>
         <div className="own-rank-points">
-          <span>Sezon puanı</span>
+          <span>{t('header_season_points')}</span>
           <strong>{formatNumber(data.ownPoints)}</strong>
         </div>
       </aside>

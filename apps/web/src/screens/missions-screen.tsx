@@ -9,6 +9,7 @@ import {
 } from '../game/ui';
 import { CelebrationModal } from '../components/celebration-modal';
 import { getSessionToken } from '../api/client';
+import { useI18n } from '../i18n/i18n-context';
 import './empire-missions.css';
 import '../components/arcade.css';
 import './social.css';
@@ -257,6 +258,7 @@ export function MissionsScreen({
   retryMissionId = null,
   claimFeedback = null,
 }: MissionsScreenProps) {
+  const { t } = useI18n();
   const [filter, setFilter] = useState<MissionFilter>('daily');
   const [isStreakClaiming, setIsStreakClaiming] = useState(false);
   const [localStreakClaimed, setLocalStreakClaimed] = useState(false);
@@ -383,18 +385,18 @@ export function MissionsScreen({
   const streakDays = Math.min(7, Math.max(0, streak));
 
   return (
-    <section className="missions-screen" aria-label="Görevler">
+    <section className="missions-screen" aria-label={t('missions_title')}>
       <SectionTitle
-        eyebrow="SEZON İLERLEMESİ"
-        title="Görevler"
-        description="Kısa hedefleri tamamla, serini koru ve sezon puanı biriktir."
+        eyebrow={t('missions_eyebrow')}
+        title={t('missions_title')}
+        description={t('missions_description')}
       />
 
       <article className="panel missions-streak">
         <div className="missions-streak-copy">
-          <p className="eyebrow">GÜNLÜK SERİ</p>
+          <p className="eyebrow">{t('missions_eyebrow')}</p>
           <h2>{formatNumber(streak)} gün</h2>
-          <p className="muted">Her gün geri dönerek ritmini koru.</p>
+          <p className="muted">{t('missions_description')}</p>
         </div>
         <ol
           className="missions-week-strip"
@@ -424,13 +426,13 @@ export function MissionsScreen({
             <div>
               <strong style={{ display: 'block', fontSize: '14px' }}>
                 {isStreakClaimed
-                  ? 'Bugünün Sandığı Açıldı!'
-                  : 'Günlük Seri Sandığı'}
+                  ? t('missions_chest_title_unlocked')
+                  : t('missions_chest_title_daily')}
               </strong>
               <small className="muted" style={{ fontSize: '12px' }}>
                 {isStreakClaimed
-                  ? 'Yarın yeni ödül için geri dön.'
-                  : 'Her gün giriş yaparak hediyeni aç.'}
+                  ? t('missions_chest_sub_unlocked')
+                  : t('missions_chest_sub_daily')}
               </small>
             </div>
           </div>
@@ -441,10 +443,10 @@ export function MissionsScreen({
             onClick={() => void handleClaimDailyStreak()}
           >
             {isStreakClaiming
-              ? 'Açılıyor…'
+              ? t('missions_chest_claiming')
               : isStreakClaimed
-                ? '✓ Alındı'
-                : 'Sandığı Aç'}
+                ? t('missions_chest_claimed')
+                : t('missions_chest_claim')}
           </button>
         </div>
         {streakClaimError && (
@@ -600,21 +602,21 @@ export function MissionsScreen({
             aria-pressed={filter === 'daily'}
             onClick={() => setFilter('daily')}
           >
-            Günlük
+            {t('missions_tab_daily')}
           </button>
           <button
             type="button"
             aria-pressed={filter === 'weekly'}
             onClick={() => setFilter('weekly')}
           >
-            Haftalık
+            {t('lb_tab_weekly')}
           </button>
           <button
             type="button"
             aria-pressed={filter === 'lifetime'}
             onClick={() => setFilter('lifetime')}
           >
-            Genel
+            {t('lb_tab_all')}
           </button>
         </div>
       </div>
