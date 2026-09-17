@@ -3,6 +3,7 @@ import {
   calculatePassiveCommission,
   calculateReferralReward,
   calculateReferralKickback,
+  calculateReferralStarterBonus,
   evaluateInviteeCashMilestones,
   evaluateInviteeMilestones,
   generateReferralDeepLink,
@@ -14,6 +15,8 @@ import {
   REFERRAL_BIND_WINDOW_MS,
   REFERRAL_CASH_KICKBACK_RATE,
   REFERRAL_COMMISSION_TIERS,
+  REFERRAL_MUTUAL_STARTER_CASH,
+  TELEGRAM_PREMIUM_REFERRAL_MULTIPLIER,
 } from './referral';
 
 describe('referral engine pure logic', () => {
@@ -334,6 +337,22 @@ describe('referral engine pure logic', () => {
           ratePercent: 7,
           rateDecimal: 0.07,
         });
+      });
+    });
+
+    describe('calculateReferralStarterBonus & Telegram Premium multiplier', () => {
+      it('returns base 5,000 Cash for standard users', () => {
+        const bonus = calculateReferralStarterBonus(false);
+        expect(bonus.cashBonus).toBe(REFERRAL_MUTUAL_STARTER_CASH);
+        expect(bonus.multiplier).toBe(1);
+        expect(bonus.cashBonus).toBe(5000);
+      });
+
+      it('returns 3x (15,000 Cash) for Telegram Premium users', () => {
+        const bonus = calculateReferralStarterBonus(true);
+        expect(bonus.multiplier).toBe(TELEGRAM_PREMIUM_REFERRAL_MULTIPLIER);
+        expect(bonus.multiplier).toBe(3);
+        expect(bonus.cashBonus).toBe(15000);
       });
     });
   });

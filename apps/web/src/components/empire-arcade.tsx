@@ -235,6 +235,7 @@ export function EmpireArcade({
             playerCash={playerCash}
             {...(onCashUpdated ? { onCashUpdated } : {})}
             {...(onPreviewReward ? { onReward: onPreviewReward } : {})}
+            {...(referralLink ? { referralLink } : {})}
           />
         )}
         {game === 'mines' && (

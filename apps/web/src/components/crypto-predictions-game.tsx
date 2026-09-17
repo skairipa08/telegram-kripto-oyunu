@@ -502,6 +502,23 @@ export function CryptoPredictionsGame({
                     +{amt}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setStakeInput(String(playerCash))}
+                  style={{
+                    flex: 1,
+                    padding: '6px',
+                    borderRadius: '6px',
+                    background: 'rgba(234, 179, 8, 0.15)',
+                    border: '1px solid #eab308',
+                    color: '#facc15',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                >
+                  MAKS
+                </button>
               </div>
 
               {feedback && (

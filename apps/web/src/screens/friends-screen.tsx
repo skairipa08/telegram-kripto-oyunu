@@ -400,6 +400,66 @@ export function FriendsScreen({
         </div>
       </div>
 
+      <div
+        className="panel referral-premium-bonus-banner"
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(59, 130, 246, 0.12))',
+          border: '1px solid rgba(168, 85, 247, 0.3)',
+          borderRadius: '12px',
+          padding: '14px 18px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+        }}
+      >
+        <span style={{ fontSize: '28px' }} aria-hidden="true">
+          ⭐
+        </span>
+        <div>
+          <strong
+            style={{ display: 'block', fontSize: '15px', color: '#c084fc' }}
+          >
+            Telegram Premium 3× Çarpanı
+          </strong>
+          <span style={{ fontSize: '13px', opacity: 0.9 }}>
+            Telegram Premium üyesi bir arkadaşını getirdiğinde{' '}
+            <strong>+15.000 Nakit ve 3 kat Sezon Puanı</strong> kazanırsın!
+          </span>
+        </div>
+      </div>
+
+      <div
+        className="panel referral-kickback-banner"
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(234, 179, 8, 0.12), rgba(245, 158, 11, 0.08))',
+          border: '1px solid rgba(234, 179, 8, 0.25)',
+          borderRadius: '12px',
+          padding: '14px 18px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+        }}
+      >
+        <span style={{ fontSize: '28px' }} aria-hidden="true">
+          ⚡
+        </span>
+        <div>
+          <strong
+            style={{ display: 'block', fontSize: '15px', color: '#facc15' }}
+          >
+            Ömür Boyu Ciro Primi (Binde 1 Kickback)
+          </strong>
+          <span style={{ fontSize: '13px', opacity: 0.9 }}>
+            Davet ettiğin arkadaşların holdinglerini büyüttükçe, her kazançlarından{' '}
+            <strong>‰1 (binde 1) nakit pay</strong> otomatik olarak kasana yatar!
+          </span>
+        </div>
+      </div>
+
       <div className="friends-metrics" aria-label="Davet özeti">
         <div className="metric">
           <span>Nitelikli davet</span>

@@ -19,6 +19,7 @@ import {
   playWinSound,
 } from '../game/arcade-audio';
 import { hapticCrash, hapticSuccess, hapticTap } from '../game/arcade-haptics';
+import { formatNumber } from '../game/ui';
 import './arcade.css';
 
 export interface CryptoCrashGameProps {
@@ -26,6 +27,7 @@ export interface CryptoCrashGameProps {
   onReward?: (amount: number) => void;
   onCashUpdated?: (newCash: number) => void;
   preview?: boolean;
+  referralLink?: string;
 }
 
 type GamePhase = 'idle' | 'countdown' | 'running' | 'cashed_out' | 'crashed';
@@ -34,6 +36,7 @@ export function CryptoCrashGame({
   playerCash = 1000,
   onReward,
   onCashUpdated,
+  referralLink,
 }: CryptoCrashGameProps) {
   const initialStake =
     playerCash >= MIN_STAKE ? Math.min(100, playerCash) : MIN_STAKE;
@@ -594,7 +597,7 @@ export function CryptoCrashGame({
   }
 
   function handleMaxStake() {
-    const maxVal = Math.max(MIN_STAKE, Math.min(playerCash, MAX_STAKE));
+    const maxVal = Math.max(MIN_STAKE, playerCash);
     setStake(maxVal);
     setRawStakeInput(String(maxVal));
     playTapSound();
@@ -854,6 +857,67 @@ export function CryptoCrashGame({
         >
           🚀 BOĞA BAŞLAT ({isStakeValid ? stake : 0} NAKİT)
         </button>
+      )}
+
+      {/* Victory Brag Card */}
+      {phase === 'cashed_out' && cashOutMultiplier && (
+        <div
+          className="crash-brag-card"
+          style={{
+            marginTop: '12px',
+            padding: '14px 18px',
+            borderRadius: '12px',
+            background:
+              'linear-gradient(135deg, rgba(234, 179, 8, 0.18), rgba(34, 197, 94, 0.18))',
+            border: '1px solid rgba(234, 179, 8, 0.4)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+            textAlign: 'center',
+          }}
+        >
+          <span style={{ fontSize: '15px', fontWeight: 800, color: '#facc15' }}>
+            🎉 Harika Çıkış! {cashOutMultiplier.toFixed(2)}× Çarpan
+          </span>
+          <span style={{ fontSize: '13px', color: '#e2e8f0' }}>
+            Arkadaşlarına hava at ve davet ederek ekstra +5.000 Nakit ve binde 1 ciro primi kazan!
+          </span>
+          <button
+            type="button"
+            className="button"
+            onClick={() => {
+              const link = referralLink || 'https://t.me/ProjectEmpireBot';
+              const multText = `${cashOutMultiplier.toFixed(2)}x`;
+              const profitText = cashoutProfitToast ? `+${formatNumber(cashoutProfitToast)} Nakit` : 'büyük kâr';
+              const text = `🔥 Crypto Crash'te ${multText} çarpan yakaladım ve tam ${profitText} kazandım! 🚀 Sen de katıl, +5.000 Nakit hoş geldin bonusuyla başla: `;
+              const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+              if (window.Telegram?.WebApp?.openTelegramLink) {
+                window.Telegram.WebApp.openTelegramLink(shareUrl);
+              } else {
+                window.open(shareUrl, '_blank', 'noopener,noreferrer');
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '10px 16px',
+              fontWeight: 800,
+              fontSize: '14px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #10b981 100%)',
+              color: '#0a0e17',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>📢</span>
+            <span>Zaferini Paylaş & Hava At</span>
+          </button>
+        </div>
       )}
     </div>
   );

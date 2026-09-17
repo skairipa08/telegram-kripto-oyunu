@@ -13,7 +13,7 @@ export interface Candlestick {
 export type CrashTier = 'bear' | 'bull' | 'moon';
 
 export const MIN_STAKE = 10;
-export const MAX_STAKE = 100000;
+export const MAX_STAKE = 10_000_000;
 export const DEFAULT_STAKES = [50, 100, 250, 500, 1000];
 
 /**

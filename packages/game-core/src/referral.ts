@@ -47,7 +47,22 @@ export const REFERRAL_MILESTONES: Record<
 
 export const REFERRAL_STARTER_CASH_BOOST = 500;
 export const REFERRAL_MUTUAL_STARTER_CASH = 5000;
+export const TELEGRAM_PREMIUM_REFERRAL_MULTIPLIER = 3;
 export const REFERRAL_BIND_WINDOW_MS = 30 * 60 * 1000; // 30 minutes
+
+/**
+ * Calculates starter referral bonus with 3x multiplier for Telegram Premium users.
+ */
+export function calculateReferralStarterBonus(isPremium: boolean = false): {
+  cashBonus: number;
+  multiplier: number;
+} {
+  const multiplier = isPremium ? TELEGRAM_PREMIUM_REFERRAL_MULTIPLIER : 1;
+  return {
+    cashBonus: REFERRAL_MUTUAL_STARTER_CASH * multiplier,
+    multiplier,
+  };
+}
 
 export interface ReferralCommissionTier {
   readonly minInvites: number;
