@@ -340,6 +340,30 @@ Project Empire Mağazası'nda Telegram Stars ile:
     };
   }
 
+  if (trimmed.startsWith('/status') || trimmed.startsWith('/server')) {
+    return {
+      replyText: `🌐 *Project Empire — Sistem & Canlı Dağıtım Durumu (Faz 1)*
+
+🔒 *Aşama:* Hazırlık Ortamı (ÇOK YAKINDA / SOON)
+• Canlı Dağıtım (Faz 1): Henüz genel yayına açılmadı (SOON)
+• Veritabanı & Migrations: Hazır & Güvenli
+• Web3 & TON Cüzdanı: Hazırlık Modu (SOON)
+• Telegram Stars Mağazası: Faturalandırma Hazır (SOON)
+
+Oyunu test etmek veya başlatmak için aşağıdaki butona dokunun:`,
+      replyMarkup: {
+        inline_keyboard: [
+          [
+            {
+              text: '🎮 Oyunu Aç (Önizleme / SOON)',
+              web_app: { url: buildMiniAppUrl(appOrigin) },
+            },
+          ],
+        ],
+      },
+    };
+  }
+
   // Fallback for unknown messages
   const fallbackText = isRu
     ? `Добро пожаловать в Project Empire Bot! Нажми кнопку ниже, чтобы начать игру 👇`

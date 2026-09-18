@@ -153,8 +153,8 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlagItem[] = [
     key: 'feature.stars_payments',
     label: 'Telegram Stars (XTR) Ödemeleri',
     description:
-      'Oyuncuların mağazadan Telegram Yıldızları ile Kolaylık Bileti ve ürün satın almasını kontrol eder.',
-    enabled: true,
+      'Oyuncuların mağazadan Telegram Yıldızları ile Kolaylık Bileti ve ürün satın almasını kontrol eder (varsayılan: Devre Dışı / SOON).',
+    enabled: false,
     category: 'monetization',
   },
   {
@@ -177,9 +177,17 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlagItem[] = [
     key: 'feature.token',
     label: 'Token ve Airdrop Modülü',
     description:
-      'Gelecek faz token tahsis ve airdrop hazırlık modülü (varsayılan: Devre Dışı).',
+      'Gelecek faz token tahsis ve airdrop hazırlık modülü (varsayılan: Devre Dışı / SOON).',
     enabled: false,
     category: 'web3',
+  },
+  {
+    key: 'feature.live_production',
+    label: 'Canlı Dağıtım & Sunucu Yayını (Faz 1)',
+    description:
+      'Canlı sunucu yayını, Telegram bot webhook yönlendirmesi ve dış ağ erişimi (varsayılan: Devre Dışı / SOON).',
+    enabled: false,
+    category: 'system',
   },
 ];
 

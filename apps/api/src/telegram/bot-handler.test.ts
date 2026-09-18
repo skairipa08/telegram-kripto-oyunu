@@ -286,6 +286,15 @@ describe('Telegram Bot Handler & MVP Integration', () => {
       });
       expect(stars.replyText).toContain('Telegram Stars & Mağaza — Çok Yakında (SOON)');
       expect(stars.replyText).toContain('Empire Pass (30 Gün)');
+
+      const status = buildBotResponse({
+        text: '/status',
+        firstName: 'Alex',
+        appOrigin: 'https://empire.example',
+      });
+      expect(status.replyText).toContain('Sistem & Canlı Dağıtım Durumu (Faz 1)');
+      expect(status.replyText).toContain('Hazırlık Ortamı (ÇOK YAKINDA / SOON)');
+      expect(status.replyText).toContain('Canlı Dağıtım (Faz 1): Henüz genel yayına açılmadı (SOON)');
     });
   });
 });
