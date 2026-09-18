@@ -401,32 +401,12 @@ export function CryptoMinesGame({
               : 'En az 1 elmas aç'}
             )
           </button>
-        ) : (
-          <button
-            type="button"
-            className="button"
-            onClick={handleStart}
-            disabled={numericStake <= 0 || numericStake > playerCash}
-            style={{
-              padding: '14px',
-              fontSize: '16px',
-              fontWeight: 900,
-              background: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)',
-              color: '#0a0e17',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(234, 179, 8, 0.3)',
-            }}
-          >
-            🎮 OYUNA BAŞLA ({formatNumber(numericStake)} Nakit)
-          </button>
-        )}
+        ) : null}
 
         {/* Stake & Mines Settings (Only adjustable when idle) */}
         {!isPlaying && (
           <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
             {/* Stake Input */}
             <div>
@@ -440,7 +420,7 @@ export function CryptoMinesGame({
                 }}
               >
                 <span>Yatırılacak Bahis (Nakit)</span>
-                <span>Min: 10</span>
+                <span>Min: {MIN_MINES_STAKE}</span>
               </div>
               <input
                 type="number"
@@ -475,12 +455,12 @@ export function CryptoMinesGame({
                     onClick={() => setStakeInput(String(chip))}
                     style={{
                       flex: '1 1 calc(20% - 6px)',
-                      padding: '6px',
-                      borderRadius: '6px',
+                      padding: '8px 4px',
+                      borderRadius: '8px',
                       background: 'rgba(255, 255, 255, 0.08)',
                       border: '1px solid rgba(255, 255, 255, 0.12)',
                       color: '#cbd5e1',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 700,
                       cursor: 'pointer',
                     }}
@@ -493,12 +473,12 @@ export function CryptoMinesGame({
                   onClick={() => setStakeInput(String(playerCash))}
                   style={{
                     flex: '1 1 calc(20% - 6px)',
-                    padding: '6px',
-                    borderRadius: '6px',
+                    padding: '8px 4px',
+                    borderRadius: '8px',
                     background: 'rgba(234, 179, 8, 0.15)',
                     border: '1px solid #eab308',
                     color: '#facc15',
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: 800,
                     cursor: 'pointer',
                   }}
@@ -525,35 +505,61 @@ export function CryptoMinesGame({
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '6px' }}>
-                {MINE_OPTIONS.map((m) => (
+                {MINE_OPTIONS.map((count) => (
                   <button
-                    key={m}
+                    key={count}
                     type="button"
-                    onClick={() => setMineCount(m)}
+                    onClick={() => setMineCount(count)}
                     style={{
                       flex: 1,
-                      padding: '8px 4px',
+                      padding: '8px 2px',
                       borderRadius: '8px',
                       background:
-                        mineCount === m
-                          ? '#f59e0b'
-                          : 'rgba(255, 255, 255, 0.06)',
-                      color: mineCount === m ? '#0a0e17' : '#cbd5e1',
+                        mineCount === count
+                          ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                          : 'rgba(255, 255, 255, 0.08)',
                       border:
-                        mineCount === m
-                          ? '1px solid #fbbf24'
-                          : '1px solid rgba(255, 255, 255, 0.1)',
+                        mineCount === count
+                          ? '1px solid #ef4444'
+                          : '1px solid rgba(255, 255, 255, 0.12)',
+                      color: mineCount === count ? '#ffffff' : '#94a3b8',
                       fontSize: '12px',
                       fontWeight: 800,
                       cursor: 'pointer',
-                      transition: 'all 0.1s ease',
+                      transition: 'all 0.15s ease',
+                      boxShadow:
+                        mineCount === count
+                          ? '0 0 10px rgba(239, 68, 68, 0.4)'
+                          : 'none',
                     }}
                   >
-                    {m}
+                    {count}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Big Launch Button */}
+            <button
+              type="button"
+              className="button"
+              onClick={handleStart}
+              disabled={numericStake <= 0 || numericStake > playerCash}
+              style={{
+                padding: '14px',
+                fontSize: '16px',
+                fontWeight: 900,
+                background: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)',
+                color: '#0a0e17',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(234, 179, 8, 0.3)',
+                marginTop: '4px',
+              }}
+            >
+              🎮 OYUNA BAŞLA ({formatNumber(numericStake)} Nakit)
+            </button>
           </div>
         )}
       </div>

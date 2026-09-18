@@ -7,7 +7,9 @@ import { CryptoCrashGame } from './crypto-crash-game';
 import { CryptoMinesGame } from './crypto-mines-game';
 import { CryptoPredictionsGame } from './crypto-predictions-game';
 import { DailyComboCard } from './daily-combo-card';
-import { isMuted, toggleMute, initAudio } from '../game/arcade-audio';
+import { isMuted, toggleMute, initAudio, playTapSound } from '../game/arcade-audio';
+import { triggerHaptic } from '../game/arcade-haptics';
+import { formatNumber } from '../game/ui';
 import './arcade.css';
 
 export type ArcadeGame =
@@ -19,6 +21,109 @@ export type ArcadeGame =
   | 'combo'
   | 'cipher'
   | 'mint';
+
+export interface ArcadeGameInfo {
+  id: ArcadeGame;
+  name: string;
+  tabLabel: string;
+  category: 'risk' | 'casual' | 'daily';
+  categoryLabel: string;
+  badge: string;
+  badgeColor: string;
+  icon: string;
+  tagline: string;
+}
+
+export const ARCADE_GAMES: ArcadeGameInfo[] = [
+  {
+    id: 'tap',
+    name: 'Dokun Kazan',
+    tabLabel: 'Dokun',
+    category: 'casual',
+    categoryLabel: '⚡ Hızlı Kazan',
+    badge: '⚡ HIZLI',
+    badgeColor: '#fbbf24',
+    icon: '🪙',
+    tagline: 'Turbo enerjiyle altınları topla',
+  },
+  {
+    id: 'merge',
+    name: 'Catizen Birleştir',
+    tabLabel: 'Birleştir',
+    category: 'casual',
+    categoryLabel: '⚡ Hızlı Kazan',
+    badge: '🐾 PASİF',
+    badgeColor: '#34d399',
+    icon: '🧩',
+    tagline: 'Çipleri birleştir, saniyelik DPS üret',
+  },
+  {
+    id: 'crash',
+    name: 'Kripto Çöküş',
+    tabLabel: 'Çöküş',
+    category: 'risk',
+    categoryLabel: '🔥 Risk & Kazanç',
+    badge: '🔥 10.000X',
+    badgeColor: '#f87171',
+    icon: '🚀',
+    tagline: 'Boğa rallisinde roket patlamadan kârı al',
+  },
+  {
+    id: 'mines',
+    name: 'Mayın Tarlası',
+    tabLabel: 'Mayın',
+    category: 'risk',
+    categoryLabel: '🔥 Risk & Kazanç',
+    badge: '💎 POPÜLER',
+    badgeColor: '#38bdf8',
+    icon: '💣',
+    tagline: 'Elmasları topla, mayınlardan kaç',
+  },
+  {
+    id: 'predictions',
+    name: 'Fiyat Tahmini',
+    tabLabel: 'Tahmin',
+    category: 'risk',
+    categoryLabel: '🔥 Risk & Kazanç',
+    badge: '📈 60s',
+    badgeColor: '#a78bfa',
+    icon: '🎯',
+    tagline: 'BTC ve TON yönünü bil, oranı kap',
+  },
+  {
+    id: 'combo',
+    name: 'Günlük Kombo',
+    tabLabel: 'Kombo',
+    category: 'daily',
+    categoryLabel: '🎁 Günlük Görev',
+    badge: '🎁 5.000.000',
+    badgeColor: '#fb923c',
+    icon: '🔑',
+    tagline: '3 gizli kartı bul, dev ödülü kap',
+  },
+  {
+    id: 'cipher',
+    name: 'Hanedan Deşifre',
+    tabLabel: 'Deşifre',
+    category: 'daily',
+    categoryLabel: '🎁 Günlük Görev',
+    badge: '🧠 1.000.000',
+    badgeColor: '#67e8f9',
+    icon: '💻',
+    tagline: 'Siber mors kodunu ve şifreyi çöz',
+  },
+  {
+    id: 'mint',
+    name: 'Darphane Refleks',
+    tabLabel: 'Darphane',
+    category: 'casual',
+    categoryLabel: '⚡ Hızlı Kazan',
+    badge: '🎯 HEDEF',
+    badgeColor: '#f472b6',
+    icon: '⚡',
+    tagline: 'Çarkı tam hedefte durdur, refleksini göster',
+  },
+];
 
 const modules: Record<
   ArcadeGame,
@@ -87,6 +192,8 @@ export function EmpireArcade({
 }) {
   const [game, setGame] = useState<ArcadeGame>(initialGame);
   const [muted, setMutedState] = useState<boolean>(() => isMuted());
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'risk' | 'casual' | 'daily'>('all');
+  const [isLobbyOpen, setIsLobbyOpen] = useState(false);
   const [assists, setAssists] = useState<Record<ArcadeGame, boolean>>({
     tap: false,
     merge: false,
@@ -99,9 +206,12 @@ export function EmpireArcade({
   });
 
   const module = modules[game];
+  const activeMeta = ARCADE_GAMES.find((g) => g.id === game) ?? ARCADE_GAMES[0]!;
 
   function handleTabChange(nextGame: ArcadeGame) {
     initAudio();
+    playTapSound();
+    triggerHaptic('impact_light');
     setGame(nextGame);
   }
 
@@ -110,12 +220,17 @@ export function EmpireArcade({
     setMutedState(next);
   }
 
+  const catalogGames =
+    categoryFilter === 'all'
+      ? ARCADE_GAMES
+      : ARCADE_GAMES.filter((g) => g.category === categoryFilter);
+
   return (
     <section
       className="empire-arcade empire-arcade-v2"
       aria-labelledby="arcade-title"
     >
-      {/* Header bar with audio mute toggle */}
+      {/* Header bar with audio mute toggle and player balance */}
       <div className="arcade-header-bar">
         <div className="arcade-header-title">
           <p className="eyebrow" style={{ margin: 0 }}>
@@ -125,6 +240,20 @@ export function EmpireArcade({
           <p>Dokun, birleştir, hackle, yükselt ve nakit kazan.</p>
         </div>
         <div className="arcade-header-actions">
+          <div
+            style={{
+              padding: '6px 10px',
+              borderRadius: '10px',
+              background: 'rgba(225, 180, 126, 0.12)',
+              border: '1px solid rgba(225, 180, 126, 0.25)',
+              fontSize: '12px',
+              fontWeight: 800,
+              color: 'var(--accent, #e1b47e)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            💰 {formatNumber(playerCash)}
+          </div>
           <button
             className="arcade-mute-btn"
             onClick={handleToggleAudio}
@@ -136,80 +265,130 @@ export function EmpireArcade({
         </div>
       </div>
 
-      {/* Arcade Games Tabs Navigation */}
+      {/* Category Pills & Hub View Toggle */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px',
+          flexWrap: 'wrap',
+        }}
+      >
+        <div className="arcade-category-pills">
+          <button
+            type="button"
+            className={`arcade-category-pill ${categoryFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setCategoryFilter('all')}
+          >
+            🎮 Tümü (8)
+          </button>
+          <button
+            type="button"
+            className={`arcade-category-pill ${categoryFilter === 'risk' ? 'active' : ''}`}
+            onClick={() => setCategoryFilter('risk')}
+          >
+            🔥 Risk & Çarpan (3)
+          </button>
+          <button
+            type="button"
+            className={`arcade-category-pill ${categoryFilter === 'casual' ? 'active' : ''}`}
+            onClick={() => setCategoryFilter('casual')}
+          >
+            ⚡ Hızlı Kazan (3)
+          </button>
+          <button
+            type="button"
+            className={`arcade-category-pill ${categoryFilter === 'daily' ? 'active' : ''}`}
+            onClick={() => setCategoryFilter('daily')}
+          >
+            🎁 Günlük (2)
+          </button>
+        </div>
+
+        <button
+          type="button"
+          className="arcade-stage-switch-btn"
+          onClick={() => setIsLobbyOpen((prev) => !prev)}
+        >
+          {isLobbyOpen ? '✕ Kartları Kapat' : '📋 Oyun Kartları'}
+        </button>
+      </div>
+
+      {/* Expandable Rich Game Cards Hub */}
+      {isLobbyOpen && (
+        <div className="arcade-hub-grid">
+          {catalogGames.map((g) => (
+            <div
+              key={g.id}
+              className={`arcade-game-card ${game === g.id ? 'active' : ''}`}
+              onClick={() => {
+                handleTabChange(g.id);
+                setIsLobbyOpen(false);
+              }}
+            >
+              <div className="arcade-game-card-top">
+                <span className="arcade-game-card-icon">{g.icon}</span>
+                <span
+                  className="arcade-game-card-badge"
+                  style={{
+                    color: g.badgeColor,
+                    background: `${g.badgeColor}22`,
+                    border: `1px solid ${g.badgeColor}44`,
+                  }}
+                >
+                  {g.badge}
+                </span>
+              </div>
+              <div>
+                <h4 className="arcade-game-card-title">{g.name}</h4>
+                <p className="arcade-game-card-tagline">{g.tagline}</p>
+              </div>
+              <button type="button" className="arcade-game-card-play-btn">
+                {game === g.id ? '✓ Şu An Açık' : '▶ Hemen Oyna'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Arcade Games Tabs Navigation - 2 rows of 4 buttons (8 total) */}
       <div
         className="arcade-nav-tabs"
         role="tablist"
         aria-label="Arcade Oyunları"
-        style={{
-          display: 'flex',
-          overflowX: 'auto',
-          gap: '6px',
-          paddingBottom: '4px',
-        }}
       >
+        {ARCADE_GAMES.map((g) => (
+          <button
+            key={g.id}
+            role="tab"
+            className={`arcade-nav-tab ${game === g.id ? 'active' : ''}`}
+            aria-selected={game === g.id}
+            onClick={() => handleTabChange(g.id)}
+          >
+            <span className="tab-icon">{g.icon}</span>
+            <span>{g.tabLabel}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Active Game Stage Bar */}
+      <div className="arcade-stage-bar">
+        <div className="arcade-stage-info">
+          <span className="arcade-stage-icon">{activeMeta.icon}</span>
+          <div className="arcade-stage-title-wrap">
+            <span className="arcade-stage-title">{activeMeta.name}</span>
+            <span className="arcade-stage-badge">
+              {activeMeta.badge} · {activeMeta.tagline}
+            </span>
+          </div>
+        </div>
         <button
-          role="tab"
-          className={`arcade-nav-tab ${game === 'tap' ? 'active' : ''}`}
-          aria-selected={game === 'tap'}
-          onClick={() => handleTabChange('tap')}
+          type="button"
+          className="arcade-stage-switch-btn"
+          onClick={() => setIsLobbyOpen((prev) => !prev)}
         >
-          <span className="tab-icon">🪙</span>
-          <span>Dokun</span>
-        </button>
-        <button
-          role="tab"
-          className={`arcade-nav-tab ${game === 'merge' ? 'active' : ''}`}
-          aria-selected={game === 'merge'}
-          onClick={() => handleTabChange('merge')}
-        >
-          <span className="tab-icon">🧩</span>
-          <span>Birleştir</span>
-        </button>
-        <button
-          role="tab"
-          className={`arcade-nav-tab ${game === 'crash' ? 'active' : ''}`}
-          aria-selected={game === 'crash'}
-          onClick={() => handleTabChange('crash')}
-        >
-          <span className="tab-icon">🚀</span>
-          <span>Çöküş</span>
-        </button>
-        <button
-          role="tab"
-          className={`arcade-nav-tab ${game === 'mines' ? 'active' : ''}`}
-          aria-selected={game === 'mines'}
-          onClick={() => handleTabChange('mines')}
-        >
-          <span className="tab-icon">💣</span>
-          <span>Mayın</span>
-        </button>
-        <button
-          role="tab"
-          className={`arcade-nav-tab ${game === 'predictions' ? 'active' : ''}`}
-          aria-selected={game === 'predictions'}
-          onClick={() => handleTabChange('predictions')}
-        >
-          <span className="tab-icon">🎯</span>
-          <span>Tahmin</span>
-        </button>
-        <button
-          role="tab"
-          className={`arcade-nav-tab ${game === 'combo' ? 'active' : ''}`}
-          aria-selected={game === 'combo'}
-          onClick={() => handleTabChange('combo')}
-        >
-          <span className="tab-icon">🔑</span>
-          <span>Kombo</span>
-        </button>
-        <button
-          role="tab"
-          className={`arcade-nav-tab ${game === 'cipher' ? 'active' : ''}`}
-          aria-selected={game === 'cipher'}
-          onClick={() => handleTabChange('cipher')}
-        >
-          <span className="tab-icon">💻</span>
-          <span>Deşifre</span>
+          {isLobbyOpen ? '✕ Kapat' : '🎮 Oyun Değiştir'}
         </button>
       </div>
 
