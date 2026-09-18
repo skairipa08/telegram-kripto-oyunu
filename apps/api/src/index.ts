@@ -253,12 +253,28 @@ export function createApp(
     createSlidingWindowRateLimiter({ windowMs: 60_000, max: 30 }),
   );
   app.use(
+    '/wallet/nonce',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 30 }),
+  );
+  app.use(
+    '/api/wallet/nonce',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 30 }),
+  );
+  app.use(
     '/wallet/connect',
     createSlidingWindowRateLimiter({ windowMs: 60_000, max: 20 }),
   );
   app.use(
     '/api/wallet/connect',
     createSlidingWindowRateLimiter({ windowMs: 60_000, max: 20 }),
+  );
+  app.use(
+    '/airdrop/claim',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 10 }),
+  );
+  app.use(
+    '/api/airdrop/claim',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 10 }),
   );
 
   app.get('/health', healthHandler);

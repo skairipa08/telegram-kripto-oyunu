@@ -1128,3 +1128,67 @@ export const submitDailyCipherResponseSchema = z.object({
 export type SubmitDailyCipherResponse = z.infer<
   typeof submitDailyCipherResponseSchema
 >;
+
+// -----------------------------------------------------------------------------
+// TON Connect & Web3 Wallet Schemas
+// -----------------------------------------------------------------------------
+
+export const tonProofDomainSchema = z
+  .object({
+    lengthBytes: z.number().int().nonnegative().max(1024),
+    value: z.string().trim().min(1).max(253),
+  })
+  .strict();
+export type TONProofDomainDto = z.infer<typeof tonProofDomainSchema>;
+
+export const tonProofPayloadSchema = z
+  .object({
+    address: z.string().trim().min(1).max(128),
+    network: z.enum(['mainnet', 'testnet', '-239', '-3']).optional(),
+    domain: tonProofDomainSchema,
+    timestamp: z.number().int().positive(),
+    payload: z.string().trim().min(1).max(512),
+    signature: z.string().trim().min(44).max(256),
+    state_init: z.string().trim().max(8192).optional(),
+    publicKey: z.string().trim().min(32).max(128).optional(),
+  })
+  .strict();
+export type TONProofPayloadDto = z.infer<typeof tonProofPayloadSchema>;
+
+export const connectWalletRequestSchema = z
+  .object({
+    address: z.string().trim().min(1).max(128),
+    walletProvider: z
+      .enum(['tonkeeper', 'telegram_wallet', 'mytonwallet', 'openmask', 'generic'])
+      .default('generic'),
+    publicKey: z.string().trim().min(32).max(128).optional(),
+    tonProof: tonProofPayloadSchema.optional(),
+    requestId: z.string().uuid().optional(),
+  })
+  .strict();
+export type ConnectWalletRequestDto = z.infer<
+  typeof connectWalletRequestSchema
+>;
+
+export const walletNonceRequestSchema = z
+  .object({
+    purpose: z
+      .enum(['LINK_WALLET', 'AUTH', 'AIRDROP_CLAIM'])
+      .default('LINK_WALLET'),
+    requestId: z.string().uuid().optional(),
+  })
+  .strict();
+export type WalletNonceRequestDto = z.infer<
+  typeof walletNonceRequestSchema
+>;
+
+export const airdropClaimRequestSchema = z
+  .object({
+    seasonId: z.string().trim().min(1).max(64),
+    requestId: z.string().uuid(),
+  })
+  .strict();
+export type AirdropClaimRequestDto = z.infer<
+  typeof airdropClaimRequestSchema
+>;
+

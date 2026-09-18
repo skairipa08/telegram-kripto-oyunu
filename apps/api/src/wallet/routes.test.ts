@@ -1,5 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { keyPairFromSeed, sign } from '@ton/crypto';
+import { createTonProofHash, createTonProofMessage } from '@empire/game-core';
 import type { Bindings } from '../auth/env';
 import { createTestDatabase } from '../auth/test-db';
 import { createApp } from '../index';
@@ -22,6 +24,15 @@ let testUser1: { cookie: string; userId: string };
 let testUser2: { cookie: string; userId: string };
 let walletStore: InMemoryWalletStore;
 
+// Precomputed valid mainnet bounceable address with account hash
+const TEST_HASH_HEX = '6f5bc67986e06430961d9df00433926a4cd92e597ddd8aa3a47a33ad44599c00';
+const validBounceable = 'EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqOkejOtRFmcAIRy';
+
+// Ed25519 keypair for cryptographic proof signing in tests
+const seed = Buffer.alloc(32, 7);
+const keyPair = keyPairFromSeed(seed);
+const publicKeyHex = keyPair.publicKey.toString('hex');
+
 function initData(id: number, username: string) {
   const fields = {
     auth_date: String(now),
@@ -41,9 +52,34 @@ function initData(id: number, username: string) {
   }).toString();
 }
 
+function createSignedProof(payloadNonce: string, domainHost = 'empire.example', timestamp = now) {
+  const domainLengthBytes = Buffer.byteLength(domainHost, 'utf8');
+  const msg = createTonProofMessage({
+    workchain: 0,
+    accountHash: Buffer.from(TEST_HASH_HEX, 'hex'),
+    domainLengthBytes,
+    domainValue: domainHost,
+    timestamp,
+    payload: payloadNonce,
+  });
+  const toSign = createTonProofHash(msg);
+  const signature = sign(toSign, keyPair.secretKey).toString('base64');
+
+  return {
+    address: validBounceable,
+    domain: {
+      lengthBytes: domainLengthBytes,
+      value: domainHost,
+    },
+    timestamp,
+    payload: payloadNonce,
+    signature,
+    publicKey: publicKeyHex,
+  };
+}
+
 describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
-  const validBounceable = 'EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqOkejOtRFmcACZq';
-  const validNonBounceable = 'UQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqOkejOtRFmcACe_';
+  let user1ActiveNonce: string;
 
   beforeAll(async () => {
     database = await createTestDatabase();
@@ -102,6 +138,7 @@ describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
           Origin: origin,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ purpose: 'LINK_WALLET' }),
       },
       env,
     );
@@ -109,7 +146,8 @@ describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as { nonce: string; expiresInSeconds: number };
     expect(body.nonce).toContain('tonproof_');
-    expect(body.expiresInSeconds).toBe(600);
+    expect(body.expiresInSeconds).toBe(300);
+    user1ActiveNonce = body.nonce;
   });
 
   it('rejects unauthenticated requests to wallet endpoints', async () => {
@@ -119,6 +157,17 @@ describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
       env,
     );
     expect(res.status).toBe(401);
+
+    const claimRes = await app.request(
+      '/airdrop/claim',
+      {
+        method: 'POST',
+        headers: { Origin: origin, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seasonId: 'season_1', requestId: crypto.randomUUID() }),
+      },
+      env,
+    );
+    expect(claimRes.status).toBe(401);
   });
 
   it('rejects connect request with invalid address format', async () => {
@@ -144,16 +193,51 @@ describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
     expect(body.error.code).toBe('INVALID_WALLET_ADDRESS');
   });
 
-  it('connects valid TON wallet successfully and marks status as soon', async () => {
-    // 1. Get nonce
+  it('rejects connect request with forged or invalid ton_proof signature', async () => {
+    const forgedProof = createSignedProof(user1ActiveNonce);
+    // Tamper with signature
+    forgedProof.signature = Buffer.alloc(64, 0).toString('base64');
+
+    const res = await app.request(
+      '/wallet/connect',
+      {
+        method: 'POST',
+        headers: {
+          Cookie: testUser1.cookie,
+          Origin: origin,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: validBounceable,
+          walletProvider: 'tonkeeper',
+          publicKey: publicKeyHex,
+          tonProof: forgedProof,
+        }),
+      },
+      env,
+    );
+
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe('INVALID_SIGNATURE');
+  });
+
+  it('connects valid TON wallet successfully with valid tonProof and marks status as soon', async () => {
+    // Generate fresh nonce for connect
     const nonceRes = await app.request(
       '/wallet/nonce',
-      { method: 'POST', headers: { Cookie: testUser1.cookie, Origin: origin } },
+      {
+        method: 'POST',
+        headers: { Cookie: testUser1.cookie, Origin: origin, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ purpose: 'LINK_WALLET' }),
+      },
       env,
     );
     const { nonce } = (await nonceRes.json()) as { nonce: string };
+    user1ActiveNonce = nonce;
 
-    // 2. Connect wallet
+    const validProof = createSignedProof(user1ActiveNonce);
+
     const connectRes = await app.request(
       '/wallet/connect',
       {
@@ -166,9 +250,8 @@ describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
         body: JSON.stringify({
           address: validBounceable,
           walletProvider: 'tonkeeper',
-          tonProof: {
-            payload: nonce,
-          },
+          publicKey: publicKeyHex,
+          tonProof: validProof,
         }),
       },
       env,
@@ -179,13 +262,41 @@ describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
       success: boolean;
       status: string;
       isAirdropLive: boolean;
-      address: string;
+      canonicalAddress: string;
     };
 
     expect(body.success).toBe(true);
     expect(body.status).toBe('soon');
     expect(body.isAirdropLive).toBe(false);
-    expect(body.address).toBe(validBounceable);
+    expect(body.canonicalAddress).toBe(`0:${TEST_HASH_HEX}`);
+  });
+
+  it('strictly rejects nonce replay attack (atomic single-use invariant)', async () => {
+    // Attempt to reuse user1ActiveNonce which was already consumed in the previous test
+    const replayedProof = createSignedProof(user1ActiveNonce);
+
+    const replayRes = await app.request(
+      '/wallet/connect',
+      {
+        method: 'POST',
+        headers: {
+          Cookie: testUser1.cookie,
+          Origin: origin,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: validBounceable,
+          walletProvider: 'tonkeeper',
+          publicKey: publicKeyHex,
+          tonProof: replayedProof,
+        }),
+      },
+      env,
+    );
+
+    expect(replayRes.status).toBe(400);
+    const body = (await replayRes.json()) as { error: { code: string; message: string } };
+    expect(body.error.code).toBe('NONCE_REPLAY_DETECTED');
   });
 
   it('strictly rejects Sybil farming attempts (one-wallet-per-account invariant)', async () => {
@@ -229,7 +340,7 @@ describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
       connected: boolean;
-      wallet: { address: string; walletProvider: string };
+      wallet: { canonicalAddress: string; walletProvider: string };
       airdrop: {
         phase: string;
         isLive: boolean;
@@ -239,11 +350,65 @@ describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
     };
 
     expect(body.connected).toBe(true);
-    expect(body.wallet.address).toBe(validBounceable);
+    expect(body.wallet.canonicalAddress).toBe(`0:${TEST_HASH_HEX}`);
     expect(body.airdrop.isLive).toBe(false);
     expect(body.airdrop.phase).toBe('preparation_soon');
     expect(body.airdrop.statusText).toContain('SOON');
     expect(body.airdrop.allocation.walletBonus).toBe(1000);
+  });
+
+  it('handles airdrop claim flow and enforces claim idempotency', async () => {
+    const requestId1 = crypto.randomUUID();
+    const claimRes1 = await app.request(
+      '/airdrop/claim',
+      {
+        method: 'POST',
+        headers: {
+          Cookie: testUser1.cookie,
+          Origin: origin,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          seasonId: 'season_genesis_1',
+          requestId: requestId1,
+        }),
+      },
+      env,
+    );
+
+    expect(claimRes1.status).toBe(200);
+    const body1 = (await claimRes1.json()) as {
+      success: boolean;
+      seasonId: string;
+      claimedPoints: number;
+      tier: string;
+    };
+    expect(body1.success).toBe(true);
+    expect(body1.seasonId).toBe('season_genesis_1');
+    expect(body1.claimedPoints).toBeGreaterThan(0);
+
+    // Duplicate claim attempt for the same season (Idempotency / Anti-Double-Spend)
+    const requestId2 = crypto.randomUUID();
+    const claimRes2 = await app.request(
+      '/airdrop/claim',
+      {
+        method: 'POST',
+        headers: {
+          Cookie: testUser1.cookie,
+          Origin: origin,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          seasonId: 'season_genesis_1',
+          requestId: requestId2,
+        }),
+      },
+      env,
+    );
+
+    expect(claimRes2.status).toBe(409);
+    const body2 = (await claimRes2.json()) as { error: { code: string } };
+    expect(body2.error.code).toBe('ALREADY_CLAIMED');
   });
 
   it('disconnects wallet successfully when unlocked', async () => {
