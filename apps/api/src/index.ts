@@ -23,6 +23,8 @@ import type { ClanStore } from './clans/store';
 import { createClanRoutes } from './clans/routes';
 import type { ComboStore } from './combo/store';
 import { createComboRoutes } from './combo/routes';
+import type { WalletStore } from './wallet/store';
+import { createWalletRoutes } from './wallet/routes';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 import { bodyLimit } from 'hono/body-limit';
@@ -47,6 +49,7 @@ export interface AppStoreFactories {
   makeArcadeStore?: (env: Bindings) => ArcadeStore;
   makeClanStore?: (env: Bindings) => ClanStore;
   makeComboStore?: (env: Bindings) => ComboStore;
+  makeWalletStore?: (env: Bindings) => WalletStore;
 }
 
 import { setCookie } from 'hono/cookie';
@@ -61,6 +64,7 @@ import { SupabaseAnalyticsStore } from './analytics/store';
 import { SupabaseEconomyStore } from './economy/store';
 import { SupabaseFraudStore } from './fraud/store';
 import { SupabaseAdminStore } from './admin/store';
+import { SupabaseWalletStore, InMemoryWalletStore } from './wallet/store';
 import {
   MemoryAuthStore,
   MemoryEconomyStore,
@@ -94,6 +98,7 @@ export function createApp(
   const defaultAnalyticsStore = new MemoryAnalyticsStore();
   const defaultFraudStore = new MemoryFraudStore();
   const defaultAdminStore = new MemoryAdminStore();
+  const defaultWalletStore = new InMemoryWalletStore();
 
   const getAuthStore =
     factories.makeAuthStore ??
@@ -169,6 +174,16 @@ export function createApp(
           )
         : defaultAdminStore);
 
+  const getWalletStore =
+    factories.makeWalletStore ??
+    ((env: Bindings) =>
+      env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
+        ? new SupabaseWalletStore(
+            env.SUPABASE_URL,
+            env.SUPABASE_SERVICE_ROLE_KEY,
+          )
+        : defaultWalletStore);
+
   // 1. Security Headers (nosniff, clickjacking, XSS, etc.)
   app.use('*', secureHeaders());
 
@@ -236,6 +251,14 @@ export function createApp(
   app.use(
     '/api/shop/invoice',
     createSlidingWindowRateLimiter({ windowMs: 60_000, max: 30 }),
+  );
+  app.use(
+    '/wallet/connect',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 20 }),
+  );
+  app.use(
+    '/api/wallet/connect',
+    createSlidingWindowRateLimiter({ windowMs: 60_000, max: 20 }),
   );
 
   app.get('/health', healthHandler);
@@ -375,6 +398,11 @@ export function createApp(
   const combo = createComboRoutes(factories.makeComboStore, getAuthStore, now);
   app.route('/', combo);
   app.route('/api', combo);
+
+  // 12. Web3 & TON Wallet & Airdrop routes
+  const wallet = createWalletRoutes(getWalletStore, getAuthStore, now);
+  app.route('/', wallet);
+  app.route('/api', wallet);
 
   app.onError((err, c) => {
     if (err instanceof SyntaxError || (err as { status?: number }).status === 400) {

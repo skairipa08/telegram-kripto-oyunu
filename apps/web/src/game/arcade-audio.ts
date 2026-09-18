@@ -347,3 +347,5 @@ export function playErrorSound(): void {
 
 export const playClickSound = playTapSound;
 export const playFailSound = playErrorSound;
+export const playSuccessSound = playWinSound;
+

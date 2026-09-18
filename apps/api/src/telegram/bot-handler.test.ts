@@ -268,5 +268,25 @@ describe('Telegram Bot Handler & MVP Integration', () => {
       expect(es.replyText).toContain('¡Bienvenido a Project Empire, Carlos!');
       expect(es.replyText).toContain('¡BONO DE BIENVENIDA: +5.000 CASH!');
     });
+
+    it('builds informative soon responses for /airdrop and /stars commands', () => {
+      const airdrop = buildBotResponse({
+        text: '/airdrop',
+        firstName: 'Alex',
+        appOrigin: 'https://empire.example',
+      });
+      expect(airdrop.replyText).toContain('$EMPIRE Airdrop Portalı — Çok Yakında (SOON)');
+      expect(airdrop.replyText).toContain('TON (The Open Network)');
+      expect(airdrop.replyText).toContain('Anti-P2W');
+
+      const stars = buildBotResponse({
+        text: '/stars',
+        firstName: 'Alex',
+        appOrigin: 'https://empire.example',
+      });
+      expect(stars.replyText).toContain('Telegram Stars & Mağaza — Çok Yakında (SOON)');
+      expect(stars.replyText).toContain('Empire Pass (30 Gün)');
+    });
   });
 });
+

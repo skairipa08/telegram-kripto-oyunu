@@ -290,6 +290,56 @@ Hemen başlamak için aşağıdaki butona dokun! 👇`;
     };
   }
 
+  if (trimmed.startsWith('/airdrop')) {
+    return {
+      replyText: `🪂 *$EMPIRE Airdrop Portalı — Çok Yakında (SOON)*
+      
+💎 *Blokzincir:* TON (The Open Network)
+🛡️ *Politika:* Kesinlikle Anti-P2W (Parayla Airdrop Alınamaz, Sadece Emek ve Sezon Puanı)
+⚖️ *Sybil Koruması:* 1 Telegram Hesabı = 1 TON Cüzdanı
+
+Airdrop Puanını Artırma Yolları:
+• Sezon Puanı (SP) toplamak
+• Günlük seriyi (Streak) kesintisiz devam ettirmek
+• Mini oyunlarda başarı ve ciro yakalamak
+• Gerçek arkadaşlarını davet etmek
+
+Airdrop portalını incelemek ve TON cüzdanını bağlamak için tıkla:`,
+      replyMarkup: {
+        inline_keyboard: [
+          [
+            {
+              text: '🪂 Airdrop Portalını Aç (Yakında)',
+              web_app: { url: buildMiniAppUrl(appOrigin) },
+            },
+          ],
+        ],
+      },
+    };
+  }
+
+  if (trimmed.startsWith('/stars') || trimmed.startsWith('/shop')) {
+    return {
+      replyText: `⭐ *Telegram Stars & Mağaza — Çok Yakında (SOON)*
+
+Project Empire Mağazası'nda Telegram Stars ile:
+• **Empire Pass (30 Gün):** 12 saat çevrimdışı kazanç, oto-toplama ve ekstra kuyruklar.
+• **Özel Kozmetikler:** Altın profil çerçevesi ve kurucu rozeti.
+
+⚠️ *Durum:* Güvenlik ve faturalandırma testleri tamamlanmakta olup satışlar yakında aktif edilecektir (SOON).`,
+      replyMarkup: {
+        inline_keyboard: [
+          [
+            {
+              text: '🛍️ Mağazayı İncele (Yakında)',
+              web_app: { url: buildMiniAppUrl(appOrigin) },
+            },
+          ],
+        ],
+      },
+    };
+  }
+
   // Fallback for unknown messages
   const fallbackText = isRu
     ? `Добро пожаловать в Project Empire Bot! Нажми кнопку ниже, чтобы начать игру 👇`

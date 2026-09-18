@@ -824,3 +824,46 @@ Token israfını önlemek ve sorumlulukları net ayrıştırmak amacıyla çalı
 - [ ] `pnpm test` (vitest) tüm test paketlerini başarıyla geçer.
 - [ ] `HANDOFF.md` güncellenerek test sonuçları ve kanıtları raporlanır.
 
+## 2026-09-17T12:26:55Z
+
+# Teamwork Project Prompt — Draft
+
+> Status: Launched
+> Goal: Comprehensive read-only audit to identify UX/usage bugs (without modifying code) and produce a detailed findings report
+> Requested team: Exactly 1 audit agent (read-only, find bugs only, do not patch)
+
+Project Empire Telegram Mini App projesinde az önce tespit ettiğimiz türden (Telegram WebView başlıkları eksik ham fetch çağrıları, F5 yenilemesinde sıfırlanan arayüz durumları, catch/finally bloklarında sahte başarı gösteren modallar, mutasyon sonrası güncellenmeyen bakiyeler, bağlanmamış handler'lar vb.) tüm kullanım ve akış hatalarını tespit eden salt-okunur (read-only) kapsamlı bir denetim ve hata raporlama görevi.
+
+Working directory: c:\Users\Administrator\Desktop\telegram kripto oyunu
+Integrity mode: development
+
+## Requirements
+
+### R1. Frontend Ekran ve İletişim Akışları Denetimi (Read-Only)
+- `apps/web/src/screens/` ve `apps/web/src/game/` altındaki tüm sekmeleri ve bileşenleri (`empire-screen.tsx`, `friends-screen.tsx`, `shop-screen.tsx`, `clans-screen.tsx`, `arcade-screen.tsx`, `analytics-screen.tsx`, `admin-screen.tsx` vb.) tara:
+  - **Ham `fetch` Çağrıları**: `postGameResource` veya `api/client` yerine doğrudan `fetch()` kullanan ve `Authorization` / `X-Empire-Session` başlıklarını göndermeyen yerleri tespit et.
+  - **Kör `finally` / Sahte Başarı**: Hata durumunda bile kullanıcıya başarı modalı veya tebrik gösteren akışları bul.
+  - **F5 / Sayfa Yenileme Kalıcılığı**: Sunucudan beslenmeyip sadece geçici React state'inde (`useState`) tutulan ve sayfa yenilendiğinde sıfırlanan kritik durumları tespit et.
+  - **Eksik Mutasyon & Query Invalidation**: Başarılı bir eylemden sonra kullanıcı bakiyesini, puanını veya ilgili sorguyu güncellemediği için arayüzde değişmeyen yerleri listele.
+  - **Bağlanmamış (Dangling) Handler'lar**: Üst bileşenden prop olarak geçilmeyen veya içi boş bırakılmış buton/aksiyon fonksiyonlarını bul.
+
+### R2. Mini Oyunlar & Arcade Akış Denetimi (Read-Only)
+- Tüm mini oyun bileşenlerini (`catizen-merge-game.tsx`, `crypto-crash-game.tsx`, `crypto-mines-game.tsx`, `crypto-predictions-game.tsx`, `dynasty-cipher-game.tsx`, `notcoin-tap-game.tsx`) tara:
+  - Oyun sonlandığında, kâr alındığında veya can kaybedildiğinde sunucu API'sine bakiye ve puan kaydının doğru yapılıp yapılmadığını incele.
+  - Ağ kopması veya API hatası olduğunda kullanıcının parasının havada kalıp kalmadığını ya da haksız kazanç/kayıp oluşup oluşmadığını tespit et.
+
+### R3. Salt-Okunur Kuralı ve Kapsamlı Raporlama
+- **KESİNLİKLE HİÇBİR KAYNAK KODU DEĞİŞTİRME VEYA DÜZELTMEYE ÇALIŞMA.**
+- Tespit edilen her hatayı şu formatta detaylı bir markdown raporuna dök:
+  1. **Hata Başlığı & Etki Derecesi (Kritik / Yüksek / Orta / Düşük)**
+  2. **Etkilenen Dosya & Satır Numarası (`file:///...#Lxx`)**
+  3. **Hatanın Mekaniği (Kullanıcı ne yaşar?)**
+  4. **Önerilen Kalıcı Çözüm Özeti**
+
+## Acceptance Criteria
+
+### Audit & Bug Raporu
+- [ ] Kod tabanındaki hiçbir dosya değiştirilmemiş veya bozulmamıştır (`git status` temiz kalır).
+- [ ] Tüm ekranlar ve mini oyunlar taranmış, bulunan tüm kullanım/akış hataları tek bir kapsamlı raporda toplanmıştır.
+- [ ] Her hata için dosya yolu, satır referansı, kullanıcıya yansıyan etkisi ve önerilen çözüm açıkça belirtilmiştir.
+

@@ -1,0 +1,301 @@
+import { createHmac } from 'node:crypto';
+import { beforeAll, describe, expect, it } from 'vitest';
+import type { Bindings } from '../auth/env';
+import { createTestDatabase } from '../auth/test-db';
+import { createApp } from '../index';
+import { InMemoryWalletStore } from './store';
+
+const now = Math.floor(Date.now() / 1000);
+const origin = 'https://empire.example';
+const env: Bindings = {
+  TELEGRAM_BOT_TOKEN: '123456:test-wallet-bot',
+  SESSION_SECRET: 'test-only-session-secret-with-enough-entropy-for-wallet',
+  APP_ORIGIN: origin,
+  SUPABASE_URL: 'https://test.supabase.co',
+  SUPABASE_SERVICE_ROLE_KEY: 'test-only-key',
+  AUTH_RATE_LIMIT: { limit: async () => ({ success: true }) },
+};
+
+let database: Awaited<ReturnType<typeof createTestDatabase>>;
+let app: ReturnType<typeof createApp>;
+let testUser1: { cookie: string; userId: string };
+let testUser2: { cookie: string; userId: string };
+let walletStore: InMemoryWalletStore;
+
+function initData(id: number, username: string) {
+  const fields = {
+    auth_date: String(now),
+    query_id: `query-wallet-${id}`,
+    user: JSON.stringify({ id, first_name: `WalletUser${id}`, username }),
+  };
+  const check = Object.entries(fields)
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([k, v]) => `${k}=${v}`)
+    .join('\n');
+  const key = createHmac('sha256', 'WebAppData')
+    .update(env.TELEGRAM_BOT_TOKEN!)
+    .digest();
+  return new URLSearchParams({
+    ...fields,
+    hash: createHmac('sha256', key).update(check).digest('hex'),
+  }).toString();
+}
+
+describe('TON Wallet & Airdrop API Routes Integration Suite', () => {
+  const validBounceable = 'EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqOkejOtRFmcACZq';
+  const validNonBounceable = 'UQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqOkejOtRFmcACe_';
+
+  beforeAll(async () => {
+    database = await createTestDatabase();
+    walletStore = new InMemoryWalletStore();
+
+    app = createApp(
+      {
+        makeAuthStore: () => database.store,
+        makeWalletStore: () => walletStore,
+      },
+      () => now,
+    );
+
+    // Login test user 1
+    const res1 = await app.request(
+      '/auth/telegram',
+      {
+        method: 'POST',
+        headers: { Origin: origin, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          initData: initData(1001, 'wallet_player_1'),
+          requestId: crypto.randomUUID(),
+        }),
+      },
+      env,
+    );
+    const cookie1 = res1.headers.get('set-cookie')?.split(';')[0] ?? '';
+    const body1 = (await res1.json()) as { user: { id: string } };
+    testUser1 = { cookie: cookie1, userId: body1.user.id };
+
+    // Login test user 2 (for Sybil testing)
+    const res2 = await app.request(
+      '/auth/telegram',
+      {
+        method: 'POST',
+        headers: { Origin: origin, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          initData: initData(1002, 'wallet_player_2'),
+          requestId: crypto.randomUUID(),
+        }),
+      },
+      env,
+    );
+    const cookie2 = res2.headers.get('set-cookie')?.split(';')[0] ?? '';
+    const body2 = (await res2.json()) as { user: { id: string } };
+    testUser2 = { cookie: cookie2, userId: body2.user.id };
+  });
+
+  it('generates cryptographic nonce for authenticated user', async () => {
+    const res = await app.request(
+      '/wallet/nonce',
+      {
+        method: 'POST',
+        headers: {
+          Cookie: testUser1.cookie,
+          Origin: origin,
+          'Content-Type': 'application/json',
+        },
+      },
+      env,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { nonce: string; expiresInSeconds: number };
+    expect(body.nonce).toContain('tonproof_');
+    expect(body.expiresInSeconds).toBe(600);
+  });
+
+  it('rejects unauthenticated requests to wallet endpoints', async () => {
+    const res = await app.request(
+      '/wallet/status',
+      { method: 'GET', headers: { Origin: origin } },
+      env,
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects connect request with invalid address format', async () => {
+    const res = await app.request(
+      '/wallet/connect',
+      {
+        method: 'POST',
+        headers: {
+          Cookie: testUser1.cookie,
+          Origin: origin,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: 'invalid_ton_address_123',
+          walletProvider: 'tonkeeper',
+        }),
+      },
+      env,
+    );
+
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe('INVALID_WALLET_ADDRESS');
+  });
+
+  it('connects valid TON wallet successfully and marks status as soon', async () => {
+    // 1. Get nonce
+    const nonceRes = await app.request(
+      '/wallet/nonce',
+      { method: 'POST', headers: { Cookie: testUser1.cookie, Origin: origin } },
+      env,
+    );
+    const { nonce } = (await nonceRes.json()) as { nonce: string };
+
+    // 2. Connect wallet
+    const connectRes = await app.request(
+      '/wallet/connect',
+      {
+        method: 'POST',
+        headers: {
+          Cookie: testUser1.cookie,
+          Origin: origin,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: validBounceable,
+          walletProvider: 'tonkeeper',
+          tonProof: {
+            payload: nonce,
+          },
+        }),
+      },
+      env,
+    );
+
+    expect(connectRes.status).toBe(200);
+    const body = (await connectRes.json()) as {
+      success: boolean;
+      status: string;
+      isAirdropLive: boolean;
+      address: string;
+    };
+
+    expect(body.success).toBe(true);
+    expect(body.status).toBe('soon');
+    expect(body.isAirdropLive).toBe(false);
+    expect(body.address).toBe(validBounceable);
+  });
+
+  it('strictly rejects Sybil farming attempts (one-wallet-per-account invariant)', async () => {
+    // User 2 attempts to connect the SAME wallet address already connected by User 1
+    const res = await app.request(
+      '/wallet/connect',
+      {
+        method: 'POST',
+        headers: {
+          Cookie: testUser2.cookie,
+          Origin: origin,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: validBounceable,
+          walletProvider: 'telegram_wallet',
+        }),
+      },
+      env,
+    );
+
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { error: { code: string; message: string } };
+    expect(body.error.code).toBe('WALLET_ALREADY_LINKED');
+    expect(body.error.message).toContain('Sybil');
+  });
+
+  it('retrieves wallet status and transparent airdrop calculation in soon phase', async () => {
+    const res = await app.request(
+      '/wallet/status',
+      {
+        method: 'GET',
+        headers: {
+          Cookie: testUser1.cookie,
+          Origin: origin,
+        },
+      },
+      env,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      connected: boolean;
+      wallet: { address: string; walletProvider: string };
+      airdrop: {
+        phase: string;
+        isLive: boolean;
+        statusText: string;
+        allocation: { totalAirdropPoints: number; walletBonus: number };
+      };
+    };
+
+    expect(body.connected).toBe(true);
+    expect(body.wallet.address).toBe(validBounceable);
+    expect(body.airdrop.isLive).toBe(false);
+    expect(body.airdrop.phase).toBe('preparation_soon');
+    expect(body.airdrop.statusText).toContain('SOON');
+    expect(body.airdrop.allocation.walletBonus).toBe(1000);
+  });
+
+  it('disconnects wallet successfully when unlocked', async () => {
+    const res = await app.request(
+      '/wallet/disconnect',
+      {
+        method: 'DELETE',
+        headers: {
+          Cookie: testUser1.cookie,
+          Origin: origin,
+        },
+      },
+      env,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { success: boolean };
+    expect(body.success).toBe(true);
+
+    // Verify it is disconnected in status
+    const statusRes = await app.request(
+      '/wallet/status',
+      { method: 'GET', headers: { Cookie: testUser1.cookie, Origin: origin } },
+      env,
+    );
+    const statusBody = (await statusRes.json()) as { connected: boolean; wallet: null };
+    expect(statusBody.connected).toBe(false);
+    expect(statusBody.wallet).toBeNull();
+  });
+
+  it('serves global public airdrop summary with transparent policies', async () => {
+    const res = await app.request(
+      '/airdrop/summary',
+      {
+        method: 'GET',
+        headers: { Origin: origin },
+      },
+      env,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      tokenSymbol: string;
+      chain: string;
+      isLive: boolean;
+      transparencyPolicy: { antiP2W: boolean; fairLaunch: boolean };
+    };
+
+    expect(body.tokenSymbol).toBe('$EMPIRE');
+    expect(body.chain).toContain('TON');
+    expect(body.isLive).toBe(false);
+    expect(body.transparencyPolicy.antiP2W).toBe(true);
+    expect(body.transparencyPolicy.fairLaunch).toBe(true);
+  });
+});

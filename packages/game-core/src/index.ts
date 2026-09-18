@@ -16,3 +16,4 @@ export * from './crypto-crash';
 export * from './dynasty-cipher';
 export * from './clans';
 export * from './daily-combo';
+export * from './ton-wallet';
